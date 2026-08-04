@@ -56,8 +56,30 @@
             font-size: 24px;
             color: #ffd700;
             text-shadow: 4px 4px #ff3300;
-            margin-bottom: 30px;
+            margin-bottom: 20px;
             text-align: center;
+        }
+
+        .slot-select-container {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .slot-btn {
+            background: #2b1b3d;
+            color: #fff;
+            border: 2px solid #8b5e3c;
+            padding: 8px 12px;
+            font-size: 9px;
+            cursor: pointer;
+        }
+
+        .slot-btn.active-slot {
+            background: #ffd700;
+            color: #000;
+            border-color: #fff;
+            font-weight: bold;
         }
 
         .menu-btn {
@@ -67,7 +89,7 @@
             padding: 14px 28px;
             font-size: 12px;
             cursor: pointer;
-            margin: 10px;
+            margin: 8px;
             width: 280px;
             text-align: center;
             box-shadow: 0 4px 0 #4a2f1b;
@@ -79,7 +101,6 @@
             transform: scale(1.05);
         }
 
-        /* Disabled Button Styling */
         .menu-btn:disabled {
             background: #4a3b32;
             color: #888;
@@ -89,7 +110,6 @@
             opacity: 0.7;
         }
 
-        /* --- Wooden Work In Progress Sign --- */
         .mp-row {
             display: flex;
             align-items: center;
@@ -150,6 +170,15 @@
             pointer-events: auto;
         }
 
+        .hud-box.clickable {
+            cursor: pointer;
+            background: #3d2352;
+            border-color: #ffd700;
+        }
+        .hud-box.clickable:hover {
+            background: #563375;
+        }
+
         .hud-box span { color: #ffd700; }
         .hud-box.health-box { border-color: #ff3333; }
         .hud-box.health-box span { color: #ff4444; }
@@ -191,12 +220,35 @@
         #minecart-prompt { background: #ffaa00; box-shadow: 0 0 15px rgba(255, 170, 0, 0.8); }
         #call-prompt { background: #00e5ff; box-shadow: 0 0 15px rgba(0, 229, 255, 0.8); color: #000; }
         #easter-prompt { background: #ff00ff; color: #fff; box-shadow: 0 0 15px rgba(255, 0, 255, 0.8); }
+        #belive-prompt { background: #ffff00; color: #0000ff; border-color: #0000ff; }
         #recall-banner { 
             top: 70px; 
             background: #ff2222; 
             color: #fff; 
             border-color: #ffffff;
             box-shadow: 0 0 20px rgba(255, 0, 0, 0.9);
+        }
+
+        /* Achievement Popup Banner */
+        #achievement-popup {
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%) translateY(-100px);
+            background: #ffd700;
+            color: #000;
+            border: 4px solid #000;
+            padding: 12px 20px;
+            font-size: 10px;
+            z-index: 30;
+            text-align: center;
+            box-shadow: 0 0 25px rgba(255, 215, 0, 0.9);
+            transition: transform 0.4s ease-out;
+            pointer-events: none;
+        }
+
+        #achievement-popup.show {
+            transform: translateX(-50%) translateY(0);
         }
 
         @keyframes pulse {
@@ -238,7 +290,7 @@
             padding-bottom: 10px;
         }
 
-        .upgrade-row {
+        .upgrade-row, .achievement-row {
             background: #2a1b3d;
             border: 2px solid #4a2870;
             padding: 10px 12px;
@@ -248,9 +300,16 @@
             align-items: center;
         }
 
-        .upgrade-details { display: flex; flex-direction: column; gap: 4px; }
-        .upgrade-title { font-size: 9px; color: #00ffff; }
-        .upgrade-cost { font-size: 8px; color: #aaa; }
+        .achievement-row.unlocked {
+            border-color: #ffd700;
+            background: #3b2818;
+        }
+
+        .upgrade-details, .achievement-details { display: flex; flex-direction: column; gap: 4px; }
+        .upgrade-title, .achievement-title { font-size: 9px; color: #00ffff; }
+        .achievement-title { color: #aaa; }
+        .achievement-row.unlocked .achievement-title { color: #ffd700; }
+        .upgrade-cost, .achievement-desc { font-size: 8px; color: #aaa; }
 
         .buy-btn {
             background: #28a745;
@@ -264,6 +323,20 @@
 
         .buy-btn:disabled { background: #444; color: #777; cursor: not-allowed; }
         .buy-btn.equipped { background: #007bff; color: #fff; border-color: #00ffff; }
+
+        .achievement-badge {
+            font-size: 9px;
+            padding: 6px 10px;
+            border: 2px solid #555;
+            color: #777;
+            background: #111;
+        }
+
+        .achievement-row.unlocked .achievement-badge {
+            border-color: #ffd700;
+            color: #ffd700;
+            background: #5c4300;
+        }
 
         .close-btn {
             margin-top: 14px;
@@ -280,8 +353,21 @@
 <body>
 
 <div id="game-container">
+    <div id="achievement-popup">
+        <div style="font-size: 8px; color: #444; margin-bottom: 4px;">🏆 ACHIEVEMENT UNLOCKED!</div>
+        <div id="achievement-popup-title" style="font-weight: bold; font-size: 10px;">TITLE</div>
+    </div>
+
     <div id="main-menu">
         <h1>MINERS I LOVE EM</h1>
+        
+        <div style="font-size: 9px; color: #aaa; margin-bottom: 8px;">SELECT SAVE SLOT:</div>
+        <div class="slot-select-container">
+            <button class="slot-btn active-slot" id="menu-slot-1" onclick="selectSaveSlot(1)">SLOT 1</button>
+            <button class="slot-btn" id="menu-slot-2" onclick="selectSaveSlot(2)">SLOT 2</button>
+            <button class="slot-btn" id="menu-slot-3" onclick="selectSaveSlot(3)">SLOT 3</button>
+        </div>
+
         <button class="menu-btn" id="sp-btn">SINGLE PLAYER</button>
 
         <div class="mp-row">
@@ -298,18 +384,21 @@
         <div class="hud-box">POWER: <span id="power-val">1</span></div>
         <div class="hud-box" id="bag-box">CARGO: <span id="bag-val">0</span>/<span id="bag-max">15</span></div>
         <div class="hud-box">DEPTH: <span id="depth-val">0</span>M</div>
+        <div class="hud-box">SLOT: <span id="active-slot-hud">1</span></div>
+        <div class="hud-box clickable" id="achievements-hud-btn">🏆 TROPHIES</div>
         <div class="hud-box emergency-info">STUCK? [R] (-50% CASH) <button class="reset-btn" id="reset-save-btn">RESET SAVE</button></div>
     </div>
 
-    <div id="shop-prompt" class="prompt">PRESS [E] TO ENTER SHOP & SELL CARGO</div>
+    <div id="shop-prompt" class="prompt">PRESS [E] TO ENTER OUTPOST SHOP & SELL ORE</div>
     <div id="minecart-prompt" class="prompt">PRESS [E] TO MOUNT MINECART</div>
     <div id="call-prompt" class="prompt">PRESS [C] TO CALL MINECART HERE</div>
     <div id="easter-prompt" class="prompt">★ YOU FOUND THE SECRET RED-HAIRED BOY! ★</div>
+    <div id="belive-prompt" class="prompt">★ BELIVE IN BLUE PAINT ★</div>
     <div id="recall-banner" class="prompt">⚠️ EMERGENCY RECALL! LOST 50% CASH ⚠️</div>
 
     <div id="shop-modal" class="modal">
         <div id="shop-window" class="modal-window">
-            <div class="modal-title">SURFACE EQUIPMENT & UPGRADES</div>
+            <div class="modal-title">SURFACE OUTPOST & GEAR SHOP</div>
 
             <div class="upgrade-row" style="border-color: #ff3333;">
                 <div class="upgrade-details">
@@ -402,6 +491,15 @@
             <button class="close-btn" id="close-shop">EXIT SHOP [ESC]</button>
         </div>
     </div>
+
+    <div id="achievements-modal" class="modal">
+        <div class="modal-window">
+            <div class="modal-title">🏆 ACHIEVEMENTS 🏆</div>
+            <div id="achievements-list">
+                </div>
+            <button class="close-btn" id="close-achievements">CLOSE [ESC]</button>
+        </div>
+    </div>
 </div>
 
 <script>
@@ -415,16 +513,23 @@
     window.addEventListener('resize', resizeCanvas);
     resizeCanvas();
 
-    // World Config
+    // World Config - DEEPER MAP (1500 Rows)
     const TILE_SIZE = 32;
     const WORLD_COLS = 120;
-    const WORLD_ROWS = 600;
-    const SAVE_KEY = 'miners_i_love_em_save';
+    const WORLD_ROWS = 1500;
+    const SURFACE_ROW = 4; // Precise surface ground baseline where depth = 0m
+    
+    // Save Slot System
+    let currentSaveSlot = 1;
+    function getSaveKey() {
+        return `miners_i_love_em_save_slot_${currentSaveSlot}`;
+    }
 
     // Tile Types
     const AIR = 0; const SKY = 1; const DIRT = 2; const STONE = 3;
     const GOLD = 4; const GEM = 5; const DIAMOND = 6; const MINECART_STATION = 7;
     const GRASS = 8; const WOOD_SUPPORT = 9; const LAVA = 10; const OBSIDIAN_BRICK = 11;
+    const RUBY = 12; const EMERALD = 13; const MYTHIC = 14;
 
     let world = [];
     let tileHp = [];
@@ -439,6 +544,7 @@
     let backpackMax = 15;
     let backpackCargo = [];
     let hasLavaSuit = false;
+    let goblinsKilled = 0;
 
     // Health & Combat System
     let playerHp = 100;
@@ -447,6 +553,59 @@
     let invulnerableTimer = 0;
     let attackTimer = 0;
     const MAX_ATTACK_TIMER = 12;
+
+    // --- ACHIEVEMENTS SYSTEM ---
+    const achievements = {
+        'first_dirt': { title: "First Dirt", desc: "Dig your very first block of earth.", unlocked: false },
+        'deep_dive_100': { title: "Deep Diver", desc: "Reach a depth of 100 meters.", unlocked: false },
+        'deep_dive_500': { title: "Abyssal Miner", desc: "Reach a depth of 500 meters.", unlocked: false },
+        'bottom_world': { title: "Core Explorer", desc: "Reach the lava depth (1400+ meters).", unlocked: false },
+        'rich_miner': { title: "Pocket Change", desc: "Accumulate $1,000 cash.", unlocked: false },
+        'tycoon': { title: "Mining Tycoon", desc: "Accumulate $10,000 cash.", unlocked: false },
+        'goblin_slayer': { title: "Goblin Pest Control", desc: "Defeat your first Goblin.", unlocked: false },
+        'rare_ruby': { title: "Ruby Hunter", desc: "Mine an ultra-rare Ruby ore.", unlocked: false },
+        'mythic_find': { title: "Mythic Discovery", desc: "Mine the mythical Mythic Crystal.", unlocked: false },
+        'lava_survivor': { title: "Lava Swimmer", desc: "Equip the Heatproof Lava Suit.", unlocked: false },
+        'easter_egg': { title: "Boy in Glasses", desc: "Find the secret Red-Haired Boy at the bottom.", unlocked: false },
+        'belive_sign': { title: "True Beliver", desc: "Find the giant Believe Sign guarded by the Boss Goblin.", unlocked: false }
+    };
+
+    function unlockAchievement(id) {
+        if (achievements[id] && !achievements[id].unlocked) {
+            achievements[id].unlocked = true;
+            showAchievementPopup(achievements[id].title);
+            saveGame();
+            renderAchievementsList();
+        }
+    }
+
+    function showAchievementPopup(title) {
+        const popup = document.getElementById('achievement-popup');
+        const titleElem = document.getElementById('achievement-popup-title');
+        titleElem.innerText = title;
+        popup.classList.add('show');
+        setTimeout(() => {
+            popup.classList.remove('show');
+        }, 3500);
+    }
+
+    function renderAchievementsList() {
+        const container = document.getElementById('achievements-list');
+        container.innerHTML = '';
+        Object.keys(achievements).forEach(id => {
+            const ach = achievements[id];
+            const row = document.createElement('div');
+            row.className = `achievement-row ${ach.unlocked ? 'unlocked' : ''}`;
+            row.innerHTML = `
+                <div class="achievement-details">
+                    <div class="achievement-title">${ach.title}</div>
+                    <div class="achievement-desc">${ach.desc}</div>
+                </div>
+                <div class="achievement-badge">${ach.unlocked ? 'UNLOCKED' : 'LOCKED'}</div>
+            `;
+            container.appendChild(row);
+        });
+    }
 
     const upgrades = {
         potion: { cost: 40, btnId: 'buy-potion', count: 0, singleUse: false, isPotion: true },
@@ -487,13 +646,24 @@
     const camera = { x: 0, y: 0, lerp: 0.12 };
     const keys = {};
 
-    /* --- PARTICLE / BREAKING EFFECT SYSTEM --- */
+    // Exact depth calculator (In Meters)
+    function getExactDepth() {
+        const surfacePixelY = SURFACE_ROW * TILE_SIZE;
+        const playerFeetY = player.y + player.height;
+        const depthInPixels = playerFeetY - surfacePixelY;
+        return Math.max(0, Math.floor(depthInPixels / TILE_SIZE));
+    }
+
+    /* --- PARTICLE SYSTEM --- */
     function spawnTileParticles(r, c, type, count = 8) {
         let colors = ["#6d4c41", "#8d6e63"];
         if (type === STONE) colors = ["#546e7a", "#78909c", "#37474f"];
         if (type === GOLD) colors = ["#ffd700", "#fff59d", "#6d4c41"];
         if (type === GEM) colors = ["#ff0080", "#ffffff", "#37474f"];
         if (type === DIAMOND) colors = ["#00e5ff", "#ffffff", "#1a237e"];
+        if (type === RUBY) colors = ["#ff1744", "#ff80ab", "#b71c1c"];
+        if (type === EMERALD) colors = ["#00e676", "#b9f6ca", "#1b5e20"];
+        if (type === MYTHIC) colors = ["#aa00ff", "#ea80fc", "#4a148c"];
 
         const centerX = c * TILE_SIZE + TILE_SIZE / 2;
         const centerY = r * TILE_SIZE + TILE_SIZE / 2;
@@ -517,7 +687,7 @@
             let p = particles[i];
             p.x += p.vx;
             p.y += p.vy;
-            p.vy += 0.25; // gravity
+            p.vy += 0.25;
             p.life--;
 
             ctx.fillStyle = p.color;
@@ -535,7 +705,6 @@
         if (type === AIR || type === SKY || type === MINECART_STATION || type === WOOD_SUPPORT || type === LAVA) return 0;
         if (type === GRASS || type === OBSIDIAN_BRICK) return 999999;
 
-        // Base hardness scaled up significantly so low dig power feels slow/hard
         const depthMultiplier = 1 + Math.pow(row / 30, 1.35); 
         let baseHp = 10;
 
@@ -544,14 +713,51 @@
         if (type === GOLD) baseHp = 70;
         if (type === GEM) baseHp = 180;
         if (type === DIAMOND) baseHp = 450;
+        if (type === RUBY) baseHp = 900;
+        if (type === EMERALD) baseHp = 1800;
+        if (type === MYTHIC) baseHp = 4000;
 
         return Math.floor(baseHp * depthMultiplier);
+    }
+
+    function selectSaveSlot(slotNum) {
+        currentSaveSlot = slotNum;
+        document.querySelectorAll('.slot-btn').forEach((b, idx) => {
+            if (idx + 1 === slotNum) b.classList.add('active-slot');
+            else b.classList.remove('active-slot');
+        });
+        document.getElementById('active-slot-hud').innerText = slotNum;
+        resetStatsToDefaults();
+        loadGame();
+        renderAchievementsList();
+        updateHUD();
+    }
+
+    function resetStatsToDefaults() {
+        cash = 0;
+        digPower = 1;
+        backpackMax = 15;
+        backpackCount = 0;
+        backpackCargo = [];
+        playerHp = 100;
+        playerMaxHp = 100;
+        swordDamage = 0;
+        hasLavaSuit = false;
+        goblinsKilled = 0;
+        player.speed = 4.0;
+        Object.keys(upgrades).forEach(k => upgrades[k].count = 0);
+        Object.keys(achievements).forEach(k => achievements[k].unlocked = false);
     }
 
     function saveGame() {
         const upgradeCounts = {};
         Object.keys(upgrades).forEach(key => {
             upgradeCounts[key] = upgrades[key].count;
+        });
+
+        const achUnlocked = {};
+        Object.keys(achievements).forEach(key => {
+            achUnlocked[key] = achievements[key].unlocked;
         });
 
         const saveData = {
@@ -562,15 +768,17 @@
             playerMaxHp: playerMaxHp,
             swordDamage: swordDamage,
             hasLavaSuit: hasLavaSuit,
+            goblinsKilled: goblinsKilled,
             playerSpeed: player.speed,
-            upgradeCounts: upgradeCounts
+            upgradeCounts: upgradeCounts,
+            achUnlocked: achUnlocked
         };
 
-        localStorage.setItem(SAVE_KEY, JSON.stringify(saveData));
+        localStorage.setItem(getSaveKey(), JSON.stringify(saveData));
     }
 
     function loadGame() {
-        const savedRaw = localStorage.getItem(SAVE_KEY);
+        const savedRaw = localStorage.getItem(getSaveKey());
         if (!savedRaw) return;
 
         try {
@@ -582,13 +790,18 @@
             playerMaxHp = data.playerMaxHp ?? 100;
             swordDamage = data.swordDamage ?? 0;
             hasLavaSuit = data.hasLavaSuit ?? false;
+            goblinsKilled = data.goblinsKilled ?? 0;
             if (data.playerSpeed) player.speed = data.playerSpeed;
 
             if (data.upgradeCounts) {
                 Object.keys(data.upgradeCounts).forEach(key => {
-                    if (upgrades[key]) {
-                        upgrades[key].count = data.upgradeCounts[key];
-                    }
+                    if (upgrades[key]) upgrades[key].count = data.upgradeCounts[key];
+                });
+            }
+
+            if (data.achUnlocked) {
+                Object.keys(data.achUnlocked).forEach(key => {
+                    if (achievements[key]) achievements[key].unlocked = data.achUnlocked[key];
                 });
             }
         } catch (e) {
@@ -597,9 +810,11 @@
     }
 
     function resetSave() {
-        if (confirm("Are you sure you want to reset all game progress?")) {
-            localStorage.removeItem(SAVE_KEY);
-            location.reload();
+        if (confirm(`Reset progress in Save Slot ${currentSaveSlot}?`)) {
+            localStorage.removeItem(getSaveKey());
+            resetStatsToDefaults();
+            renderAchievementsList();
+            updateHUD();
         }
     }
 
@@ -638,10 +853,10 @@
                     world[r][c] = AIR;
                 } else if (r === 5) {
                     world[r][c] = GRASS;
-                } else if (r >= 585 && r <= 594) {
+                } else if (r >= WORLD_ROWS - 15 && r <= WORLD_ROWS - 6) {
                     world[r][c] = LAVA;
-                } else if (r >= 595) {
-                    if (c >= 52 && c <= 68 && r >= 596 && r <= 598) {
+                } else if (r >= WORLD_ROWS - 5) {
+                    if (c >= 52 && c <= 68 && r >= WORLD_ROWS - 4 && r <= WORLD_ROWS - 2) {
                         world[r][c] = AIR;
                     } else {
                         world[r][c] = OBSIDIAN_BRICK;
@@ -650,20 +865,37 @@
                     const rand = Math.random();
 
                     if (r < 60) {
-                        if (rand < 0.82) world[r][c] = DIRT;
-                        else if (rand < 0.94) world[r][c] = STONE;
+                        if (rand < 0.88) world[r][c] = DIRT;
+                        else if (rand < 0.985) world[r][c] = STONE;
                         else world[r][c] = GOLD;
                     } else if (r < 250) {
-                        if (rand < 0.45) world[r][c] = DIRT;
-                        else if (rand < 0.80) world[r][c] = STONE;
-                        else if (rand < 0.95) world[r][c] = GOLD;
+                        if (rand < 0.50) world[r][c] = DIRT;
+                        else if (rand < 0.90) world[r][c] = STONE;
+                        else if (rand < 0.985) world[r][c] = GOLD;
                         else world[r][c] = GEM;
-                    } else {
-                        if (rand < 0.20) world[r][c] = DIRT;
-                        else if (rand < 0.65) world[r][c] = STONE;
-                        else if (rand < 0.85) world[r][c] = GOLD;
-                        else if (rand < 0.96) world[r][c] = GEM;
+                    } else if (r < 600) {
+                        if (rand < 0.30) world[r][c] = DIRT;
+                        else if (rand < 0.82) world[r][c] = STONE;
+                        else if (rand < 0.95) world[r][c] = GOLD;
+                        else if (rand < 0.992) world[r][c] = GEM;
                         else world[r][c] = DIAMOND;
+                    } else if (r < 1000) {
+                        if (rand < 0.20) world[r][c] = DIRT;
+                        else if (rand < 0.70) world[r][c] = STONE;
+                        else if (rand < 0.88) world[r][c] = GOLD;
+                        else if (rand < 0.96) world[r][c] = GEM;
+                        else if (rand < 0.988) world[r][c] = DIAMOND;
+                        else if (rand < 0.997) world[r][c] = RUBY;
+                        else world[r][c] = EMERALD;
+                    } else {
+                        if (rand < 0.10) world[r][c] = DIRT;
+                        else if (rand < 0.55) world[r][c] = STONE;
+                        else if (rand < 0.75) world[r][c] = GOLD;
+                        else if (rand < 0.88) world[r][c] = GEM;
+                        else if (rand < 0.95) world[r][c] = DIAMOND;
+                        else if (rand < 0.98) world[r][c] = RUBY;
+                        else if (rand < 0.995) world[r][c] = EMERALD;
+                        else world[r][c] = MYTHIC;
                     }
                 }
 
@@ -683,7 +915,43 @@
         }
 
         generateAbandonedMines();
+        generateDeepBossMineshaft();
         updateCartPositionFromProgress();
+    }
+
+    function generateDeepBossMineshaft() {
+        // Deep Mineshaft cavern for the Believe Sign and Boss Goblin (Row 850)
+        const bossRow = 850;
+        const bossColStart = 15;
+        const bossColEnd = 45;
+
+        for (let col = bossColStart; col <= bossColEnd; col++) {
+            for (let r = bossRow; r < bossRow + 6; r++) {
+                world[r][col] = AIR;
+                tileHp[r][col] = 0;
+            }
+            if (col % 6 === 0) {
+                for (let h = 0; h < 6; h++) {
+                    world[bossRow + h][col] = WOOD_SUPPORT;
+                }
+            }
+        }
+
+        // Spawn Boss Goblin guarding the sign
+        goblins.push({
+            isBoss: true,
+            x: 32 * TILE_SIZE,
+            y: (bossRow + 6) * TILE_SIZE - 54,
+            vy: 0,
+            width: 42,
+            height: 54,
+            speed: 2.2,
+            dir: 1,
+            hp: 650,
+            maxHp: 650,
+            minX: (bossColStart + 2) * TILE_SIZE,
+            maxX: (bossColEnd - 2) * TILE_SIZE
+        });
     }
 
     function updateCartPositionFromProgress() {
@@ -700,7 +968,7 @@
     }
 
     function generateAbandonedMines() {
-        const numMines = 35;
+        const numMines = 80;
         for (let i = 0; i < numMines; i++) {
             const startRow = Math.floor(15 + Math.random() * (WORLD_ROWS - 50));
             const startCol = Math.floor(Math.random() * (WORLD_COLS - 30));
@@ -759,7 +1027,7 @@
         goblins.forEach((g) => {
             const distToPlayer = Math.hypot(player.x - g.x, player.y - g.y);
 
-            if (distToPlayer < 180) {
+            if (distToPlayer < (g.isBoss ? 280 : 180)) {
                 g.dir = player.x > g.x ? 1 : -1;
             }
 
@@ -787,7 +1055,7 @@
                 if (player.x < g.x + g.width && player.x + player.width > g.x &&
                     player.y < g.y + g.height && player.y + player.height > g.y) {
                     
-                    playerHp -= 20;
+                    playerHp -= g.isBoss ? 45 : 20;
                     invulnerableTimer = 40;
                     if (playerHp <= 0) {
                         playerHp = 0;
@@ -814,8 +1082,10 @@
                 
                 g.hp -= swordDamage;
                 if (g.hp <= 0) {
+                    cash += g.isBoss ? 500 : 50;
                     goblins.splice(i, 1);
-                    cash += 50;
+                    goblinsKilled++;
+                    unlockAchievement('goblin_slayer');
                     saveGame();
                     updateHUD();
                 }
@@ -824,7 +1094,8 @@
     }
 
     function isSolidTile(type) {
-        return type === DIRT || type === STONE || type === GOLD || type === GEM || type === DIAMOND || type === GRASS || type === OBSIDIAN_BRICK;
+        return type === DIRT || type === STONE || type === GOLD || type === GEM || type === DIAMOND || 
+               type === RUBY || type === EMERALD || type === MYTHIC || type === GRASS || type === OBSIDIAN_BRICK;
     }
 
     function isInLava(x, y, w, h) {
@@ -877,6 +1148,11 @@
     function updatePlayer() {
         if (attackTimer > 0) attackTimer--;
 
+        const currentDepth = getExactDepth();
+        if (currentDepth >= 100) unlockAchievement('deep_dive_100');
+        if (currentDepth >= 500) unlockAchievement('deep_dive_500');
+        if (currentDepth >= 1400) unlockAchievement('bottom_world');
+
         if (player.inCart) {
             let rowSpeed = 0.4;
             let currentMove = 0;
@@ -915,7 +1191,6 @@
             player.facing = 'right';
         }
 
-        /* Update Walking Frame for Animation */
         if (player.vx !== 0 && player.grounded) {
             player.animFrame += 0.25;
         } else {
@@ -988,12 +1263,14 @@
 
         tileHp[r][c] -= digPower;
 
-        // Spawn hit particle effect
         spawnTileParticles(r, c, tile, 3);
 
         if (tileHp[r][c] <= 0) {
-            // Spawn full destroy particle effect
             spawnTileParticles(r, c, tile, 12);
+            unlockAchievement('first_dirt');
+
+            if (tile === RUBY) unlockAchievement('rare_ruby');
+            if (tile === MYTHIC) unlockAchievement('mythic_find');
 
             const depthValMultiplier = 1 + Math.floor(r / 20) * 0.8;
             let itemVal = 1;
@@ -1003,6 +1280,9 @@
             if (tile === GOLD) itemVal = Math.floor(20 * depthValMultiplier);
             if (tile === GEM) itemVal = Math.floor(80 * depthValMultiplier);
             if (tile === DIAMOND) itemVal = Math.floor(300 * depthValMultiplier);
+            if (tile === RUBY) itemVal = Math.floor(750 * depthValMultiplier);
+            if (tile === EMERALD) itemVal = Math.floor(1800 * depthValMultiplier);
+            if (tile === MYTHIC) itemVal = Math.floor(5000 * depthValMultiplier);
 
             backpackCargo.push(itemVal);
             backpackCount++;
@@ -1017,6 +1297,10 @@
             cash += totalEarnings;
             backpackCargo = [];
             backpackCount = 0;
+
+            if (cash >= 1000) unlockAchievement('rich_miner');
+            if (cash >= 10000) unlockAchievement('tycoon');
+
             saveGame();
             updateHUD();
         }
@@ -1043,21 +1327,205 @@
 
     function drawGoblins() {
         goblins.forEach(g => {
-            ctx.fillStyle = "#2e7d32";
-            ctx.fillRect(g.x, g.y, g.width, g.height);
+            if (g.isBoss) {
+                // Boss Goblin Render
+                ctx.fillStyle = "#1b5e20";
+                ctx.fillRect(g.x, g.y, g.width, g.height);
 
-            ctx.fillStyle = "#ff0000";
-            ctx.fillRect(g.dir === 1 ? g.x + 12 : g.x + 2, g.y + 4, 4, 4);
+                // Crown
+                ctx.fillStyle = "#ffd700";
+                ctx.fillRect(g.x + 8, g.y - 10, g.width - 16, 10);
+                ctx.fillRect(g.x + 4, g.y - 14, 8, 6);
+                ctx.fillRect(g.x + g.width - 12, g.y - 14, 8, 6);
+                ctx.fillRect(g.x + g.width/2 - 4, g.y - 16, 8, 8);
 
-            ctx.fillStyle = "#1b5e20";
-            ctx.fillRect(g.x - 3, g.y + 2, 4, 6);
-            ctx.fillRect(g.x + g.width - 1, g.y + 2, 4, 6);
+                // Glowing Eyes
+                ctx.fillStyle = "#ff0000";
+                ctx.shadowColor = "#ff0000";
+                ctx.shadowBlur = 10;
+                ctx.fillRect(g.dir === 1 ? g.x + 24 : g.x + 6, g.y + 12, 10, 8);
+                ctx.shadowBlur = 0;
 
-            ctx.fillStyle = "#000";
-            ctx.fillRect(g.x, g.y - 8, g.width, 4);
-            ctx.fillStyle = "#ff3333";
-            ctx.fillRect(g.x, g.y - 8, g.width * (g.hp / g.maxHp), 4);
+                // Ears & Shoulders
+                ctx.fillStyle = "#0d3311";
+                ctx.fillRect(g.x - 6, g.y + 6, 8, 14);
+                ctx.fillRect(g.x + g.width - 2, g.y + 6, 8, 14);
+
+                // HP Bar
+                ctx.fillStyle = "#000";
+                ctx.fillRect(g.x - 10, g.y - 24, g.width + 20, 8);
+                ctx.fillStyle = "#ff0000";
+                ctx.fillRect(g.x - 10, g.y - 24, (g.width + 20) * (g.hp / g.maxHp), 8);
+            } else {
+                // Standard Goblin
+                ctx.fillStyle = "#2e7d32";
+                ctx.fillRect(g.x, g.y, g.width, g.height);
+
+                ctx.fillStyle = "#ff0000";
+                ctx.fillRect(g.dir === 1 ? g.x + 12 : g.x + 2, g.y + 4, 4, 4);
+
+                ctx.fillStyle = "#1b5e20";
+                ctx.fillRect(g.x - 3, g.y + 2, 4, 6);
+                ctx.fillRect(g.x + g.width - 1, g.y + 2, 4, 6);
+
+                ctx.fillStyle = "#000";
+                ctx.fillRect(g.x, g.y - 8, g.width, 4);
+                ctx.fillStyle = "#ff3333";
+                ctx.fillRect(g.x, g.y - 8, g.width * (g.hp / g.maxHp), 4);
+            }
         });
+    }
+
+    function drawShopVisuals(shopX, shopY) {
+        const shopW = 190;
+        const shopH = 125;
+        const time = Date.now() * 0.003;
+
+        // Brick Foundation
+        ctx.fillStyle = "#37474f";
+        ctx.fillRect(shopX, shopY + 90, shopW, 35);
+        ctx.fillStyle = "#263238";
+        for (let bx = 0; bx < shopW; bx += 20) {
+            ctx.fillRect(shopX + bx, shopY + 90, 2, 35);
+            ctx.fillRect(shopX + bx + 10, shopY + 107, 10, 2);
+        }
+
+        // Upper Timber Structure
+        ctx.fillStyle = "#4e342e";
+        ctx.fillRect(shopX + 10, shopY + 25, shopW - 20, 65);
+
+        // Wooden Plank Lines
+        ctx.fillStyle = "#3e2723";
+        for (let py = 35; py < 90; py += 10) {
+            ctx.fillRect(shopX + 10, shopY + py, shopW - 20, 2);
+        }
+
+        // Support Beams (Pillars)
+        ctx.fillStyle = "#261408";
+        ctx.fillRect(shopX + 10, shopY + 25, 8, 65);
+        ctx.fillRect(shopX + shopW - 18, shopY + 25, 8, 65);
+        ctx.fillRect(shopX + 90, shopY + 25, 8, 65);
+
+        // Striped Awning Over Counter
+        const awningX = shopX + 105;
+        const awningY = shopY + 45;
+        const awningW = 75;
+        for (let stripe = 0; stripe < awningW; stripe += 12) {
+            ctx.fillStyle = (stripe / 12) % 2 === 0 ? "#e53935" : "#ffffff";
+            ctx.fillRect(awningX + stripe, awningY, 12, 12);
+        }
+        ctx.fillStyle = "#b71c1c";
+        ctx.fillRect(awningX, awningY + 12, awningW, 3);
+
+        // Brick Chimney & Smoke Particles
+        ctx.fillStyle = "#8d6e63";
+        ctx.fillRect(shopX + 25, shopY - 25, 20, 35);
+        ctx.fillStyle = "#5d4037";
+        ctx.fillRect(shopX + 23, shopY - 28, 24, 5);
+
+        // Chimney Smoke Animation
+        ctx.fillStyle = "rgba(200, 200, 200, 0.4)";
+        for (let s = 0; s < 3; s++) {
+            let smokeOffset = ((time * 25 + s * 15) % 45);
+            let smokeSize = 6 + smokeOffset * 0.2;
+            let smokeX = shopX + 35 + Math.sin(time + s) * 6 - smokeSize / 2;
+            let smokeY = shopY - 32 - smokeOffset;
+            ctx.beginPath();
+            ctx.arc(smokeX, smokeY, smokeSize, 0, Math.PI * 2);
+            ctx.fill();
+        }
+
+        // Grand Slanted Shingle Roof
+        ctx.fillStyle = "#1e1005";
+        ctx.beginPath();
+        ctx.moveTo(shopX - 12, shopY + 25);
+        ctx.lineTo(shopX + shopW / 2, shopY - 18);
+        ctx.lineTo(shopX + shopW + 12, shopY + 25);
+        ctx.fill();
+
+        ctx.fillStyle = "#3e2723";
+        ctx.beginPath();
+        ctx.moveTo(shopX - 6, shopY + 23);
+        ctx.lineTo(shopX + shopW / 2, shopY - 12);
+        ctx.lineTo(shopX + shopW + 6, shopY + 23);
+        ctx.fill();
+
+        // Animated Glowing Shop Signboard
+        const signX = shopX + 32;
+        const signY = shopY - 2;
+        const signW = 126;
+        const signH = 24;
+
+        ctx.fillStyle = "#0a0a12";
+        ctx.fillRect(signX, signY, signW, signH);
+        ctx.strokeStyle = "#ffd700";
+        ctx.lineWidth = 2;
+        ctx.strokeRect(signX, signY, signW, signH);
+
+        // Neon Glow Text Effect
+        const neonPulse = (Math.sin(time * 4) * 0.3) + 0.7;
+        ctx.fillStyle = `rgba(0, 229, 255, ${neonPulse})`;
+        ctx.shadowColor = "#00e5ff";
+        ctx.shadowBlur = 8;
+        ctx.font = "8px 'Press Start 2P', monospace";
+        ctx.fillText("⭐ OUTPOST SHOP ⭐", signX + 7, signY + 16);
+        ctx.shadowBlur = 0;
+
+        // Glowing Lanterns
+        const drawLantern = (lx, ly) => {
+            ctx.fillStyle = "#3e2723";
+            ctx.fillRect(lx, ly, 2, 6);
+            ctx.fillStyle = "#ffd700";
+            ctx.shadowColor = "#ffaa00";
+            ctx.shadowBlur = 10;
+            ctx.fillRect(lx - 3, ly + 6, 8, 10);
+            ctx.shadowBlur = 0;
+            ctx.fillStyle = "#fff";
+            ctx.fillRect(lx - 1, ly + 8, 4, 6);
+        };
+        drawLantern(shopX + 18, shopY + 38);
+        drawLantern(shopX + shopW - 20, shopY + 38);
+
+        // Shop Doorway with Arch
+        ctx.fillStyle = "#120a04";
+        ctx.fillRect(shopX + 28, shopY + 50, 36, 75);
+        ctx.fillStyle = "#ffd700";
+        ctx.fillRect(shopX + 56, shopY + 88, 4, 4); // Handle
+
+        // Shopkeeper Counter & NPC
+        ctx.fillStyle = "#6d4c41";
+        ctx.fillRect(shopX + 105, shopY + 65, 75, 12);
+        ctx.fillStyle = "#4e342e";
+        ctx.fillRect(shopX + 105, shopY + 77, 75, 48);
+
+        // Pickaxe Decoration on Counter
+        ctx.fillStyle = "#aaa";
+        ctx.fillRect(shopX + 155, shopY + 60, 10, 3);
+        ctx.fillStyle = "#8b4513";
+        ctx.fillRect(shopX + 159, shopY + 63, 2, 8);
+
+        // Animated Merchant NPC
+        const merchantY = shopY + 44 + Math.sin(time * 2) * 1.5;
+        ctx.fillStyle = "#ffcc99"; // skin
+        ctx.fillRect(shopX + 128, merchantY, 18, 18);
+        
+        // Merchant Hat
+        ctx.fillStyle = "#8e24aa";
+        ctx.fillRect(shopX + 124, merchantY - 4, 26, 5);
+        ctx.fillRect(shopX + 128, merchantY - 10, 18, 6);
+
+        // Merchant Clothes
+        ctx.fillStyle = "#ab47bc";
+        ctx.fillRect(shopX + 125, merchantY + 18, 24, 12);
+
+        // Blinking Eyes
+        ctx.fillStyle = (Math.sin(time * 0.8) > 0.95) ? "#ffcc99" : "#000";
+        ctx.fillRect(shopX + 132, merchantY + 6, 3, 3);
+        ctx.fillRect(shopX + 140, merchantY + 6, 3, 3);
+
+        // Friendly Mustache
+        ctx.fillStyle = "#5d4037";
+        ctx.fillRect(shopX + 131, merchantY + 12, 12, 3);
     }
 
     function drawCoolBlock(type, x, y, r, c) {
@@ -1116,6 +1584,34 @@
             ctx.fillRect(x + 8, y + 8, 16, 16);
             ctx.fillStyle = "#ffffff";
             ctx.fillRect(x + 12, y + 10, 4, 4);
+            ctx.shadowBlur = 0;
+        } else if (type === RUBY) {
+            ctx.fillStyle = "#3e1111";
+            ctx.fillRect(x, y, TILE_SIZE, TILE_SIZE);
+            ctx.fillStyle = "#ff1744";
+            ctx.beginPath();
+            ctx.arc(x + 16, y + 16, 10, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.fillStyle = "#ffffff";
+            ctx.fillRect(x + 12, y + 10, 4, 4);
+        } else if (type === EMERALD) {
+            ctx.fillStyle = "#0d3311";
+            ctx.fillRect(x, y, TILE_SIZE, TILE_SIZE);
+            ctx.fillStyle = "#00e676";
+            ctx.fillRect(x + 6, y + 6, 20, 20);
+            ctx.fillStyle = "#ffffff";
+            ctx.fillRect(x + 10, y + 8, 4, 4);
+        } else if (type === MYTHIC) {
+            ctx.fillStyle = "#210038";
+            ctx.fillRect(x, y, TILE_SIZE, TILE_SIZE);
+
+            const pulse = Math.sin(time * 3 + r) * 6 + 10;
+            ctx.fillStyle = "#aa00ff";
+            ctx.shadowColor = "#ea80fc";
+            ctx.shadowBlur = pulse;
+            ctx.fillRect(x + 6, y + 6, 20, 20);
+            ctx.fillStyle = "#ffffff";
+            ctx.fillRect(x + 14, y + 12, 4, 4);
             ctx.shadowBlur = 0;
         } else if (type === LAVA) {
             const lavaY = Math.sin(time * 2 + c) * 3;
@@ -1237,7 +1733,31 @@
         ctx.restore();
     }
 
-    /* --- HUMAN PLAYER WITH WALKING ANIMATION --- */
+    // --- BIGGER BELIEVE SIGN IN MINESHAFTS ---
+    function drawBeliveSign(x, y) {
+        ctx.save();
+        ctx.translate(x, y);
+
+        // Larger sign board dimensions (120x60)
+        ctx.fillStyle = "#ffff00";
+        ctx.fillRect(0, 0, 120, 60);
+        ctx.strokeStyle = "#000000";
+        ctx.lineWidth = 4;
+        ctx.strokeRect(0, 0, 120, 60);
+
+        // Text
+        ctx.fillStyle = "#0000ff";
+        ctx.font = "16px 'Press Start 2P', monospace";
+        ctx.fillText("BELIVE", 12, 38);
+
+        // Wooden posts
+        ctx.fillStyle = "#8b4513";
+        ctx.fillRect(25, 60, 12, 35);
+        ctx.fillRect(83, 60, 12, 35);
+
+        ctx.restore();
+    }
+
     function drawHumanPlayer(x, y, facing, frame, lavaSuitActive, currentAttackTimer = 0) {
         ctx.save();
         ctx.translate(x, y);
@@ -1255,40 +1775,32 @@
         const helmetColor = lavaSuitActive ? "#ff4500" : "#ffd700";
         const shirtColor = lavaSuitActive ? "#cc1100" : "#d9381e";
 
-        // Calculate Leg Swing Offsets
         const legOffset = Math.sin(frame) * 4;
         const armOffset = Math.cos(frame) * 3;
 
-        // Backpack
         ctx.fillStyle = "#8b4513";
         ctx.fillRect(-4, 12, 6, 12);
 
-        // Helmet
         ctx.fillStyle = helmetColor;
         ctx.fillRect(2, 0, 14, 6);
         ctx.fillRect(0, 5, 18, 3);
 
-        // Head & Eyes
         ctx.fillStyle = skinColor;
         ctx.fillRect(3, 8, 12, 7);
         ctx.fillStyle = "#000";
         ctx.fillRect(11, 10, 2, 2);
 
-        // Shirt / Torso
         ctx.fillStyle = shirtColor;
         ctx.fillRect(3, 15, 12, 8);
 
-        // Arms (Animated)
         ctx.fillStyle = skinColor;
         ctx.fillRect(1, 16 + armOffset, 3, 6);
         ctx.fillRect(14, 16 - armOffset, 3, 6);
 
-        // Animated Legs (Pants)
         ctx.fillStyle = "#2b4c7e";
         ctx.fillRect(4 + legOffset, 23, 4, 7);
         ctx.fillRect(10 - legOffset, 23, 4, 7);
 
-        // Sword / Attack Animation
         if (currentAttackTimer > 0) {
             const swingProgress = (MAX_ATTACK_TIMER - currentAttackTimer) / MAX_ATTACK_TIMER;
             const startAngle = -Math.PI / 2.2;
@@ -1373,41 +1885,38 @@
 
         drawSwervingTracks(startRow, endRow);
 
+        // Easter eggs
         const boyX = 60 * TILE_SIZE;
-        const boyY = 597 * TILE_SIZE;
+        const boyY = (WORLD_ROWS - 3) * TILE_SIZE;
         drawRedHairGlassesBoy(boyX, boyY);
 
-        const shopX = 65 * TILE_SIZE;
-        const shopY = 2 * TILE_SIZE;
+        // Bigger Believe Sign positioned deep inside the row 850 mineshaft
+        const beliveSignX = 22 * TILE_SIZE;
+        const beliveSignY = 850 * TILE_SIZE + 10;
+        drawBeliveSign(beliveSignX, beliveSignY);
 
-        ctx.fillStyle = "#5d4037";
-        ctx.fillRect(shopX, shopY, 120, 96);
-        ctx.fillStyle = "#3e2723";
-        ctx.fillRect(shopX + 10, shopY + 10, 100, 30);
-        
-        ctx.fillStyle = "#ffd700";
-        ctx.font = "8px 'Press Start 2P', monospace";
-        ctx.fillText("SHOP", shopX + 42, shopY + 28);
-
-        ctx.fillStyle = "#1c0d02";
-        ctx.fillRect(shopX + 45, shopY + 46, 30, 50);
+        // Moved Shop Visuals
+        const shopX = 80 * TILE_SIZE;
+        const shopY = 1 * TILE_SIZE + 5;
+        drawShopVisuals(shopX, shopY);
 
         drawGoblins();
         drawMinecartObject(shaftCart);
 
         drawHumanPlayer(player.x, player.y, player.facing, player.animFrame, hasLavaSuit, attackTimer);
 
-        /* Draw Block-Break Debris Particles */
         updateAndDrawParticles();
 
         ctx.restore();
     }
 
     const shopPrompt = document.getElementById('shop-prompt');
+    const belivePrompt = document.getElementById('belive-prompt');
     const minecartPrompt = document.getElementById('minecart-prompt');
     const callPrompt = document.getElementById('call-prompt');
     const easterPrompt = document.getElementById('easter-prompt');
     const shopModal = document.getElementById('shop-modal');
+    const achievementsModal = document.getElementById('achievements-modal');
     const bagBox = document.getElementById('bag-box');
     
     let inShopZone = false;
@@ -1415,11 +1924,11 @@
     let nearMinecart = false;
 
     function checkProximity() {
-        const shopDoorX = 65 * TILE_SIZE + 60;
-        const shopDoorY = 4 * TILE_SIZE;
+        const shopDoorX = 80 * TILE_SIZE + 46;
+        const shopDoorY = 5 * TILE_SIZE;
         const shopDist = Math.hypot(player.x - shopDoorX, player.y - shopDoorY);
 
-        if (shopDist < 60) {
+        if (shopDist < 50) {
             inShopZone = true;
             shopPrompt.style.display = "block";
             sellAllCargo();
@@ -1437,12 +1946,23 @@
         const cartDist = Math.hypot(player.x - shaftCart.x, player.y - shaftCart.y);
         nearMinecart = cartDist < 48;
 
+        const beliveX = 22 * TILE_SIZE + 60;
+        const beliveY = 850 * TILE_SIZE + 30;
+        const beliveSignDist = Math.hypot(player.x - beliveX, player.y - beliveY);
+        if (beliveSignDist < 120) {
+            belivePrompt.style.display = "block";
+            unlockAchievement('belive_sign');
+        } else {
+            belivePrompt.style.display = "none";
+        }
+
         const boyX = 60 * TILE_SIZE + 12;
-        const boyY = 597 * TILE_SIZE + 12;
+        const boyY = (WORLD_ROWS - 3) * TILE_SIZE + 12;
         const eggDist = Math.hypot(player.x - boyX, player.y - boyY);
 
         if (eggDist < 80) {
             easterPrompt.style.display = "block";
+            unlockAchievement('easter_egg');
         } else {
             easterPrompt.style.display = "none";
         }
@@ -1487,8 +2007,7 @@
             bagBox.classList.remove('full');
         }
 
-        const depthMeters = Math.max(0, Math.floor((player.y / TILE_SIZE) - 4));
-        document.getElementById('depth-val').innerText = depthMeters;
+        document.getElementById('depth-val').innerText = getExactDepth();
 
         Object.keys(upgrades).forEach(key => {
             const up = upgrades[key];
@@ -1532,6 +2051,7 @@
                         player.speed += up.speedInc;
                     } else if (key === 'suit') {
                         hasLavaSuit = true;
+                        unlockAchievement('lava_survivor');
                     } else {
                         digPower += up.power;
                     }
@@ -1544,6 +2064,14 @@
 
         document.getElementById('close-shop').addEventListener('click', () => {
             shopModal.style.display = 'none';
+        });
+
+        document.getElementById('achievements-hud-btn').addEventListener('click', () => {
+            achievementsModal.style.display = 'flex';
+        });
+
+        document.getElementById('close-achievements').addEventListener('click', () => {
+            achievementsModal.style.display = 'none';
         });
 
         document.getElementById('reset-save-btn').addEventListener('click', resetSave);
@@ -1584,6 +2112,7 @@
 
         if (e.key === 'Escape') {
             shopModal.style.display = 'none';
+            achievementsModal.style.display = 'none';
         }
     });
 
@@ -1592,7 +2121,7 @@
     });
 
     function gameLoop() {
-        if (shopModal.style.display !== 'flex' && document.getElementById('main-menu').style.display === 'none') {
+        if (shopModal.style.display !== 'flex' && achievementsModal.style.display !== 'flex' && document.getElementById('main-menu').style.display === 'none') {
             updatePlayer();
             updateGoblins();
             updateMinecartLogic();
@@ -1606,6 +2135,7 @@
     loadGame();
     initWorld();
     setupShop();
+    renderAchievementsList();
     updateHUD();
     gameLoop();
 </script>

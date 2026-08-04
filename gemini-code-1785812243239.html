@@ -1,0 +1,1188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Miners I Love Em</title>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+    <style>
+        * {
+            box-sizing: border-box;
+            user-select: none;
+            image-rendering: pixelated;
+            font-family: 'Press Start 2P', monospace, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+
+        html, body {
+            width: 100%;
+            height: 100%;
+            background-color: #000;
+            color: #fff;
+            overflow: hidden;
+        }
+
+        #game-container {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            background-color: #050508;
+        }
+
+        canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+
+        /* --- HUD Overlay --- */
+        #hud {
+            position: absolute;
+            top: 16px;
+            left: 16px;
+            right: 16px;
+            display: flex;
+            justify-content: space-between;
+            gap: 10px;
+            pointer-events: none;
+            z-index: 5;
+            flex-wrap: wrap;
+        }
+
+        .hud-box {
+            background: rgba(15, 10, 25, 0.9);
+            border: 2px solid #8b5e3c;
+            padding: 8px 12px;
+            font-size: 10px;
+            color: #fff;
+            text-shadow: 2px 2px #000;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.6);
+        }
+
+        .hud-box span {
+            color: #ffd700;
+        }
+
+        .hud-box.full {
+            border-color: #ff3333;
+            color: #ff6666;
+            animation: flash 0.6s infinite alternate;
+        }
+
+        .emergency-info {
+            border-color: #ff3333;
+            color: #ffaaaa;
+        }
+
+        @keyframes flash {
+            from { opacity: 1; }
+            to { opacity: 0.5; }
+        }
+
+        /* --- Interaction Prompts --- */
+        .prompt {
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #ffd700;
+            color: #000;
+            padding: 10px 18px;
+            font-size: 10px;
+            border: 3px solid #000;
+            display: none;
+            animation: pulse 0.8s infinite alternate;
+            z-index: 5;
+            box-shadow: 0 0 15px rgba(255, 215, 0, 0.6);
+        }
+
+        #minecart-prompt { background: #ffaa00; box-shadow: 0 0 15px rgba(255, 170, 0, 0.8); }
+        #call-prompt { background: #00e5ff; box-shadow: 0 0 15px rgba(0, 229, 255, 0.8); color: #000; }
+        #easter-prompt { background: #ff00ff; color: #fff; box-shadow: 0 0 15px rgba(255, 0, 255, 0.8); }
+        #recall-banner { 
+            top: 70px; 
+            background: #ff2222; 
+            color: #fff; 
+            border-color: #ffffff;
+            box-shadow: 0 0 20px rgba(255, 0, 0, 0.9);
+        }
+
+        @keyframes pulse {
+            from { transform: translateX(-50%) scale(1); }
+            to { transform: translateX(-50%) scale(1.05); }
+        }
+
+        /* --- Shop Modal Overlay --- */
+        .modal {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.88);
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 10;
+        }
+
+        .modal-window {
+            width: 620px;
+            max-width: 92vw;
+            max-height: 85vh;
+            overflow-y: auto;
+            background: #1d1526;
+            border: 4px solid #9b59b6;
+            padding: 20px;
+            box-shadow: 0 0 30px rgba(155, 89, 182, 0.4);
+        }
+
+        .modal-title {
+            color: #ffd700;
+            font-size: 12px;
+            text-align: center;
+            margin-bottom: 14px;
+            border-bottom: 2px solid #9b59b6;
+            padding-bottom: 10px;
+        }
+
+        .upgrade-row {
+            background: #2a1b3d;
+            border: 2px solid #4a2870;
+            padding: 10px 12px;
+            margin-bottom: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .upgrade-details {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .upgrade-title {
+            font-size: 9px;
+            color: #00ffff;
+        }
+
+        .upgrade-cost {
+            font-size: 8px;
+            color: #aaa;
+        }
+
+        .buy-btn {
+            background: #28a745;
+            color: #fff;
+            border: 2px solid #000;
+            padding: 8px 12px;
+            font-size: 8px;
+            cursor: pointer;
+            line-height: 1.2;
+            text-align: center;
+        }
+
+        .buy-btn:disabled {
+            background: #444;
+            color: #777;
+            cursor: not-allowed;
+        }
+
+        .buy-btn.equipped {
+            background: #007bff;
+            color: #fff;
+            border-color: #00ffff;
+        }
+
+        .close-btn {
+            margin-top: 14px;
+            width: 100%;
+            background: #c82333;
+            color: #fff;
+            border: 2px solid #000;
+            padding: 12px;
+            font-size: 10px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+
+<div id="game-container">
+    <canvas id="gameCanvas"></canvas>
+    
+    <div id="hud">
+        <div class="hud-box">CASH: $<span id="cash-val">0</span></div>
+        <div class="hud-box">POWER: <span id="power-val">1</span></div>
+        <div class="hud-box" id="bag-box">CARGO: <span id="bag-val">0</span>/<span id="bag-max">15</span></div>
+        <div class="hud-box">DEPTH: <span id="depth-val">0</span>M</div>
+        <div class="hud-box emergency-info">STUCK? PRESS [R] (-50% CASH)</div>
+    </div>
+
+    <div id="shop-prompt" class="prompt">PRESS [E] TO ENTER SHOP & SELL CARGO</div>
+    <div id="minecart-prompt" class="prompt">PRESS [E] TO MOUNT MINECART</div>
+    <div id="call-prompt" class="prompt">PRESS [C] TO CALL MINECART HERE</div>
+    <div id="easter-prompt" class="prompt">★ YOU FOUND THE SECRET RED-HAIRED BOY! ★</div>
+    <div id="recall-banner" class="prompt">⚠️ EMERGENCY RECALL! LOST 50% CASH ⚠️</div>
+
+    <div id="shop-modal" class="modal">
+        <div id="shop-window" class="modal-window">
+            <div class="modal-title">SURFACE EQUIPMENT & UPGRADES</div>
+            
+            <div class="upgrade-row">
+                <div class="upgrade-details">
+                    <div class="upgrade-title">TITANIUM PICKAXE</div>
+                    <div class="upgrade-cost">DIG POWER +1 | COST: $<span id="cost-pick">15</span></div>
+                </div>
+                <button class="buy-btn" id="buy-pick">BUY</button>
+            </div>
+
+            <div class="upgrade-row">
+                <div class="upgrade-details">
+                    <div class="upgrade-title">SPEED BOOTS</div>
+                    <div class="upgrade-cost">MOVEMENT SPEED +1 | COST: $<span id="cost-boots">25</span></div>
+                </div>
+                <button class="buy-btn" id="buy-boots">BUY</button>
+            </div>
+
+            <div class="upgrade-row">
+                <div class="upgrade-details">
+                    <div class="upgrade-title">BACKPACK EXPANSION</div>
+                    <div class="upgrade-cost">CAPACITY +15 | COST: $<span id="cost-bag">30</span></div>
+                </div>
+                <button class="buy-btn" id="buy-bag">BUY</button>
+            </div>
+
+            <div class="upgrade-row">
+                <div class="upgrade-details">
+                    <div class="upgrade-title">SEISMIC CHARGES</div>
+                    <div class="upgrade-cost">DIG POWER +5 | COST: $<span id="cost-tnt">200</span></div>
+                </div>
+                <button class="buy-btn" id="buy-tnt">BUY</button>
+            </div>
+
+            <div class="upgrade-row">
+                <div class="upgrade-details">
+                    <div class="upgrade-title">MINING LASER</div>
+                    <div class="upgrade-cost">DIG POWER +12 | COST: $<span id="cost-laser">500</span></div>
+                </div>
+                <button class="buy-btn" id="buy-laser">BUY</button>
+            </div>
+
+            <div class="upgrade-row">
+                <div class="upgrade-details">
+                    <div class="upgrade-title">HYPER DRILL RIG</div>
+                    <div class="upgrade-cost">DIG POWER +25 | COST: $<span id="cost-drill">1200</span></div>
+                </div>
+                <button class="buy-btn" id="buy-drill">BUY</button>
+            </div>
+
+            <div class="upgrade-row">
+                <div class="upgrade-details">
+                    <div class="upgrade-title">PLASMA EXCAVATOR</div>
+                    <div class="upgrade-cost">DIG POWER +60 | COST: $<span id="cost-plasma">3000</span></div>
+                </div>
+                <button class="buy-btn" id="buy-plasma">BUY</button>
+            </div>
+
+            <div class="upgrade-row" style="border-color: #ff4500;">
+                <div class="upgrade-details">
+                    <div class="upgrade-title" style="color:#ff6600;">HEATPROOF LAVA SUIT</div>
+                    <div class="upgrade-cost">SWIM IN LAVA POOLS | COST: $<span id="cost-suit">2500</span></div>
+                </div>
+                <button class="buy-btn" id="buy-suit">BUY</button>
+            </div>
+
+            <button class="close-btn" id="close-shop">EXIT SHOP [ESC]</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d');
+
+    function resizeCanvas() {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+    }
+    window.addEventListener('resize', resizeCanvas);
+    resizeCanvas();
+
+    // World Config
+    const TILE_SIZE = 32;
+    const WORLD_COLS = 120;
+    const WORLD_ROWS = 600;
+
+    // Tile Types
+    const AIR = 0;
+    const SKY = 1;
+    const DIRT = 2;
+    const STONE = 3;
+    const GOLD = 4;
+    const GEM = 5;
+    const DIAMOND = 6;
+    const MINECART_STATION = 7;
+    const GRASS = 8;
+    const WOOD_SUPPORT = 9;
+    const LAVA = 10;
+    const OBSIDIAN_BRICK = 11;
+
+    let world = [];
+    let tileHp = [];
+    let railCols = [];
+
+    // Player Upgrades & Stats
+    let cash = 0;
+    let digPower = 1;
+    let backpackCount = 0;
+    let backpackMax = 15;
+    let backpackCargo = [];
+    let hasLavaSuit = false;
+
+    const upgrades = {
+        pick: { cost: 15, power: 1, btnId: 'buy-pick', count: 0, singleUse: false },
+        boots: { cost: 25, speedInc: 0.8, btnId: 'buy-boots', count: 0, singleUse: false },
+        bag: { cost: 30, capacity: 15, btnId: 'buy-bag', count: 0, singleUse: false },
+        tnt: { cost: 200, power: 5, btnId: 'buy-tnt', count: 0, singleUse: false },
+        laser: { cost: 500, power: 12, btnId: 'buy-laser', count: 0, singleUse: false },
+        drill: { cost: 1200, power: 25, btnId: 'buy-drill', count: 0, singleUse: false },
+        plasma: { cost: 3000, power: 60, btnId: 'buy-plasma', count: 0, singleUse: false },
+        suit: { cost: 2500, btnId: 'buy-suit', count: 0, singleUse: true }
+    };
+
+    let shaftCart = {
+        rowProgress: 4,
+        x: 0,
+        y: 0,
+        targetRow: 4,
+        width: 28,
+        height: 20,
+        isMovingToTarget: false
+    };
+
+    const player = {
+        x: 55 * TILE_SIZE,
+        y: 3 * TILE_SIZE,
+        vx: 0,
+        vy: 0,
+        width: 18,
+        height: 30,
+        speed: 4.0,
+        gravity: 0.45,
+        jumpPower: -9.2,
+        grounded: false,
+        facing: 'right',
+        animFrame: 0,
+        animTimer: 0,
+        inCart: false
+    };
+
+    const camera = { x: 0, y: 0, lerp: 0.12 };
+    const keys = {};
+
+    function generateSwervingTrack() {
+        railCols = [];
+        let centerCol = 50;
+
+        for (let r = 0; r < WORLD_ROWS - 20; r++) {
+            if (r < 4) {
+                railCols[r] = centerCol;
+            } else {
+                const wave1 = Math.sin(r * 0.04) * 22;
+                const wave2 = Math.cos(r * 0.015) * 15;
+                let col = Math.floor(centerCol + wave1 + wave2);
+                col = Math.max(8, Math.min(col, WORLD_COLS - 10));
+                railCols[r] = col;
+            }
+        }
+    }
+
+    function initWorld() {
+        world = [];
+        tileHp = [];
+        generateSwervingTrack();
+
+        for (let r = 0; r < WORLD_ROWS; r++) {
+            world[r] = [];
+            tileHp[r] = [];
+
+            for (let c = 0; c < WORLD_COLS; c++) {
+                if (r < 4) {
+                    world[r][c] = SKY;
+                } else if (r === 4) {
+                    world[r][c] = AIR;
+                } else if (r === 5) {
+                    world[r][c] = GRASS;
+                } else if (r >= 585 && r <= 594) {
+                    world[r][c] = LAVA;
+                } else if (r >= 595) {
+                    if (c >= 52 && c <= 68 && r >= 596 && r <= 598) {
+                        world[r][c] = AIR;
+                    } else {
+                        world[r][c] = OBSIDIAN_BRICK;
+                    }
+                } else {
+                    const rand = Math.random();
+
+                    if (r < 60) {
+                        if (rand < 0.82) world[r][c] = DIRT;
+                        else if (rand < 0.94) world[r][c] = STONE;
+                        else world[r][c] = GOLD;
+                    } else if (r < 250) {
+                        if (rand < 0.45) world[r][c] = DIRT;
+                        else if (rand < 0.80) world[r][c] = STONE;
+                        else if (rand < 0.95) world[r][c] = GOLD;
+                        else world[r][c] = GEM;
+                    } else {
+                        if (rand < 0.20) world[r][c] = DIRT;
+                        else if (rand < 0.65) world[r][c] = STONE;
+                        else if (rand < 0.85) world[r][c] = GOLD;
+                        else if (rand < 0.96) world[r][c] = GEM;
+                        else world[r][c] = DIAMOND;
+                    }
+                }
+
+                tileHp[r][c] = getMaxTileHp(world[r][c], r);
+            }
+        }
+
+        for (let r = 4; r < WORLD_ROWS - 20; r++) {
+            const trackCol = railCols[r];
+            for (let dc = -1; dc <= 1; dc++) {
+                const c = trackCol + dc;
+                if (c >= 0 && c < WORLD_COLS) {
+                    world[r][c] = AIR;
+                    tileHp[r][c] = 0;
+                }
+            }
+        }
+
+        generateAbandonedMines();
+        updateCartPositionFromProgress();
+    }
+
+    function updateCartPositionFromProgress() {
+        const row = Math.floor(shaftCart.rowProgress);
+        const nextRow = Math.min(WORLD_ROWS - 21, row + 1);
+        const frac = shaftCart.rowProgress - row;
+
+        const colCurrent = railCols[row] || 50;
+        const colNext = railCols[nextRow] || 50;
+        const interpolatedCol = colCurrent + (colNext - colCurrent) * frac;
+
+        shaftCart.x = interpolatedCol * TILE_SIZE + 2;
+        shaftCart.y = shaftCart.rowProgress * TILE_SIZE + 2;
+    }
+
+    function generateAbandonedMines() {
+        const numMines = 35;
+        for (let i = 0; i < numMines; i++) {
+            const startRow = Math.floor(15 + Math.random() * (WORLD_ROWS - 50));
+            const startCol = Math.floor(Math.random() * (WORLD_COLS - 30));
+            const tunnelLength = Math.floor(20 + Math.random() * 35);
+
+            for (let col = startCol; col < Math.min(WORLD_COLS - 2, startCol + tunnelLength); col++) {
+                for (let h = 0; h < 3; h++) {
+                    const r = startRow + h;
+                    if (r < WORLD_ROWS - 20 && r > 5) {
+                        world[r][col] = AIR;
+                        tileHp[r][col] = 0;
+                    }
+                }
+                if (col % 6 === 0) {
+                    world[startRow][col] = WOOD_SUPPORT;
+                    world[startRow + 1][col] = WOOD_SUPPORT;
+                    world[startRow + 2][col] = WOOD_SUPPORT;
+                }
+            }
+        }
+    }
+
+    function getMaxTileHp(type, row) {
+        if (type === AIR || type === SKY || type === MINECART_STATION || type === WOOD_SUPPORT || type === LAVA) return 0;
+        if (type === GRASS || type === OBSIDIAN_BRICK) return 999999;
+
+        const depthHardness = Math.floor(row / 25); 
+        let baseHp = 1;
+
+        if (type === DIRT) baseHp = 1 + depthHardness * 0.8;
+        if (type === STONE) baseHp = 3 + depthHardness * 1.5;
+        if (type === GOLD) baseHp = 4 + depthHardness * 2.0;
+        if (type === GEM) baseHp = 7 + depthHardness * 2.5;
+        if (type === DIAMOND) baseHp = 12 + depthHardness * 3.5;
+
+        return Math.floor(baseHp);
+    }
+
+    function isSolidTile(type) {
+        return type === DIRT || type === STONE || type === GOLD || type === GEM || type === DIAMOND || type === GRASS || type === OBSIDIAN_BRICK;
+    }
+
+    function isInLava(x, y, w, h) {
+        const left = Math.max(0, Math.floor(x / TILE_SIZE));
+        const right = Math.min(WORLD_COLS - 1, Math.floor((x + w - 1) / TILE_SIZE));
+        const top = Math.max(0, Math.floor(y / TILE_SIZE));
+        const bottom = Math.min(WORLD_ROWS - 1, Math.floor((y + h - 1) / TILE_SIZE));
+
+        for (let r = top; r <= bottom; r++) {
+            for (let c = left; c <= right; c++) {
+                if (world[r] && world[r][c] === LAVA) return true;
+            }
+        }
+        return false;
+    }
+
+    function emergencySurfaceRecall() {
+        player.inCart = false;
+        player.x = 55 * TILE_SIZE;
+        player.y = 3 * TILE_SIZE;
+        player.vx = 0;
+        player.vy = 0;
+
+        cash = Math.floor(cash / 2);
+        updateHUD();
+
+        const banner = document.getElementById('recall-banner');
+        banner.style.display = 'block';
+        setTimeout(() => {
+            banner.style.display = 'none';
+        }, 3000);
+    }
+
+    function updateMinecartLogic() {
+        if (shaftCart.isMovingToTarget) {
+            const rowDiff = shaftCart.targetRow - shaftCart.rowProgress;
+            if (Math.abs(rowDiff) > 0.3) {
+                const step = 0.5 * Math.sign(rowDiff);
+                shaftCart.rowProgress += step;
+            } else {
+                shaftCart.rowProgress = shaftCart.targetRow;
+                shaftCart.isMovingToTarget = false;
+            }
+            updateCartPositionFromProgress();
+        }
+    }
+
+    function updatePlayer() {
+        if (player.inCart) {
+            let rowSpeed = 0.4;
+            let currentMove = 0;
+
+            if (keys['w'] || keys['ArrowUp']) currentMove = -rowSpeed;
+            else if (keys['s'] || keys['ArrowDown']) currentMove = rowSpeed;
+
+            shaftCart.rowProgress += currentMove;
+            shaftCart.rowProgress = Math.max(3, Math.min(shaftCart.rowProgress, WORLD_ROWS - 22));
+
+            updateCartPositionFromProgress();
+            player.x = shaftCart.x + 5;
+            player.y = shaftCart.y - player.height + 10;
+            return;
+        }
+
+        const touchingLava = isInLava(player.x, player.y, player.width, player.height);
+
+        if (touchingLava && !hasLavaSuit) {
+            player.vy = -10;
+            player.y -= 6;
+        }
+
+        let currentSpeed = (touchingLava && hasLavaSuit) ? player.speed * 0.6 : player.speed;
+        player.vx = 0;
+
+        if (keys['a'] || keys['ArrowLeft']) {
+            player.vx = -currentSpeed;
+            player.facing = 'left';
+        }
+        if (keys['d'] || keys['ArrowRight']) {
+            player.vx = currentSpeed;
+            player.facing = 'right';
+        }
+
+        if (touchingLava && hasLavaSuit) {
+            player.vy *= 0.82;
+            if (keys['w'] || keys['ArrowUp'] || keys[' ']) player.vy -= 1.2;
+            else if (keys['s'] || keys['ArrowDown']) player.vy += 0.8;
+        } else {
+            player.vy += player.gravity;
+        }
+
+        if ((keys[' '] || keys['w'] || keys['ArrowUp']) && player.grounded && !touchingLava) {
+            player.vy = player.jumpPower;
+            player.grounded = false;
+        }
+
+        player.x += player.vx;
+        if (checkTileCollision('x')) {
+            const centerRow = Math.max(0, Math.min(WORLD_ROWS - 1, Math.floor((player.y + player.height / 2) / TILE_SIZE)));
+            if (player.facing === 'left') {
+                digTile(centerRow, Math.floor((player.x - 2) / TILE_SIZE));
+            } else {
+                digTile(centerRow, Math.floor((player.x + player.width + 2) / TILE_SIZE));
+            }
+            player.x -= player.vx;
+        }
+
+        player.grounded = false;
+        player.y += player.vy;
+        if (checkTileCollision('y')) {
+            if (player.vy > 0) player.grounded = true;
+            player.y -= player.vy;
+            player.vy = 0;
+        }
+
+        if ((keys['s'] || keys['ArrowDown']) && !touchingLava) {
+            const feetRow = Math.max(0, Math.min(WORLD_ROWS - 1, Math.floor((player.y + player.height + 4) / TILE_SIZE)));
+            const feetCol = Math.max(0, Math.min(WORLD_COLS - 1, Math.floor((player.x + player.width / 2) / TILE_SIZE)));
+            digTile(feetRow, feetCol);
+        }
+
+        if (player.x < 0) player.x = 0;
+        if (player.x + player.width > WORLD_COLS * TILE_SIZE) player.x = WORLD_COLS * TILE_SIZE - player.width;
+        if (player.y + player.height > WORLD_ROWS * TILE_SIZE) player.y = WORLD_ROWS * TILE_SIZE - player.height;
+    }
+
+    function checkTileCollision(axis) {
+        const left = Math.max(0, Math.floor(player.x / TILE_SIZE));
+        const right = Math.min(WORLD_COLS - 1, Math.floor((player.x + player.width - 1) / TILE_SIZE));
+        const top = Math.max(0, Math.floor(player.y / TILE_SIZE));
+        const bottom = Math.min(WORLD_ROWS - 1, Math.floor((player.y + player.height - 1) / TILE_SIZE));
+
+        for (let r = top; r <= bottom; r++) {
+            for (let c = left; c <= right; c++) {
+                if (world[r] && isSolidTile(world[r][c])) return true;
+            }
+        }
+        return false;
+    }
+
+    function digTile(r, c) {
+        if (!world[r] || !world[r][c] || !isSolidTile(world[r][c])) return;
+        if (backpackCount >= backpackMax) return;
+
+        const tile = world[r][c];
+        if (tile === GRASS || tile === OBSIDIAN_BRICK) return;
+
+        tileHp[r][c] -= digPower;
+
+        if (tileHp[r][c] <= 0) {
+            const depthValMultiplier = 1 + Math.floor(r / 20) * 0.8;
+            let itemVal = 1;
+
+            if (tile === DIRT) itemVal = Math.floor(1 * depthValMultiplier);
+            if (tile === STONE) itemVal = Math.floor(3 * depthValMultiplier);
+            if (tile === GOLD) itemVal = Math.floor(20 * depthValMultiplier);
+            if (tile === GEM) itemVal = Math.floor(80 * depthValMultiplier);
+            if (tile === DIAMOND) itemVal = Math.floor(300 * depthValMultiplier);
+
+            backpackCargo.push(itemVal);
+            backpackCount++;
+            world[r][c] = AIR;
+            updateHUD();
+        }
+    }
+
+    function sellAllCargo() {
+        if (backpackCargo.length > 0) {
+            const totalEarnings = backpackCargo.reduce((a, b) => a + b, 0);
+            cash += totalEarnings;
+            backpackCargo = [];
+            backpackCount = 0;
+            updateHUD();
+        }
+    }
+
+    function callMinecartToPlayer() {
+        if (player.inCart) return;
+        const targetRow = Math.max(3, Math.min(WORLD_ROWS - 22, (player.y + player.height / 2) / TILE_SIZE));
+        shaftCart.targetRow = targetRow;
+        shaftCart.isMovingToTarget = true;
+    }
+
+    function updateCamera() {
+        const targetX = player.x + player.width / 2 - canvas.width / 2;
+        const targetY = player.y + player.height / 2 - canvas.height / 2;
+
+        const lerpRate = player.inCart ? 0.22 : camera.lerp;
+        camera.x += (targetX - camera.x) * lerpRate;
+        camera.y += (targetY - camera.y) * lerpRate;
+
+        camera.x = Math.max(0, Math.min(camera.x, WORLD_COLS * TILE_SIZE - canvas.width));
+        camera.y = Math.max(0, Math.min(camera.y, WORLD_ROWS * TILE_SIZE - canvas.height));
+    }
+
+    /* --- BLOCK RENDERING --- */
+    function drawCoolBlock(type, x, y, r, c) {
+        const time = Date.now() * 0.003;
+
+        if (type === DIRT) {
+            ctx.fillStyle = "#6d4c41";
+            ctx.fillRect(x, y, TILE_SIZE, TILE_SIZE);
+            ctx.fillStyle = "#4e342e";
+            ctx.fillRect(x + 2, y + 2, 8, 8);
+            ctx.fillRect(x + 18, y + 14, 10, 10);
+            ctx.fillStyle = "#8d6e63";
+            ctx.fillRect(x + 10, y + 22, 6, 6);
+        } else if (type === STONE) {
+            ctx.fillStyle = "#546e7a";
+            ctx.fillRect(x, y, TILE_SIZE, TILE_SIZE);
+            ctx.fillStyle = "#37474f";
+            ctx.fillRect(x, y + 28, TILE_SIZE, 4);
+            ctx.fillRect(x + 28, y, 4, TILE_SIZE);
+            ctx.fillStyle = "#78909c";
+            ctx.fillRect(x + 2, y + 2, 12, 12);
+        } else if (type === GOLD) {
+            ctx.fillStyle = "#6d4c41";
+            ctx.fillRect(x, y, TILE_SIZE, TILE_SIZE);
+            ctx.fillStyle = "#ffd700";
+            ctx.fillRect(x + 6, y + 6, 8, 8);
+            ctx.fillRect(x + 18, y + 14, 10, 10);
+            ctx.fillRect(x + 8, y + 20, 8, 8);
+            ctx.fillStyle = "#fff59d";
+            ctx.fillRect(x + 8, y + 8, 3, 3);
+            ctx.fillRect(x + 20, y + 16, 3, 3);
+        } else if (type === GEM) {
+            ctx.fillStyle = "#37474f";
+            ctx.fillRect(x, y, TILE_SIZE, TILE_SIZE);
+            
+            const pulse = Math.sin(time + r + c) * 0.3 + 0.7;
+            ctx.fillStyle = `rgba(255, 0, 128, ${pulse})`;
+            ctx.beginPath();
+            ctx.moveTo(x + 16, y + 4);
+            ctx.lineTo(x + 28, y + 16);
+            ctx.lineTo(x + 16, y + 28);
+            ctx.lineTo(x + 4, y + 16);
+            ctx.closePath();
+            ctx.fill();
+
+            ctx.fillStyle = "#ffffff";
+            ctx.fillRect(x + 12, y + 10, 4, 4);
+        } else if (type === DIAMOND) {
+            ctx.fillStyle = "#1a237e";
+            ctx.fillRect(x, y, TILE_SIZE, TILE_SIZE);
+
+            const glow = Math.sin(time * 2 + r * 2) * 4 + 8;
+            ctx.fillStyle = "#00e5ff";
+            ctx.shadowColor = "#00e5ff";
+            ctx.shadowBlur = glow;
+            ctx.fillRect(x + 8, y + 8, 16, 16);
+            ctx.fillStyle = "#ffffff";
+            ctx.fillRect(x + 12, y + 10, 4, 4);
+            ctx.shadowBlur = 0;
+        } else if (type === LAVA) {
+            const lavaY = Math.sin(time * 2 + c) * 3;
+            ctx.fillStyle = "#d50000";
+            ctx.fillRect(x, y, TILE_SIZE, TILE_SIZE);
+            ctx.fillStyle = "#ff6d00";
+            ctx.fillRect(x, y + lavaY, TILE_SIZE, TILE_SIZE - lavaY);
+            ctx.fillStyle = "#ffab00";
+            ctx.fillRect(x + 4, y + 6 + lavaY, 10, 4);
+            ctx.fillRect(x + 18, y + 18 + lavaY, 8, 4);
+        } else if (type === OBSIDIAN_BRICK) {
+            ctx.fillStyle = "#120024";
+            ctx.fillRect(x, y, TILE_SIZE, TILE_SIZE);
+            ctx.strokeStyle = "#7b1fa2";
+            ctx.lineWidth = 2;
+            ctx.strokeRect(x + 2, y + 2, TILE_SIZE - 4, TILE_SIZE - 4);
+        } else if (type === GRASS) {
+            ctx.fillStyle = "#5d4037";
+            ctx.fillRect(x, y, TILE_SIZE, TILE_SIZE);
+            ctx.fillStyle = "#2e7d32";
+            ctx.fillRect(x, y, TILE_SIZE, 8);
+            ctx.fillStyle = "#4caf50";
+            ctx.fillRect(x + 2, y + 2, 4, 6);
+            ctx.fillRect(x + 10, y + 2, 4, 6);
+            ctx.fillRect(x + 20, y + 2, 4, 6);
+        } else if (type === WOOD_SUPPORT) {
+            ctx.fillStyle = "#4e342e";
+            ctx.fillRect(x + 10, y, 12, TILE_SIZE);
+            ctx.fillStyle = "#3e2723";
+            ctx.fillRect(x + 10, y + 6, 12, 3);
+            ctx.fillRect(x + 10, y + 20, 12, 3);
+        }
+
+        if (isSolidTile(type) && type !== GRASS && type !== OBSIDIAN_BRICK) {
+            const maxHp = getMaxTileHp(type, r);
+            const currentHp = tileHp[r][c];
+            if (currentHp < maxHp) {
+                const damageRatio = 1 - (currentHp / maxHp);
+                ctx.fillStyle = "rgba(0,0,0,0.5)";
+                ctx.fillRect(x, y, TILE_SIZE * damageRatio, TILE_SIZE);
+            }
+        }
+    }
+
+    function drawSwervingTracks(startRow, endRow) {
+        ctx.save();
+        for (let r = startRow; r <= Math.min(endRow, WORLD_ROWS - 22); r++) {
+            if (r < 3) continue;
+
+            const x1 = railCols[r] * TILE_SIZE + 16;
+            const y1 = r * TILE_SIZE + 16;
+            const x2 = (railCols[r + 1] || railCols[r]) * TILE_SIZE + 16;
+            const y2 = (r + 1) * TILE_SIZE + 16;
+
+            if (r % 2 === 0) {
+                ctx.strokeStyle = "#4e342e";
+                ctx.lineWidth = 6;
+                ctx.beginPath();
+                ctx.moveTo(x1 - 12, y1);
+                ctx.lineTo(x1 + 12, y1);
+                ctx.stroke();
+            }
+
+            ctx.strokeStyle = "#b0bec5";
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            ctx.moveTo(x1 - 8, y1);
+            ctx.lineTo(x2 - 8, y2);
+            ctx.stroke();
+
+            ctx.beginPath();
+            ctx.moveTo(x1 + 8, y1);
+            ctx.lineTo(x2 + 8, y2);
+            ctx.stroke();
+        }
+        ctx.restore();
+    }
+
+    function drawRedHairGlassesBoy(x, y) {
+        ctx.save();
+        ctx.translate(x, y);
+
+        ctx.fillStyle = "#ffd700";
+        ctx.fillRect(-10, 32, 44, 10);
+        ctx.fillStyle = "#b8860b";
+        ctx.fillRect(-6, 26, 36, 6);
+
+        ctx.fillStyle = "rgba(255, 215, 0, 0.3)";
+        ctx.beginPath();
+        ctx.arc(12, 12, 28, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.fillStyle = "#ff3300";
+        ctx.fillRect(2, -2, 20, 10);
+        ctx.fillRect(0, 2, 24, 6);
+
+        ctx.fillStyle = "#ffdbac";
+        ctx.fillRect(4, 8, 16, 10);
+
+        ctx.fillStyle = "#000000";
+        ctx.fillRect(4, 10, 7, 5);
+        ctx.fillRect(13, 10, 7, 5);
+        ctx.fillRect(11, 11, 2, 2);
+
+        ctx.fillStyle = "#00ffff";
+        ctx.fillRect(5, 11, 5, 3);
+        ctx.fillRect(14, 11, 5, 3);
+
+        ctx.fillStyle = "#a0522d";
+        ctx.fillRect(9, 16, 6, 2);
+
+        ctx.fillStyle = "#009944";
+        ctx.fillRect(3, 18, 18, 9);
+
+        ctx.fillStyle = "#224488";
+        ctx.fillRect(5, 27, 6, 5);
+        ctx.fillRect(13, 27, 6, 5);
+
+        ctx.restore();
+    }
+
+    function drawHumanPlayer(x, y, facing, frame) {
+        ctx.save();
+        ctx.translate(x, y);
+
+        if (facing === 'left') {
+            ctx.scale(-1, 1);
+            ctx.translate(-player.width, 0);
+        }
+
+        const skinColor = "#ffcc99";
+        const helmetColor = hasLavaSuit ? "#ff4500" : "#ffd700";
+        const shirtColor = hasLavaSuit ? "#cc1100" : "#d9381e";
+
+        ctx.fillStyle = "#8b4513";
+        ctx.fillRect(-4, 12, 6, 12);
+
+        ctx.fillStyle = helmetColor;
+        ctx.fillRect(2, 0, 14, 6);
+        ctx.fillRect(0, 5, 18, 3);
+
+        ctx.fillStyle = skinColor;
+        ctx.fillRect(3, 8, 12, 7);
+        ctx.fillStyle = "#000";
+        ctx.fillRect(11, 10, 2, 2);
+
+        ctx.fillStyle = shirtColor;
+        ctx.fillRect(3, 15, 12, 8);
+
+        ctx.fillStyle = "#2b4c7e";
+        ctx.fillRect(4, 23, 4, 5);
+        ctx.fillRect(10, 23, 4, 5);
+
+        ctx.restore();
+    }
+
+    function drawMinecartObject(cart) {
+        ctx.save();
+        ctx.translate(cart.x, cart.y);
+
+        ctx.fillStyle = "#78909c";
+        ctx.fillRect(0, 0, cart.width, cart.height);
+        ctx.fillStyle = "#37474f";
+        ctx.fillRect(2, 2, cart.width - 4, cart.height - 4);
+
+        ctx.fillStyle = "#111";
+        ctx.beginPath();
+        ctx.arc(4, cart.height + 2, 4, 0, Math.PI * 2);
+        ctx.arc(cart.width - 4, cart.height + 2, 4, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.restore();
+    }
+
+    function draw() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        ctx.save();
+        ctx.translate(-Math.floor(camera.x), -Math.floor(camera.y));
+
+        const startCol = Math.max(0, Math.floor(camera.x / TILE_SIZE));
+        const endCol = Math.min(WORLD_COLS, Math.ceil((camera.x + canvas.width) / TILE_SIZE));
+        const startRow = Math.max(0, Math.floor(camera.y / TILE_SIZE));
+        const endRow = Math.min(WORLD_ROWS, Math.ceil((camera.y + canvas.height) / TILE_SIZE));
+
+        for (let r = startRow; r < endRow; r++) {
+            for (let c = startCol; c < endCol; c++) {
+                if (!world[r]) continue;
+                const type = world[r][c];
+                const x = c * TILE_SIZE;
+                const y = r * TILE_SIZE;
+
+                if (type === SKY) {
+                    ctx.fillStyle = "#4fc3f7";
+                    ctx.fillRect(x, y, TILE_SIZE, TILE_SIZE);
+                } else {
+                    drawCoolBlock(type, x, y, r, c);
+                }
+            }
+        }
+
+        drawSwervingTracks(startRow, endRow);
+
+        const boyX = 60 * TILE_SIZE;
+        const boyY = 597 * TILE_SIZE;
+        drawRedHairGlassesBoy(boyX, boyY);
+
+        const shopX = 65 * TILE_SIZE;
+        const shopY = 2 * TILE_SIZE;
+
+        ctx.fillStyle = "#5d4037";
+        ctx.fillRect(shopX, shopY, 120, 96);
+        ctx.fillStyle = "#3e2723";
+        ctx.fillRect(shopX + 10, shopY + 10, 100, 30);
+        
+        ctx.fillStyle = "#ffd700";
+        ctx.font = "8px 'Press Start 2P', monospace";
+        ctx.fillText("SHOP", shopX + 42, shopY + 28);
+
+        ctx.fillStyle = "#1c0d02";
+        ctx.fillRect(shopX + 45, shopY + 46, 30, 50);
+
+        drawMinecartObject(shaftCart);
+        drawHumanPlayer(player.x, player.y, player.facing, player.animFrame);
+
+        ctx.restore();
+    }
+
+    const shopPrompt = document.getElementById('shop-prompt');
+    const minecartPrompt = document.getElementById('minecart-prompt');
+    const callPrompt = document.getElementById('call-prompt');
+    const easterPrompt = document.getElementById('easter-prompt');
+    const shopModal = document.getElementById('shop-modal');
+    const bagBox = document.getElementById('bag-box');
+    
+    let inShopZone = false;
+    let nearSwervingTrack = false;
+    let nearMinecart = false;
+
+    function checkProximity() {
+        const shopDoorX = 65 * TILE_SIZE + 60;
+        const shopDoorY = 4 * TILE_SIZE;
+        const shopDist = Math.hypot(player.x - shopDoorX, player.y - shopDoorY);
+
+        if (shopDist < 60) {
+            inShopZone = true;
+            shopPrompt.style.display = "block";
+            sellAllCargo();
+        } else {
+            inShopZone = false;
+            shopPrompt.style.display = "none";
+        }
+
+        const pRow = Math.max(0, Math.min(WORLD_ROWS - 1, Math.floor((player.y + player.height / 2) / TILE_SIZE)));
+        const pCol = Math.max(0, Math.min(WORLD_COLS - 1, Math.floor((player.x + player.width / 2) / TILE_SIZE)));
+        const trackColAtRow = railCols[pRow] || 50;
+
+        nearSwervingTrack = Math.abs(pCol - trackColAtRow) <= 3 && pRow < WORLD_ROWS - 22;
+
+        const cartDist = Math.hypot(player.x - shaftCart.x, player.y - shaftCart.y);
+        nearMinecart = cartDist < 48;
+
+        const boyX = 60 * TILE_SIZE + 12;
+        const boyY = 597 * TILE_SIZE + 12;
+        const eggDist = Math.hypot(player.x - boyX, player.y - boyY);
+
+        if (eggDist < 80) {
+            easterPrompt.style.display = "block";
+        } else {
+            easterPrompt.style.display = "none";
+        }
+
+        if (player.inCart) {
+            minecartPrompt.style.display = "block";
+            minecartPrompt.innerText = "PRESS [E] TO EXIT MINECART (USE W/S TO DRIVE)";
+            callPrompt.style.display = "none";
+        } else if (nearMinecart) {
+            minecartPrompt.style.display = "block";
+            minecartPrompt.innerText = "PRESS [E] TO BOARD MINECART";
+            callPrompt.style.display = "none";
+        } else if (nearSwervingTrack && !shaftCart.isMovingToTarget) {
+            minecartPrompt.style.display = "none";
+            callPrompt.style.display = "block";
+        } else {
+            minecartPrompt.style.display = "none";
+            callPrompt.style.display = "none";
+        }
+    }
+
+    function toggleMinecart() {
+        if (player.inCart) {
+            player.x += 24;
+            player.inCart = false;
+        } else if (nearMinecart) {
+            player.inCart = true;
+        }
+    }
+
+    function updateHUD() {
+        document.getElementById('cash-val').innerText = Math.floor(cash);
+        document.getElementById('power-val').innerText = digPower;
+        document.getElementById('bag-val').innerText = backpackCount;
+        document.getElementById('bag-max').innerText = backpackMax;
+
+        if (backpackCount >= backpackMax) {
+            bagBox.classList.add('full');
+        } else {
+            bagBox.classList.remove('full');
+        }
+
+        const depthMeters = Math.max(0, Math.floor((player.y / TILE_SIZE) - 4));
+        document.getElementById('depth-val').innerText = depthMeters;
+
+        Object.keys(upgrades).forEach(key => {
+            const up = upgrades[key];
+            const btn = document.getElementById(up.btnId);
+
+            if (up.singleUse && up.count > 0) {
+                btn.disabled = true;
+                btn.innerText = "EQUIPPED";
+                btn.classList.add('equipped');
+            } else {
+                btn.disabled = cash < up.cost;
+                if (up.count > 0) {
+                    btn.innerText = `BUY MORE\n[EQUIPPED x${up.count}]`;
+                    btn.classList.add('equipped');
+                } else {
+                    btn.innerText = "BUY";
+                    btn.classList.remove('equipped');
+                }
+            }
+        });
+    }
+
+    function setupShop() {
+        Object.keys(upgrades).forEach(key => {
+            const up = upgrades[key];
+            document.getElementById(up.btnId).addEventListener('click', () => {
+                if (cash >= up.cost && (!up.singleUse || up.count === 0)) {
+                    cash -= up.cost;
+                    up.count++;
+
+                    if (key === 'bag') {
+                        backpackMax += up.capacity;
+                    } else if (key === 'boots') {
+                        player.speed += up.speedInc;
+                    } else if (key === 'suit') {
+                        hasLavaSuit = true;
+                    } else {
+                        digPower += up.power;
+                    }
+
+                    updateHUD();
+                }
+            });
+        });
+
+        document.getElementById('close-shop').addEventListener('click', () => {
+            shopModal.style.display = 'none';
+        });
+    }
+
+    window.addEventListener('keydown', (e) => {
+        if (e.key === ' ' || e.key === 'ArrowUp' || e.key === 'ArrowDown') {
+            e.preventDefault();
+        }
+
+        keys[e.key] = true;
+
+        if (e.key === 'e' || e.key === 'E') {
+            if (inShopZone) {
+                shopModal.style.display = 'flex';
+            } else {
+                toggleMinecart();
+            }
+        }
+
+        if (e.key === 'c' || e.key === 'C') {
+            if (nearSwervingTrack && !player.inCart) {
+                callMinecartToPlayer();
+            }
+        }
+
+        if (e.key === 'r' || e.key === 'R') {
+            emergencySurfaceRecall();
+        }
+
+        if (e.key === 'Escape') {
+            shopModal.style.display = 'none';
+        }
+    });
+
+    window.addEventListener('keyup', (e) => {
+        keys[e.key] = false;
+    });
+
+    function gameLoop() {
+        if (shopModal.style.display !== 'flex') {
+            updatePlayer();
+            updateMinecartLogic();
+        }
+        updateCamera();
+        checkProximity();
+        draw();
+        requestAnimationFrame(gameLoop);
+    }
+
+    initWorld();
+    setupShop();
+    updateHUD();
+    gameLoop();
+</script>
+
+</body>
+</html>

@@ -58,6 +58,7 @@
             color: #fff;
             text-shadow: 2px 2px #000;
             box-shadow: 0 4px 10px rgba(0,0,0,0.6);
+            pointer-events: auto;
         }
 
         .hud-box span {
@@ -81,6 +82,20 @@
         .emergency-info {
             border-color: #ff3333;
             color: #ffaaaa;
+        }
+
+        .reset-btn {
+            background: #a72828;
+            color: #fff;
+            border: 2px solid #000;
+            padding: 4px 8px;
+            font-size: 8px;
+            cursor: pointer;
+            margin-left: 8px;
+        }
+
+        .reset-btn:hover {
+            background: #ff3333;
         }
 
         @keyframes flash {
@@ -227,7 +242,7 @@
         <div class="hud-box">POWER: <span id="power-val">1</span></div>
         <div class="hud-box" id="bag-box">CARGO: <span id="bag-val">0</span>/<span id="bag-max">15</span></div>
         <div class="hud-box">DEPTH: <span id="depth-val">0</span>M</div>
-        <div class="hud-box emergency-info">STUCK? PRESS [R] (-50% CASH)</div>
+        <div class="hud-box emergency-info">STUCK? [R] (-50% CASH) <button class="reset-btn" id="reset-save-btn">RESET SAVE</button></div>
     </div>
 
     <div id="shop-prompt" class="prompt">PRESS [E] TO ENTER SHOP & SELL CARGO</div>
@@ -348,6 +363,7 @@
     const TILE_SIZE = 32;
     const WORLD_COLS = 120;
     const WORLD_ROWS = 600;
+    const SAVE_KEY = 'miners_i_love_em_save';
 
     // Tile Types
     const AIR = 0;
@@ -382,6 +398,7 @@
     let swordDamage = 0;
     let invulnerableTimer = 0;
     let attackTimer = 0;
+    const MAX_ATTACK_TIMER = 12;
 
     const upgrades = {
         potion: { cost: 40, btnId: 'buy-potion', count: 0, singleUse: false, isPotion: true },
@@ -426,6 +443,62 @@
 
     const camera = { x: 0, y: 0, lerp: 0.12 };
     const keys = {};
+
+    /* --- LOCALSTORAGE PERSISTENCE --- */
+    function saveGame() {
+        const upgradeCounts = {};
+        Object.keys(upgrades).forEach(key => {
+            upgradeCounts[key] = upgrades[key].count;
+        });
+
+        const saveData = {
+            cash: cash,
+            digPower: digPower,
+            backpackMax: backpackMax,
+            playerHp: playerHp,
+            playerMaxHp: playerMaxHp,
+            swordDamage: swordDamage,
+            hasLavaSuit: hasLavaSuit,
+            playerSpeed: player.speed,
+            upgradeCounts: upgradeCounts
+        };
+
+        localStorage.setItem(SAVE_KEY, JSON.stringify(saveData));
+    }
+
+    function loadGame() {
+        const savedRaw = localStorage.getItem(SAVE_KEY);
+        if (!savedRaw) return;
+
+        try {
+            const data = JSON.parse(savedRaw);
+            cash = data.cash ?? 0;
+            digPower = data.digPower ?? 1;
+            backpackMax = data.backpackMax ?? 15;
+            playerHp = data.playerHp ?? 100;
+            playerMaxHp = data.playerMaxHp ?? 100;
+            swordDamage = data.swordDamage ?? 0;
+            hasLavaSuit = data.hasLavaSuit ?? false;
+            if (data.playerSpeed) player.speed = data.playerSpeed;
+
+            if (data.upgradeCounts) {
+                Object.keys(data.upgradeCounts).forEach(key => {
+                    if (upgrades[key]) {
+                        upgrades[key].count = data.upgradeCounts[key];
+                    }
+                });
+            }
+        } catch (e) {
+            console.error("Failed to load save file:", e);
+        }
+    }
+
+    function resetSave() {
+        if (confirm("Are you sure you want to reset all game progress?")) {
+            localStorage.removeItem(SAVE_KEY);
+            location.reload();
+        }
+    }
 
     function generateSwervingTrack() {
         railCols = [];
@@ -528,8 +601,9 @@
             const startRow = Math.floor(15 + Math.random() * (WORLD_ROWS - 50));
             const startCol = Math.floor(Math.random() * (WORLD_COLS - 30));
             const tunnelLength = Math.floor(20 + Math.random() * 35);
+            const endCol = Math.min(WORLD_COLS - 2, startCol + tunnelLength);
 
-            for (let col = startCol; col < Math.min(WORLD_COLS - 2, startCol + tunnelLength); col++) {
+            for (let col = startCol; col < endCol; col++) {
                 for (let h = 0; h < 3; h++) {
                     const r = startRow + h;
                     if (r < WORLD_ROWS - 20 && r > 5) {
@@ -544,11 +618,11 @@
                 }
             }
 
-            // Spawn Goblin snapped on floor (startRow + 3 is floor tile)
             const goblinHeight = 24;
+            const spawnCol = startCol + 3;
             goblins.push({
-                x: (startCol + 5) * TILE_SIZE,
-                y: (startRow + 3) * TILE_SIZE - goblinHeight,
+                x: spawnCol * TILE_SIZE,
+                y: (startRow + 2) * TILE_SIZE - goblinHeight,
                 vy: 0,
                 width: 20,
                 height: goblinHeight,
@@ -556,36 +630,47 @@
                 dir: Math.random() < 0.5 ? 1 : -1,
                 hp: 40 + Math.floor(startRow / 10),
                 maxHp: 40 + Math.floor(startRow / 10),
-                minX: startCol * TILE_SIZE,
-                maxX: Math.min(WORLD_COLS - 2, startCol + tunnelLength) * TILE_SIZE
+                minX: (startCol + 1) * TILE_SIZE,
+                maxX: (endCol - 2) * TILE_SIZE
             });
         }
+    }
+
+    function checkGoblinWallCollision(g, nextX) {
+        const topRow = Math.floor(g.y / TILE_SIZE);
+        const bottomRow = Math.floor((g.y + g.height - 1) / TILE_SIZE);
+        const col = g.dir === 1 ? Math.floor((nextX + g.width) / TILE_SIZE) : Math.floor(nextX / TILE_SIZE);
+
+        for (let r = topRow; r <= bottomRow; r++) {
+            if (world[r] && isSolidTile(world[r][col])) {
+                return true;
+            }
+        }
+        return false;
     }
 
     function updateGoblins() {
         if (invulnerableTimer > 0) invulnerableTimer--;
 
         goblins.forEach((g) => {
-            // Patrol or Chase Player
             const distToPlayer = Math.hypot(player.x - g.x, player.y - g.y);
 
             if (distToPlayer < 180) {
-                // Chase
                 g.dir = player.x > g.x ? 1 : -1;
-                g.x += g.dir * (g.speed * 1.2);
-            } else {
-                // Patrol
-                g.x += g.dir * g.speed;
-                if (g.x < g.minX || g.x > g.maxX) {
-                    g.dir *= -1;
-                }
             }
 
-            // Apply Gravity to Goblin so they don't float
+            let nextX = g.x + g.dir * g.speed;
+
+            if (checkGoblinWallCollision(g, nextX) || nextX < g.minX || nextX > g.maxX) {
+                g.dir *= -1;
+                nextX = g.x + g.dir * g.speed;
+            } else {
+                g.x = nextX;
+            }
+
             g.vy += 0.45;
             g.y += g.vy;
 
-            // Check floor collision for Goblin
             const feetRow = Math.floor((g.y + g.height) / TILE_SIZE);
             const centerCol = Math.floor((g.x + g.width / 2) / TILE_SIZE);
 
@@ -594,13 +679,12 @@
                 g.vy = 0;
             }
 
-            // Touch Player Collision
             if (invulnerableTimer <= 0 && !player.inCart) {
                 if (player.x < g.x + g.width && player.x + player.width > g.x &&
                     player.y < g.y + g.height && player.y + player.height > g.y) {
                     
                     playerHp -= 20;
-                    invulnerableTimer = 40; // invincible frames
+                    invulnerableTimer = 40;
                     if (playerHp <= 0) {
                         playerHp = 0;
                         emergencySurfaceRecall();
@@ -613,7 +697,7 @@
 
     function attackGoblins() {
         if (swordDamage <= 0) return;
-        attackTimer = 12; // animation frames for attack swing
+        attackTimer = MAX_ATTACK_TIMER;
 
         const reach = 40;
         const attackX = player.facing === 'right' ? player.x + player.width : player.x - reach;
@@ -627,7 +711,8 @@
                 g.hp -= swordDamage;
                 if (g.hp <= 0) {
                     goblins.splice(i, 1);
-                    cash += 50; // Cash drop from defeating goblin
+                    cash += 50;
+                    saveGame();
                     updateHUD();
                 }
             }
@@ -677,6 +762,7 @@
 
         playerHp = playerMaxHp;
         cash = Math.floor(cash / 2);
+        saveGame();
         updateHUD();
 
         const banner = document.getElementById('recall-banner');
@@ -830,6 +916,7 @@
             cash += totalEarnings;
             backpackCargo = [];
             backpackCount = 0;
+            saveGame();
             updateHUD();
         }
     }
@@ -853,22 +940,18 @@
         camera.y = Math.max(0, Math.min(camera.y, WORLD_ROWS * TILE_SIZE - canvas.height));
     }
 
-    /* --- DRAWING GOBLINS & ATTACKS --- */
     function drawGoblins() {
         goblins.forEach(g => {
-            ctx.fillStyle = "#2e7d32"; // Green skin
+            ctx.fillStyle = "#2e7d32";
             ctx.fillRect(g.x, g.y, g.width, g.height);
 
-            // Red glowing eyes
             ctx.fillStyle = "#ff0000";
             ctx.fillRect(g.dir === 1 ? g.x + 12 : g.x + 2, g.y + 4, 4, 4);
 
-            // Ears
             ctx.fillStyle = "#1b5e20";
             ctx.fillRect(g.x - 3, g.y + 2, 4, 6);
             ctx.fillRect(g.x + g.width - 1, g.y + 2, 4, 6);
 
-            // Goblin HP bar
             ctx.fillStyle = "#000";
             ctx.fillRect(g.x, g.y - 8, g.width, 4);
             ctx.fillStyle = "#ff3333";
@@ -876,7 +959,6 @@
         });
     }
 
-    /* --- BLOCK RENDERING --- */
     function drawCoolBlock(type, x, y, r, c) {
         const time = Date.now() * 0.003;
 
@@ -1059,7 +1141,7 @@
         ctx.translate(x, y);
 
         if (invulnerableTimer % 4 > 2) {
-            ctx.globalAlpha = 0.5; // Flash effect when taking damage
+            ctx.globalAlpha = 0.5;
         }
 
         if (facing === 'left') {
@@ -1090,12 +1172,41 @@
         ctx.fillRect(4, 23, 4, 5);
         ctx.fillRect(10, 23, 4, 5);
 
-        // Draw Sword Arc Attack
+        // --- SWORD SWING ANIMATION ---
         if (attackTimer > 0) {
+            const swingProgress = (MAX_ATTACK_TIMER - attackTimer) / MAX_ATTACK_TIMER;
+            const startAngle = -Math.PI / 2.2;
+            const endAngle = Math.PI / 3;
+            const currentAngle = startAngle + (endAngle - startAngle) * swingProgress;
+
+            ctx.save();
+            ctx.translate(12, 14);
+
+            // Draw Sword Blade
+            ctx.rotate(currentAngle);
+            ctx.fillStyle = "#c0c0c0";
+            ctx.fillRect(0, -3, 22, 5);
             ctx.fillStyle = "#ffffff";
-            ctx.fillRect(16, 5, 24, 6);
-            ctx.fillStyle = "#00e5ff";
-            ctx.fillRect(20, 3, 18, 10);
+            ctx.fillRect(2, -2, 18, 2);
+            ctx.fillStyle = "#8b4513";
+            ctx.fillRect(-4, -2, 4, 3);
+            ctx.restore();
+
+            // Draw Arc Slash Effect
+            ctx.save();
+            ctx.translate(12, 14);
+            ctx.beginPath();
+            ctx.arc(0, 0, 26, startAngle, currentAngle, false);
+            ctx.strokeStyle = "rgba(0, 229, 255, 0.85)";
+            ctx.lineWidth = 4;
+            ctx.stroke();
+
+            ctx.beginPath();
+            ctx.arc(0, 0, 29, startAngle, currentAngle, false);
+            ctx.strokeStyle = "rgba(255, 255, 255, 0.6)";
+            ctx.lineWidth = 2;
+            ctx.stroke();
+            ctx.restore();
         }
 
         ctx.restore();
@@ -1307,6 +1418,7 @@
                         digPower += up.power;
                     }
 
+                    saveGame();
                     updateHUD();
                 }
             });
@@ -1315,6 +1427,8 @@
         document.getElementById('close-shop').addEventListener('click', () => {
             shopModal.style.display = 'none';
         });
+
+        document.getElementById('reset-save-btn').addEventListener('click', resetSave);
     }
 
     window.addEventListener('keydown', (e) => {
@@ -1367,6 +1481,7 @@
         requestAnimationFrame(gameLoop);
     }
 
+    loadGame();
     initWorld();
     setupShop();
     updateHUD();

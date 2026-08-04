@@ -64,6 +64,14 @@
             color: #ffd700;
         }
 
+        .hud-box.health-box {
+            border-color: #ff3333;
+        }
+
+        .hud-box.health-box span {
+            color: #ff4444;
+        }
+
         .hud-box.full {
             border-color: #ff3333;
             color: #ff6666;
@@ -214,6 +222,7 @@
     <canvas id="gameCanvas"></canvas>
     
     <div id="hud">
+        <div class="hud-box health-box">HP: <span id="hp-val">100</span>/<span id="hp-max">100</span></div>
         <div class="hud-box">CASH: $<span id="cash-val">0</span></div>
         <div class="hud-box">POWER: <span id="power-val">1</span></div>
         <div class="hud-box" id="bag-box">CARGO: <span id="bag-val">0</span>/<span id="bag-max">15</span></div>
@@ -230,6 +239,30 @@
     <div id="shop-modal" class="modal">
         <div id="shop-window" class="modal-window">
             <div class="modal-title">SURFACE EQUIPMENT & UPGRADES</div>
+
+            <div class="upgrade-row" style="border-color: #ff3333;">
+                <div class="upgrade-details">
+                    <div class="upgrade-title" style="color:#ff6666;">HEALTH POTION</div>
+                    <div class="upgrade-cost">RESTORE 50 HP | COST: $<span id="cost-potion">40</span></div>
+                </div>
+                <button class="buy-btn" id="buy-potion">BUY</button>
+            </div>
+
+            <div class="upgrade-row" style="border-color: #ff3333;">
+                <div class="upgrade-details">
+                    <div class="upgrade-title" style="color:#ff6666;">MAX HEALTH BOOST</div>
+                    <div class="upgrade-cost">MAX HP +50 | COST: $<span id="cost-health">100</span></div>
+                </div>
+                <button class="buy-btn" id="buy-health">BUY</button>
+            </div>
+
+            <div class="upgrade-row" style="border-color: #33cc33;">
+                <div class="upgrade-details">
+                    <div class="upgrade-title" style="color:#66ff66;">GOBLIN SLAYER SWORD</div>
+                    <div class="upgrade-cost">PRESS [F] TO ATTACK GOBLINS (+25 DMG) | COST: $<span id="cost-sword">150</span></div>
+                </div>
+                <button class="buy-btn" id="buy-sword">BUY</button>
+            </div>
             
             <div class="upgrade-row">
                 <div class="upgrade-details">
@@ -333,6 +366,7 @@
     let world = [];
     let tileHp = [];
     let railCols = [];
+    let goblins = [];
 
     // Player Upgrades & Stats
     let cash = 0;
@@ -342,7 +376,17 @@
     let backpackCargo = [];
     let hasLavaSuit = false;
 
+    // Health & Combat System
+    let playerHp = 100;
+    let playerMaxHp = 100;
+    let swordDamage = 0;
+    let invulnerableTimer = 0;
+    let attackTimer = 0;
+
     const upgrades = {
+        potion: { cost: 40, btnId: 'buy-potion', count: 0, singleUse: false, isPotion: true },
+        health: { cost: 100, hpInc: 50, btnId: 'buy-health', count: 0, singleUse: false },
+        sword: { cost: 150, dmgInc: 25, btnId: 'buy-sword', count: 0, singleUse: false },
         pick: { cost: 15, power: 1, btnId: 'buy-pick', count: 0, singleUse: false },
         boots: { cost: 25, speedInc: 0.8, btnId: 'buy-boots', count: 0, singleUse: false },
         bag: { cost: 30, capacity: 15, btnId: 'buy-bag', count: 0, singleUse: false },
@@ -403,6 +447,7 @@
     function initWorld() {
         world = [];
         tileHp = [];
+        goblins = [];
         generateSwervingTrack();
 
         for (let r = 0; r < WORLD_ROWS; r++) {
@@ -498,6 +543,94 @@
                     world[startRow + 2][col] = WOOD_SUPPORT;
                 }
             }
+
+            // Spawn Goblin snapped on floor (startRow + 3 is floor tile)
+            const goblinHeight = 24;
+            goblins.push({
+                x: (startCol + 5) * TILE_SIZE,
+                y: (startRow + 3) * TILE_SIZE - goblinHeight,
+                vy: 0,
+                width: 20,
+                height: goblinHeight,
+                speed: 1.8,
+                dir: Math.random() < 0.5 ? 1 : -1,
+                hp: 40 + Math.floor(startRow / 10),
+                maxHp: 40 + Math.floor(startRow / 10),
+                minX: startCol * TILE_SIZE,
+                maxX: Math.min(WORLD_COLS - 2, startCol + tunnelLength) * TILE_SIZE
+            });
+        }
+    }
+
+    function updateGoblins() {
+        if (invulnerableTimer > 0) invulnerableTimer--;
+
+        goblins.forEach((g) => {
+            // Patrol or Chase Player
+            const distToPlayer = Math.hypot(player.x - g.x, player.y - g.y);
+
+            if (distToPlayer < 180) {
+                // Chase
+                g.dir = player.x > g.x ? 1 : -1;
+                g.x += g.dir * (g.speed * 1.2);
+            } else {
+                // Patrol
+                g.x += g.dir * g.speed;
+                if (g.x < g.minX || g.x > g.maxX) {
+                    g.dir *= -1;
+                }
+            }
+
+            // Apply Gravity to Goblin so they don't float
+            g.vy += 0.45;
+            g.y += g.vy;
+
+            // Check floor collision for Goblin
+            const feetRow = Math.floor((g.y + g.height) / TILE_SIZE);
+            const centerCol = Math.floor((g.x + g.width / 2) / TILE_SIZE);
+
+            if (world[feetRow] && isSolidTile(world[feetRow][centerCol])) {
+                g.y = feetRow * TILE_SIZE - g.height;
+                g.vy = 0;
+            }
+
+            // Touch Player Collision
+            if (invulnerableTimer <= 0 && !player.inCart) {
+                if (player.x < g.x + g.width && player.x + player.width > g.x &&
+                    player.y < g.y + g.height && player.y + player.height > g.y) {
+                    
+                    playerHp -= 20;
+                    invulnerableTimer = 40; // invincible frames
+                    if (playerHp <= 0) {
+                        playerHp = 0;
+                        emergencySurfaceRecall();
+                    }
+                    updateHUD();
+                }
+            }
+        });
+    }
+
+    function attackGoblins() {
+        if (swordDamage <= 0) return;
+        attackTimer = 12; // animation frames for attack swing
+
+        const reach = 40;
+        const attackX = player.facing === 'right' ? player.x + player.width : player.x - reach;
+        const attackY = player.y;
+
+        for (let i = goblins.length - 1; i >= 0; i--) {
+            const g = goblins[i];
+            if (g.x < attackX + reach && g.x + g.width > attackX &&
+                g.y < attackY + player.height && g.y + g.height > attackY) {
+                
+                g.hp -= swordDamage;
+                if (g.hp <= 0) {
+                    goblins.splice(i, 1);
+                    cash += 50; // Cash drop from defeating goblin
+                    updateHUD();
+                }
+            }
         }
     }
 
@@ -542,6 +675,7 @@
         player.vx = 0;
         player.vy = 0;
 
+        playerHp = playerMaxHp;
         cash = Math.floor(cash / 2);
         updateHUD();
 
@@ -567,6 +701,8 @@
     }
 
     function updatePlayer() {
+        if (attackTimer > 0) attackTimer--;
+
         if (player.inCart) {
             let rowSpeed = 0.4;
             let currentMove = 0;
@@ -588,6 +724,9 @@
         if (touchingLava && !hasLavaSuit) {
             player.vy = -10;
             player.y -= 6;
+            playerHp -= 5;
+            if (playerHp <= 0) emergencySurfaceRecall();
+            updateHUD();
         }
 
         let currentSpeed = (touchingLava && hasLavaSuit) ? player.speed * 0.6 : player.speed;
@@ -712,6 +851,29 @@
 
         camera.x = Math.max(0, Math.min(camera.x, WORLD_COLS * TILE_SIZE - canvas.width));
         camera.y = Math.max(0, Math.min(camera.y, WORLD_ROWS * TILE_SIZE - canvas.height));
+    }
+
+    /* --- DRAWING GOBLINS & ATTACKS --- */
+    function drawGoblins() {
+        goblins.forEach(g => {
+            ctx.fillStyle = "#2e7d32"; // Green skin
+            ctx.fillRect(g.x, g.y, g.width, g.height);
+
+            // Red glowing eyes
+            ctx.fillStyle = "#ff0000";
+            ctx.fillRect(g.dir === 1 ? g.x + 12 : g.x + 2, g.y + 4, 4, 4);
+
+            // Ears
+            ctx.fillStyle = "#1b5e20";
+            ctx.fillRect(g.x - 3, g.y + 2, 4, 6);
+            ctx.fillRect(g.x + g.width - 1, g.y + 2, 4, 6);
+
+            // Goblin HP bar
+            ctx.fillStyle = "#000";
+            ctx.fillRect(g.x, g.y - 8, g.width, 4);
+            ctx.fillStyle = "#ff3333";
+            ctx.fillRect(g.x, g.y - 8, g.width * (g.hp / g.maxHp), 4);
+        });
     }
 
     /* --- BLOCK RENDERING --- */
@@ -896,6 +1058,10 @@
         ctx.save();
         ctx.translate(x, y);
 
+        if (invulnerableTimer % 4 > 2) {
+            ctx.globalAlpha = 0.5; // Flash effect when taking damage
+        }
+
         if (facing === 'left') {
             ctx.scale(-1, 1);
             ctx.translate(-player.width, 0);
@@ -923,6 +1089,14 @@
         ctx.fillStyle = "#2b4c7e";
         ctx.fillRect(4, 23, 4, 5);
         ctx.fillRect(10, 23, 4, 5);
+
+        // Draw Sword Arc Attack
+        if (attackTimer > 0) {
+            ctx.fillStyle = "#ffffff";
+            ctx.fillRect(16, 5, 24, 6);
+            ctx.fillStyle = "#00e5ff";
+            ctx.fillRect(20, 3, 18, 10);
+        }
 
         ctx.restore();
     }
@@ -993,6 +1167,7 @@
         ctx.fillStyle = "#1c0d02";
         ctx.fillRect(shopX + 45, shopY + 46, 30, 50);
 
+        drawGoblins();
         drawMinecartObject(shaftCart);
         drawHumanPlayer(player.x, player.y, player.facing, player.animFrame);
 
@@ -1070,6 +1245,8 @@
     }
 
     function updateHUD() {
+        document.getElementById('hp-val').innerText = Math.floor(playerHp);
+        document.getElementById('hp-max').innerText = playerMaxHp;
         document.getElementById('cash-val').innerText = Math.floor(cash);
         document.getElementById('power-val').innerText = digPower;
         document.getElementById('bag-val').innerText = backpackCount;
@@ -1095,7 +1272,7 @@
             } else {
                 btn.disabled = cash < up.cost;
                 if (up.count > 0) {
-                    btn.innerText = `BUY MORE\n[EQUIPPED x${up.count}]`;
+                    btn.innerText = up.isPotion ? "BUY POTION" : `BUY MORE\n[EQUIPPED x${up.count}]`;
                     btn.classList.add('equipped');
                 } else {
                     btn.innerText = "BUY";
@@ -1113,7 +1290,14 @@
                     cash -= up.cost;
                     up.count++;
 
-                    if (key === 'bag') {
+                    if (key === 'potion') {
+                        playerHp = Math.min(playerMaxHp, playerHp + 50);
+                    } else if (key === 'health') {
+                        playerMaxHp += up.hpInc;
+                        playerHp += up.hpInc;
+                    } else if (key === 'sword') {
+                        swordDamage += up.dmgInc;
+                    } else if (key === 'bag') {
                         backpackMax += up.capacity;
                     } else if (key === 'boots') {
                         player.speed += up.speedInc;
@@ -1148,6 +1332,10 @@
             }
         }
 
+        if (e.key === 'f' || e.key === 'F') {
+            attackGoblins();
+        }
+
         if (e.key === 'c' || e.key === 'C') {
             if (nearSwervingTrack && !player.inCart) {
                 callMinecartToPlayer();
@@ -1170,6 +1358,7 @@
     function gameLoop() {
         if (shopModal.style.display !== 'flex') {
             updatePlayer();
+            updateGoblins();
             updateMinecartLogic();
         }
         updateCamera();

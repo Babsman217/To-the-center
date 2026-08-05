@@ -222,6 +222,8 @@
         #baxter-shop-prompt { background: #e65100; color: #fff; box-shadow: 0 0 15px rgba(230, 81, 0, 0.8); }
         #easter-prompt { background: #ff00ff; color: #fff; box-shadow: 0 0 15px rgba(255, 0, 255, 0.8); }
         #belive-prompt { background: #ffff00; color: #0000ff; border-color: #0000ff; }
+        #void-egg-prompt { background: #1a0033; color: #e040fb; border-color: #e040fb; box-shadow: 0 0 15px rgba(224, 64, 251, 0.8); }
+        #celestial-egg-prompt { background: #0d1b2a; color: #e0f7fa; border-color: #80d8ff; box-shadow: 0 0 15px rgba(128, 216, 255, 0.8); }
         #recall-banner { 
             top: 70px; 
             background: #ff2222; 
@@ -523,6 +525,8 @@
     <div id="call-prompt" class="prompt">PRESS [C] TO CALL MINECART HERE</div>
     <div id="easter-prompt" class="prompt">★ YOU FOUND THE SECRET RED-HAIRED BOY! ★</div>
     <div id="belive-prompt" class="prompt">★ BELIVE IN BLUE PAINT ★</div>
+    <div id="void-egg-prompt" class="prompt">✦ YOU FOUND THE VOID SANCTUARY! ✦</div>
+    <div id="celestial-egg-prompt" class="prompt">✦ YOU FOUND THE CELESTIAL SHRINE! ✦</div>
     <div id="recall-banner" class="prompt">⚠️ EMERGENCY RECALL! LOST 50% CASH ⚠️</div>
 
     <div id="shop-modal" class="modal">
@@ -623,6 +627,62 @@
                 <button class="buy-btn" id="buy-suit">BUY</button>
             </div>
 
+            <div class="upgrade-row" style="border-color: #ff3333;">
+                <div class="upgrade-details">
+                    <div class="upgrade-title" style="color:#ff6666;">MEGA HEALTH ELIXIR</div>
+                    <div class="upgrade-cost">INSTANT FULL HEAL | COST: $<span id="cost-megapotion">300</span></div>
+                </div>
+                <button class="buy-btn" id="buy-megapotion">BUY</button>
+            </div>
+
+            <div class="upgrade-row" style="border-color: #e040fb;">
+                <div class="upgrade-details">
+                    <div class="upgrade-title" style="color:#ea80fc;">VOIDFORGED VEST</div>
+                    <div class="upgrade-cost">MAX HP +150 | COST: $<span id="cost-voidarmor">6000</span></div>
+                </div>
+                <button class="buy-btn" id="buy-voidarmor">BUY</button>
+            </div>
+
+            <div class="upgrade-row" style="border-color: #e040fb;">
+                <div class="upgrade-details">
+                    <div class="upgrade-title" style="color:#ea80fc;">ANCIENT RELIC BLADE</div>
+                    <div class="upgrade-cost">+100 DMG TO GOBLINS | COST: $<span id="cost-relicblade">12000</span></div>
+                </div>
+                <button class="buy-btn" id="buy-relicblade">BUY</button>
+            </div>
+
+            <div class="upgrade-row" style="border-color: #e040fb;">
+                <div class="upgrade-details">
+                    <div class="upgrade-title" style="color:#ea80fc;">RIFTWOVEN PACK</div>
+                    <div class="upgrade-cost">CAPACITY +40 | COST: $<span id="cost-titanbag">5000</span></div>
+                </div>
+                <button class="buy-btn" id="buy-titanbag">BUY</button>
+            </div>
+
+            <div class="upgrade-row" style="border-color: #e040fb;">
+                <div class="upgrade-details">
+                    <div class="upgrade-title" style="color:#ea80fc;">VOIDFORGED PICKAXE</div>
+                    <div class="upgrade-cost">DIG POWER +250 | COST: $<span id="cost-voidpick">8000</span></div>
+                </div>
+                <button class="buy-btn" id="buy-voidpick">BUY</button>
+            </div>
+
+            <div class="upgrade-row" style="border-color: #80d8ff;">
+                <div class="upgrade-details">
+                    <div class="upgrade-title" style="color:#e0f7fa;">CELESTIAL DRILL</div>
+                    <div class="upgrade-cost">DIG POWER +600 | COST: $<span id="cost-celestialdrill">25000</span></div>
+                </div>
+                <button class="buy-btn" id="buy-celestialdrill">BUY</button>
+            </div>
+
+            <div class="upgrade-row" style="border-color: #80d8ff;">
+                <div class="upgrade-details">
+                    <div class="upgrade-title" style="color:#e0f7fa;">OMEGA EXCAVATOR</div>
+                    <div class="upgrade-cost">DIG POWER +1500 | COST: $<span id="cost-omega">75000</span></div>
+                </div>
+                <button class="buy-btn" id="buy-omega">BUY</button>
+            </div>
+
             <button class="close-btn" id="close-shop">EXIT SHOP [ESC]</button>
         </div>
     </div>
@@ -667,6 +727,22 @@
                     <div class="upgrade-cost">MAXIMUM SPEED CARRIAGE | COST: $<span id="cost-cart-hyper">800</span></div>
                 </div>
                 <button class="buy-btn" id="buy-cart-hyper">BUY</button>
+            </div>
+
+            <div class="upgrade-row" style="border-color: #4a148c;">
+                <div class="upgrade-details">
+                    <div class="upgrade-title" style="color:#ce93d8;">OBSIDIAN HULL PLATING</div>
+                    <div class="upgrade-cost">TAKE ANOTHER 50% LESS DAMAGE (STACKS) | COST: $<span id="cost-cart-obsidian">3000</span></div>
+                </div>
+                <button class="buy-btn" id="buy-cart-obsidian">BUY</button>
+            </div>
+
+            <div class="upgrade-row" style="border-color: #4a148c;">
+                <div class="upgrade-details">
+                    <div class="upgrade-title" style="color:#ce93d8;">QUANTUM RAIL ENGINE</div>
+                    <div class="upgrade-cost">MINECART SPEED +400% | COST: $<span id="cost-cart-quantum">5000</span></div>
+                </div>
+                <button class="buy-btn" id="buy-cart-quantum">BUY</button>
             </div>
 
             <button class="close-btn" id="close-baxter-shop" style="background: #e65100;">EXIT GARAGE [ESC]</button>
@@ -757,10 +833,10 @@
     window.addEventListener('resize', resizeCanvas);
     resizeCanvas();
 
-    // World Config - DEEPER MAP (1500 Rows)
+    // World Config - DEEPER MAP (2200 Rows)
     const TILE_SIZE = 32;
     const WORLD_COLS = 120;
-    const WORLD_ROWS = 1500;
+    const WORLD_ROWS = 2200;
     const SURFACE_ROW = 4; // Precise surface ground baseline where depth = 0m
     
     // Save Slot System
@@ -774,6 +850,7 @@
     const GOLD = 4; const GEM = 5; const DIAMOND = 6; const MINECART_STATION = 7;
     const GRASS = 8; const WOOD_SUPPORT = 9; const LAVA = 10; const OBSIDIAN_BRICK = 11;
     const RUBY = 12; const EMERALD = 13; const MYTHIC = 14;
+    const VOIDSTONE = 15; const CELESTITE = 16;
 
     let world = [];
     let tileHp = [];
@@ -793,6 +870,7 @@
     // Minecart Stats
     let cartSpeedMultiplier = 1.0;
     let cartArmorActive = false;
+    let cartObsidianActive = false;
 
     // Health & Combat System
     let playerHp = 100;
@@ -899,15 +977,22 @@
         'first_dirt': { title: "First Dirt", desc: "Dig your very first block of earth.", unlocked: false },
         'deep_dive_100': { title: "Deep Diver", desc: "Reach a depth of 100 meters.", unlocked: false },
         'deep_dive_500': { title: "Abyssal Miner", desc: "Reach a depth of 500 meters.", unlocked: false },
-        'bottom_world': { title: "Core Explorer", desc: "Reach the lava depth (1400+ meters).", unlocked: false },
+        'deep_dive_1500': { title: "Void Delver", desc: "Reach a depth of 1500 meters.", unlocked: false },
+        'deep_dive_2000': { title: "Celestial Depths", desc: "Reach a depth of 2000 meters.", unlocked: false },
+        'bottom_world': { title: "Core Explorer", desc: "Reach the lava depth (2180+ meters).", unlocked: false },
         'rich_miner': { title: "Pocket Change", desc: "Accumulate $1,000 cash.", unlocked: false },
         'tycoon': { title: "Mining Tycoon", desc: "Accumulate $10,000 cash.", unlocked: false },
         'goblin_slayer': { title: "Goblin Pest Control", desc: "Defeat your first Goblin.", unlocked: false },
         'rare_ruby': { title: "Ruby Hunter", desc: "Mine an ultra-rare Ruby ore.", unlocked: false },
         'mythic_find': { title: "Mythic Discovery", desc: "Mine the mythical Mythic Crystal.", unlocked: false },
+        'void_find': { title: "Rift Breaker", desc: "Mine a shard of unstable Voidstone.", unlocked: false },
+        'celestial_find': { title: "Starborn", desc: "Mine a fragment of glimmering Celestite.", unlocked: false },
         'lava_survivor': { title: "Lava Swimmer", desc: "Equip the Heatproof Lava Suit.", unlocked: false },
+        'lava_cart_dive': { title: "Magma Daredevil", desc: "Ride the minecart down into the lava layer and escape.", unlocked: false },
         'easter_egg': { title: "Boy in Glasses", desc: "Find the secret Red-Haired Boy at the bottom.", unlocked: false },
-        'belive_sign': { title: "True Beliver", desc: "Find the giant Believe Sign guarded by the Boss Goblin.", unlocked: false }
+        'belive_sign': { title: "True Beliver", desc: "Find the giant Believe Sign guarded by the Boss Goblin.", unlocked: false },
+        'void_sanctuary': { title: "Rift Wanderer", desc: "Discover the hidden Void Sanctuary and its Crystal Golem.", unlocked: false },
+        'celestial_shrine': { title: "Stargazer", desc: "Discover the hidden Celestial Shrine near the world's core.", unlocked: false }
     };
 
     function unlockAchievement(id) {
@@ -949,6 +1034,7 @@
 
     const upgrades = {
         potion: { cost: 40, btnId: 'buy-potion', count: 0, singleUse: false, isPotion: true },
+        megapotion: { cost: 300, btnId: 'buy-megapotion', count: 0, singleUse: false, isPotion: true },
         health: { cost: 100, hpInc: 50, btnId: 'buy-health', count: 0, singleUse: false },
         sword: { cost: 150, dmgInc: 25, btnId: 'buy-sword', count: 0, singleUse: false },
         pick: { cost: 15, power: 2, btnId: 'buy-pick', count: 0, singleUse: false },
@@ -958,14 +1044,22 @@
         laser: { cost: 500, power: 20, btnId: 'buy-laser', count: 0, singleUse: false },
         drill: { cost: 1200, power: 50, btnId: 'buy-drill', count: 0, singleUse: false },
         plasma: { cost: 3000, power: 120, btnId: 'buy-plasma', count: 0, singleUse: false },
-        suit: { cost: 2500, btnId: 'buy-suit', count: 0, singleUse: true }
+        suit: { cost: 2500, btnId: 'buy-suit', count: 0, singleUse: true },
+        voidarmor: { cost: 6000, hpInc: 150, btnId: 'buy-voidarmor', count: 0, singleUse: false },
+        relicblade: { cost: 12000, dmgInc: 100, btnId: 'buy-relicblade', count: 0, singleUse: false },
+        titanbag: { cost: 5000, capacity: 40, btnId: 'buy-titanbag', count: 0, singleUse: false },
+        voidpick: { cost: 8000, power: 250, btnId: 'buy-voidpick', count: 0, singleUse: false },
+        celestialdrill: { cost: 25000, power: 600, btnId: 'buy-celestialdrill', count: 0, singleUse: false },
+        omegaexcavator: { cost: 75000, power: 1500, btnId: 'buy-omega', count: 0, singleUse: false }
     };
 
     const baxterUpgrades = {
         cartSpeed: { cost: 75, speedMult: 1.5, btnId: 'buy-cart-speed', count: 0, singleUse: true },
         cartEngine: { cost: 250, speedMult: 2.2, btnId: 'buy-cart-engine', count: 0, singleUse: true },
         cartArmor: { cost: 180, btnId: 'buy-cart-armor', count: 0, singleUse: true },
-        cartHyper: { cost: 800, speedMult: 3.5, btnId: 'buy-cart-hyper', count: 0, singleUse: true }
+        cartHyper: { cost: 800, speedMult: 3.5, btnId: 'buy-cart-hyper', count: 0, singleUse: true },
+        cartObsidian: { cost: 3000, btnId: 'buy-cart-obsidian', count: 0, singleUse: true },
+        cartQuantum: { cost: 5000, speedMult: 5.0, btnId: 'buy-cart-quantum', count: 0, singleUse: true }
     };
 
     let shaftCart = {
@@ -1011,6 +1105,8 @@
         if (type === RUBY) colors = ["#ff1744", "#ff80ab", "#b71c1c"];
         if (type === EMERALD) colors = ["#00e676", "#b9f6ca", "#1b5e20"];
         if (type === MYTHIC) colors = ["#aa00ff", "#ea80fc", "#4a148c"];
+        if (type === VOIDSTONE) colors = ["#e040fb", "#000000", "#1a0033"];
+        if (type === CELESTITE) colors = ["#e0f7fa", "#ffffff", "#40c4ff"];
 
         const centerX = c * TILE_SIZE + TILE_SIZE / 2;
         const centerY = r * TILE_SIZE + TILE_SIZE / 2;
@@ -1063,6 +1159,8 @@
         if (type === RUBY) baseHp = 900;
         if (type === EMERALD) baseHp = 1800;
         if (type === MYTHIC) baseHp = 4000;
+        if (type === VOIDSTONE) baseHp = 8000;
+        if (type === CELESTITE) baseHp = 16000;
 
         return Math.floor(baseHp * depthMultiplier);
     }
@@ -1092,6 +1190,7 @@
         hasLavaSuit = false;
         cartSpeedMultiplier = 1.0;
         cartArmorActive = false;
+        cartObsidianActive = false;
         goblinsKilled = 0;
         player.speed = 4.0;
         Object.keys(upgrades).forEach(k => upgrades[k].count = 0);
@@ -1125,6 +1224,7 @@
             hasLavaSuit: hasLavaSuit,
             cartSpeedMultiplier: cartSpeedMultiplier,
             cartArmorActive: cartArmorActive,
+            cartObsidianActive: cartObsidianActive,
             goblinsKilled: goblinsKilled,
             playerSpeed: player.speed,
             upgradeCounts: upgradeCounts,
@@ -1150,6 +1250,7 @@
             hasLavaSuit = data.hasLavaSuit ?? false;
             cartSpeedMultiplier = data.cartSpeedMultiplier ?? 1.0;
             cartArmorActive = data.cartArmorActive ?? false;
+            cartObsidianActive = data.cartObsidianActive ?? false;
             goblinsKilled = data.goblinsKilled ?? 0;
             if (data.playerSpeed) player.speed = data.playerSpeed;
 
@@ -1188,8 +1289,8 @@
         railCols = [];
         let centerCol = 50;
 
-        for (let r = 0; r < WORLD_ROWS - 20; r++) {
-            if (r < 4) {
+        for (let r = 0; r < WORLD_ROWS - 5; r++) {
+            if (r < 8) {
                 railCols[r] = centerCol;
             } else {
                 const wave1 = Math.sin(r * 0.04) * 22;
@@ -1253,7 +1354,7 @@
                         else if (rand < 0.988) world[r][c] = DIAMOND;
                         else if (rand < 0.997) world[r][c] = RUBY;
                         else world[r][c] = EMERALD;
-                    } else {
+                    } else if (r < 1400) {
                         if (rand < 0.10) world[r][c] = DIRT;
                         else if (rand < 0.55) world[r][c] = STONE;
                         else if (rand < 0.75) world[r][c] = GOLD;
@@ -1262,6 +1363,27 @@
                         else if (rand < 0.98) world[r][c] = RUBY;
                         else if (rand < 0.995) world[r][c] = EMERALD;
                         else world[r][c] = MYTHIC;
+                    } else if (r < 1800) {
+                        if (rand < 0.08) world[r][c] = DIRT;
+                        else if (rand < 0.45) world[r][c] = STONE;
+                        else if (rand < 0.68) world[r][c] = GOLD;
+                        else if (rand < 0.82) world[r][c] = GEM;
+                        else if (rand < 0.91) world[r][c] = DIAMOND;
+                        else if (rand < 0.96) world[r][c] = RUBY;
+                        else if (rand < 0.985) world[r][c] = EMERALD;
+                        else if (rand < 0.996) world[r][c] = MYTHIC;
+                        else world[r][c] = VOIDSTONE;
+                    } else {
+                        if (rand < 0.05) world[r][c] = DIRT;
+                        else if (rand < 0.35) world[r][c] = STONE;
+                        else if (rand < 0.55) world[r][c] = GOLD;
+                        else if (rand < 0.70) world[r][c] = GEM;
+                        else if (rand < 0.82) world[r][c] = DIAMOND;
+                        else if (rand < 0.90) world[r][c] = RUBY;
+                        else if (rand < 0.95) world[r][c] = EMERALD;
+                        else if (rand < 0.975) world[r][c] = MYTHIC;
+                        else if (rand < 0.994) world[r][c] = VOIDSTONE;
+                        else world[r][c] = CELESTITE;
                     }
                 }
 
@@ -1269,9 +1391,10 @@
             }
         }
 
-        for (let r = 4; r < WORLD_ROWS - 20; r++) {
+        for (let r = 4; r < WORLD_ROWS - 15; r++) {
             const trackCol = railCols[r];
-            for (let dc = -1; dc <= 1; dc++) {
+            const halfWidth = r < 12 ? 3 : 1;
+            for (let dc = -halfWidth; dc <= halfWidth; dc++) {
                 const c = trackCol + dc;
                 if (c >= 0 && c < WORLD_COLS) {
                     world[r][c] = AIR;
@@ -1282,7 +1405,47 @@
 
         generateAbandonedMines();
         generateDeepBossMineshaft();
+        generateVoidSanctuary();
+        generateCelestialShrine();
         updateCartPositionFromProgress();
+    }
+
+    function generateVoidSanctuary() {
+        const roomRow = 1650;
+        const colStart = 8;
+        const colEnd = 28;
+        for (let col = colStart; col <= colEnd; col++) {
+            for (let h = 0; h < 8; h++) {
+                const r = roomRow + h;
+                world[r][col] = AIR;
+                tileHp[r][col] = 0;
+            }
+            if (col % 5 === 0) {
+                for (let h = 0; h < 8; h++) {
+                    world[roomRow + h][col] = WOOD_SUPPORT;
+                    tileHp[roomRow + h][col] = 0;
+                }
+            }
+        }
+    }
+
+    function generateCelestialShrine() {
+        const roomRow = 2050;
+        const colStart = 96;
+        const colEnd = 116;
+        for (let col = colStart; col <= colEnd; col++) {
+            for (let h = 0; h < 8; h++) {
+                const r = roomRow + h;
+                world[r][col] = AIR;
+                tileHp[r][col] = 0;
+            }
+            if (col % 6 === 0) {
+                for (let h = 0; h < 8; h++) {
+                    world[roomRow + h][col] = WOOD_SUPPORT;
+                    tileHp[roomRow + h][col] = 0;
+                }
+            }
+        }
     }
 
     function generateDeepBossMineshaft() {
@@ -1320,7 +1483,7 @@
 
     function updateCartPositionFromProgress() {
         const row = Math.floor(shaftCart.rowProgress);
-        const nextRow = Math.min(WORLD_ROWS - 21, row + 1);
+        const nextRow = Math.min(WORLD_ROWS - 6, row + 1);
         const frac = shaftCart.rowProgress - row;
 
         const colCurrent = railCols[row] || 50;
@@ -1423,6 +1586,9 @@
                     if (player.inCart && cartArmorActive) {
                         damageTaken = Math.floor(damageTaken * 0.5);
                     }
+                    if (player.inCart && cartObsidianActive) {
+                        damageTaken = Math.floor(damageTaken * 0.5);
+                    }
                     playerHp -= damageTaken;
                     invulnerableTimer = 40;
                     if (playerHp <= 0) {
@@ -1463,7 +1629,8 @@
 
     function isSolidTile(type) {
         return type === DIRT || type === STONE || type === GOLD || type === GEM || type === DIAMOND || 
-               type === RUBY || type === EMERALD || type === MYTHIC || type === GRASS || type === OBSIDIAN_BRICK;
+               type === RUBY || type === EMERALD || type === MYTHIC || type === VOIDSTONE || type === CELESTITE ||
+               type === GRASS || type === OBSIDIAN_BRICK;
     }
 
     function isInLava(x, y, w, h) {
@@ -1520,7 +1687,10 @@
         const currentDepth = parseFloat(getExactDepth());
         if (currentDepth >= 100) unlockAchievement('deep_dive_100');
         if (currentDepth >= 500) unlockAchievement('deep_dive_500');
-        if (currentDepth >= 1400) unlockAchievement('bottom_world');
+        if (currentDepth >= 1500) unlockAchievement('deep_dive_1500');
+        if (currentDepth >= 2000) unlockAchievement('deep_dive_2000');
+        if (currentDepth >= 2180) unlockAchievement('bottom_world');
+        if (player.inCart && currentDepth >= 2178) unlockAchievement('lava_cart_dive');
 
         if (player.inCart) {
             let rowSpeed = 0.4 * cartSpeedMultiplier;
@@ -1530,7 +1700,7 @@
             else if (keys['s'] || keys['arrowdown']) currentMove = rowSpeed;
 
             shaftCart.rowProgress += currentMove;
-            shaftCart.rowProgress = Math.max(3, Math.min(shaftCart.rowProgress, WORLD_ROWS - 22));
+            shaftCart.rowProgress = Math.max(3, Math.min(shaftCart.rowProgress, WORLD_ROWS - 7));
 
             updateCartPositionFromProgress();
             player.x = shaftCart.x + 5;
@@ -1647,18 +1817,22 @@
 
             if (tile === RUBY) unlockAchievement('rare_ruby');
             if (tile === MYTHIC) unlockAchievement('mythic_find');
+            if (tile === VOIDSTONE) unlockAchievement('void_find');
+            if (tile === CELESTITE) unlockAchievement('celestial_find');
 
             const depthValMultiplier = 1 + Math.floor(r / 20) * 0.8;
             let itemVal = 1;
 
-            if (tile === DIRT) itemVal = Math.floor(1 * depthValMultiplier);
-            if (tile === STONE) itemVal = Math.floor(3 * depthValMultiplier);
-            if (tile === GOLD) itemVal = Math.floor(20 * depthValMultiplier);
-            if (tile === GEM) itemVal = Math.floor(80 * depthValMultiplier);
-            if (tile === DIAMOND) itemVal = Math.floor(300 * depthValMultiplier);
-            if (tile === RUBY) itemVal = Math.floor(750 * depthValMultiplier);
-            if (tile === EMERALD) itemVal = Math.floor(1800 * depthValMultiplier);
-            if (tile === MYTHIC) itemVal = Math.floor(5000 * depthValMultiplier);
+            if (tile === DIRT) itemVal = Math.floor(2 * depthValMultiplier);
+            if (tile === STONE) itemVal = Math.floor(5 * depthValMultiplier);
+            if (tile === GOLD) itemVal = Math.floor(35 * depthValMultiplier);
+            if (tile === GEM) itemVal = Math.floor(140 * depthValMultiplier);
+            if (tile === DIAMOND) itemVal = Math.floor(500 * depthValMultiplier);
+            if (tile === RUBY) itemVal = Math.floor(1200 * depthValMultiplier);
+            if (tile === EMERALD) itemVal = Math.floor(2800 * depthValMultiplier);
+            if (tile === MYTHIC) itemVal = Math.floor(7500 * depthValMultiplier);
+            if (tile === VOIDSTONE) itemVal = Math.floor(18000 * depthValMultiplier);
+            if (tile === CELESTITE) itemVal = Math.floor(45000 * depthValMultiplier);
 
             backpackCargo.push(itemVal);
             backpackCount++;
@@ -1684,7 +1858,7 @@
 
     function callMinecartToPlayer() {
         if (player.inCart) return;
-        const targetRow = Math.max(3, Math.min(WORLD_ROWS - 22, (player.y + player.height / 2) / TILE_SIZE));
+        const targetRow = Math.max(3, Math.min(WORLD_ROWS - 7, (player.y + player.height / 2) / TILE_SIZE));
         shaftCart.targetRow = targetRow;
         shaftCart.isMovingToTarget = true;
     }
@@ -2102,6 +2276,49 @@
             ctx.fillStyle = "#ffffff";
             ctx.fillRect(x + 14, y + 12, 4, 4);
             ctx.shadowBlur = 0;
+        } else if (type === VOIDSTONE) {
+            ctx.fillStyle = "#0a0014";
+            ctx.fillRect(x, y, TILE_SIZE, TILE_SIZE);
+
+            const riftPulse = Math.sin(time * 2.5 + r + c) * 0.35 + 0.65;
+            ctx.strokeStyle = `rgba(224, 64, 251, ${riftPulse})`;
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(x + 4, y + 6);
+            ctx.lineTo(x + 14, y + 16);
+            ctx.lineTo(x + 8, y + 26);
+            ctx.moveTo(x + 26, y + 4);
+            ctx.lineTo(x + 18, y + 16);
+            ctx.lineTo(x + 28, y + 24);
+            ctx.stroke();
+
+            ctx.fillStyle = `rgba(224, 64, 251, ${riftPulse})`;
+            ctx.shadowColor = "#e040fb";
+            ctx.shadowBlur = 6 + riftPulse * 6;
+            ctx.fillRect(x + 14, y + 14, 4, 4);
+            ctx.shadowBlur = 0;
+        } else if (type === CELESTITE) {
+            ctx.fillStyle = "#0d1b2a";
+            ctx.fillRect(x, y, TILE_SIZE, TILE_SIZE);
+
+            const starPulse = Math.sin(time * 3 + r * 1.5 + c) * 5 + 9;
+            ctx.fillStyle = "#e0f7fa";
+            ctx.shadowColor = "#80d8ff";
+            ctx.shadowBlur = starPulse;
+            ctx.beginPath();
+            ctx.moveTo(x + 16, y + 4);
+            ctx.lineTo(x + 20, y + 13);
+            ctx.lineTo(x + 29, y + 16);
+            ctx.lineTo(x + 20, y + 19);
+            ctx.lineTo(x + 16, y + 28);
+            ctx.lineTo(x + 12, y + 19);
+            ctx.lineTo(x + 3, y + 16);
+            ctx.lineTo(x + 12, y + 13);
+            ctx.closePath();
+            ctx.fill();
+            ctx.fillStyle = "#ffffff";
+            ctx.fillRect(x + 14, y + 14, 4, 4);
+            ctx.shadowBlur = 0;
         } else if (type === LAVA) {
             const lavaY = Math.sin(time * 2 + c) * 3;
             ctx.fillStyle = "#d50000";
@@ -2147,7 +2364,7 @@
 
     function drawSwervingTracks(startRow, endRow) {
         ctx.save();
-        for (let r = startRow; r <= Math.min(endRow, WORLD_ROWS - 22); r++) {
+        for (let r = startRow; r <= Math.min(endRow, WORLD_ROWS - 6); r++) {
             if (r < 3) continue;
 
             const x1 = railCols[r] * TILE_SIZE + 16;
@@ -2243,6 +2460,149 @@
         ctx.restore();
     }
 
+    function drawMineEntrance(x, y) {
+        const w = 7 * TILE_SIZE;
+        const legW = 16;
+        const time = Date.now() * 0.003;
+
+        ctx.fillStyle = "#4e342e";
+        ctx.fillRect(x, y + 20, legW, 100);
+        for (let i = 0; i < 5; i++) {
+            ctx.fillStyle = "#5d4037";
+            ctx.fillRect(x + 2, y + 24 + i * 18, legW - 4, 4);
+        }
+
+        ctx.fillStyle = "#4e342e";
+        ctx.fillRect(x + w - legW, y + 20, legW, 100);
+        for (let i = 0; i < 5; i++) {
+            ctx.fillStyle = "#5d4037";
+            ctx.fillRect(x + w - legW + 2, y + 24 + i * 18, legW - 4, 4);
+        }
+
+        ctx.strokeStyle = "#3e2723";
+        ctx.lineWidth = 6;
+        ctx.beginPath();
+        ctx.moveTo(x + legW, y + 30);
+        ctx.lineTo(x + w / 2, y + 90);
+        ctx.moveTo(x + w - legW, y + 30);
+        ctx.lineTo(x + w / 2, y + 90);
+        ctx.stroke();
+
+        ctx.fillStyle = "#5d4037";
+        ctx.fillRect(x - 6, y, w + 12, 26);
+        ctx.fillStyle = "#3e2723";
+        ctx.fillRect(x - 6, y + 20, w + 12, 6);
+
+        const stripeW = (w + 12) / 8;
+        for (let i = 0; i < 8; i++) {
+            ctx.fillStyle = i % 2 === 0 ? "#ffeb3b" : "#212121";
+            ctx.fillRect(x - 6 + i * stripeW, y + 2, stripeW, 10);
+        }
+
+        ctx.fillStyle = "#6d4c41";
+        ctx.fillRect(x + w / 2 - 60, y - 34, 120, 30);
+        ctx.strokeStyle = "#3e2723";
+        ctx.lineWidth = 3;
+        ctx.strokeRect(x + w / 2 - 60, y - 34, 120, 30);
+        ctx.fillStyle = "#ffe082";
+        ctx.font = "bold 13px monospace";
+        ctx.textAlign = "center";
+        ctx.fillText("MINE SHAFT", x + w / 2, y - 20);
+        ctx.fillText("ENTRANCE", x + w / 2, y - 8);
+        ctx.textAlign = "left";
+
+        ctx.strokeStyle = "#78909c";
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.arc(x + w / 2, y - 44, 10, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.strokeStyle = "#5d4037";
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(x + w / 2, y - 34);
+        ctx.lineTo(x + w / 2, y + 40);
+        ctx.stroke();
+
+        const glow = Math.sin(time * 2) * 4 + 10;
+        [x + legW / 2, x + w - legW / 2].forEach(lx => {
+            ctx.fillStyle = "#3e2723";
+            ctx.fillRect(lx - 2, y + 44, 4, 6);
+            ctx.fillStyle = "#ffca28";
+            ctx.shadowColor = "#ffca28";
+            ctx.shadowBlur = glow;
+            ctx.beginPath();
+            ctx.arc(lx, y + 50, 6, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.shadowBlur = 0;
+        });
+    }
+
+    function drawVoidGolem(x, y) {
+        ctx.save();
+        ctx.translate(x, y);
+        const time = Date.now() * 0.003;
+        const pulse = Math.sin(time * 2) * 0.3 + 0.7;
+
+        ctx.fillStyle = "#1a0033";
+        ctx.fillRect(-10, 60, 80, 14);
+        ctx.strokeStyle = "#e040fb";
+        ctx.lineWidth = 2;
+        ctx.strokeRect(-10, 60, 80, 14);
+
+        ctx.fillStyle = "#2a0845";
+        ctx.fillRect(10, 10, 40, 50);
+
+        ctx.fillStyle = `rgba(224, 64, 251, ${pulse})`;
+        ctx.fillRect(20, 20, 4, 30);
+        ctx.fillRect(32, 15, 4, 40);
+
+        ctx.fillStyle = "#3a0a55";
+        ctx.fillRect(16, -14, 28, 26);
+
+        ctx.fillStyle = `rgba(255, 255, 255, ${pulse})`;
+        ctx.shadowColor = "#e040fb";
+        ctx.shadowBlur = 10;
+        ctx.fillRect(20, -4, 6, 6);
+        ctx.fillRect(32, -4, 6, 6);
+        ctx.shadowBlur = 0;
+
+        ctx.restore();
+    }
+
+    function drawCelestialGuardian(x, y) {
+        ctx.save();
+        ctx.translate(x, y);
+        const time = Date.now() * 0.003;
+
+        ctx.fillStyle = "#0d1b2a";
+        ctx.fillRect(-10, 60, 90, 12);
+        ctx.strokeStyle = "#80d8ff";
+        ctx.lineWidth = 2;
+        ctx.strokeRect(-10, 60, 90, 12);
+
+        for (let i = 0; i < 3; i++) {
+            const ang = time + i * (Math.PI * 2 / 3);
+            const sx = 35 + Math.cos(ang) * 30;
+            const sy = 20 + Math.sin(ang) * 14;
+            ctx.fillStyle = "#e0f7fa";
+            ctx.shadowColor = "#80d8ff";
+            ctx.shadowBlur = 8;
+            ctx.fillRect(sx - 3, sy - 3, 6, 6);
+        }
+        ctx.shadowBlur = 0;
+
+        const glow = Math.sin(time * 2.5) * 6 + 12;
+        ctx.fillStyle = "#e0f7fa";
+        ctx.shadowColor = "#ffffff";
+        ctx.shadowBlur = glow;
+        ctx.beginPath();
+        ctx.arc(35, 30, 16, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.shadowBlur = 0;
+
+        ctx.restore();
+    }
+
     function drawHumanPlayer(x, y, facing, frame, lavaSuitActive, currentAttackTimer = 0) {
         ctx.save();
         ctx.translate(x, y);
@@ -2327,7 +2687,7 @@
         ctx.save();
         ctx.translate(cart.x, cart.y);
 
-        ctx.fillStyle = cartArmorActive ? "#ff9800" : "#78909c";
+        ctx.fillStyle = cartObsidianActive ? "#4a148c" : (cartArmorActive ? "#ff9800" : "#78909c");
         ctx.fillRect(0, 0, cart.width, cart.height);
         ctx.fillStyle = "#37474f";
         ctx.fillRect(2, 2, cart.width - 4, cart.height - 4);
@@ -2379,6 +2739,14 @@
         const beliveSignY = 850 * TILE_SIZE + 10;
         drawBeliveSign(beliveSignX, beliveSignY);
 
+        const voidGolemX = 14 * TILE_SIZE;
+        const voidGolemY = 1650 * TILE_SIZE + 46;
+        drawVoidGolem(voidGolemX, voidGolemY);
+
+        const celestialGuardX = 102 * TILE_SIZE;
+        const celestialGuardY = 2050 * TILE_SIZE + 46;
+        drawCelestialGuardian(celestialGuardX, celestialGuardY);
+
         const shopX = 80 * TILE_SIZE;
         const shopY = 1 * TILE_SIZE + 5;
         drawShopVisuals(shopX, shopY);
@@ -2386,6 +2754,10 @@
         const baxterShopX = 87 * TILE_SIZE;
         const baxterShopY = 1 * TILE_SIZE + 5;
         drawBaxterShopVisuals(baxterShopX, baxterShopY);
+
+        const entranceX = (railCols[6] - 3) * TILE_SIZE;
+        const entranceY = 2 * TILE_SIZE;
+        drawMineEntrance(entranceX, entranceY);
 
         drawGoblins();
         drawMinecartObject(shaftCart);
@@ -2403,6 +2775,8 @@
     const minecartPrompt = document.getElementById('minecart-prompt');
     const callPrompt = document.getElementById('call-prompt');
     const easterPrompt = document.getElementById('easter-prompt');
+    const voidEggPrompt = document.getElementById('void-egg-prompt');
+    const celestialEggPrompt = document.getElementById('celestial-egg-prompt');
     const shopModal = document.getElementById('shop-modal');
     const baxterModal = document.getElementById('baxter-modal');
     const achievementsModal = document.getElementById('achievements-modal');
@@ -2444,7 +2818,7 @@
         const pCol = Math.max(0, Math.min(WORLD_COLS - 1, Math.floor((player.x + player.width / 2) / TILE_SIZE)));
         const trackColAtRow = railCols[pRow] || 50;
 
-        nearSwervingTrack = Math.abs(pCol - trackColAtRow) <= 3 && pRow < WORLD_ROWS - 22;
+        nearSwervingTrack = Math.abs(pCol - trackColAtRow) <= 3 && pRow < WORLD_ROWS - 6;
 
         const cartDist = Math.hypot(player.x - shaftCart.x, player.y - shaftCart.y);
         nearMinecart = cartDist < 48;
@@ -2468,6 +2842,26 @@
             unlockAchievement('easter_egg');
         } else {
             easterPrompt.style.display = "none";
+        }
+
+        const voidGolemPX = 14 * TILE_SIZE + 35;
+        const voidGolemPY = 1650 * TILE_SIZE + 46 + 30;
+        const voidGolemDist = Math.hypot(player.x - voidGolemPX, player.y - voidGolemPY);
+        if (voidGolemDist < 100) {
+            voidEggPrompt.style.display = "block";
+            unlockAchievement('void_sanctuary');
+        } else {
+            voidEggPrompt.style.display = "none";
+        }
+
+        const celestialGuardPX = 102 * TILE_SIZE + 35;
+        const celestialGuardPY = 2050 * TILE_SIZE + 46 + 30;
+        const celestialGuardDist = Math.hypot(player.x - celestialGuardPX, player.y - celestialGuardPY);
+        if (celestialGuardDist < 100) {
+            celestialEggPrompt.style.display = "block";
+            unlockAchievement('celestial_shrine');
+        } else {
+            celestialEggPrompt.style.display = "none";
         }
 
         if (player.inCart) {
@@ -2563,7 +2957,9 @@
         else if (curRow < 250) layerName = "STONE STRATA";
         else if (curRow < 600) layerName = "DEEP GEM CAVERNS";
         else if (curRow < 1000) layerName = "ABYSSAL ORE MINES";
-        else if (curRow < 1485) layerName = "MYTHIC CORE CAVERNS";
+        else if (curRow < 1400) layerName = "MYTHIC CORE CAVERNS";
+        else if (curRow < 1800) layerName = "VOID RIFT CAVERNS";
+        else if (curRow < 2185) layerName = "CELESTIAL ABYSS";
         else layerName = "LAVA CORE FLOOR";
 
         document.getElementById('bp-layer-val').innerText = layerName;
@@ -2600,12 +2996,14 @@
 
                     if (key === 'potion') {
                         playerHp = Math.min(playerMaxHp, playerHp + 50);
-                    } else if (key === 'health') {
+                    } else if (key === 'megapotion') {
+                        playerHp = playerMaxHp;
+                    } else if (key === 'health' || key === 'voidarmor') {
                         playerMaxHp += up.hpInc;
                         playerHp += up.hpInc;
-                    } else if (key === 'sword') {
+                    } else if (key === 'sword' || key === 'relicblade') {
                         swordDamage += up.dmgInc;
-                    } else if (key === 'bag') {
+                    } else if (key === 'bag' || key === 'titanbag') {
                         backpackMax += up.capacity;
                     } else if (key === 'boots') {
                         player.speed += up.speedInc;
@@ -2632,6 +3030,8 @@
 
                     if (key === 'cartArmor') {
                         cartArmorActive = true;
+                    } else if (key === 'cartObsidian') {
+                        cartObsidianActive = true;
                     } else {
                         cartSpeedMultiplier = Math.max(cartSpeedMultiplier, up.speedMult);
                     }

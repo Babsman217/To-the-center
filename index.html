@@ -229,6 +229,49 @@
             box-shadow: 0 0 20px rgba(255, 0, 0, 0.9);
         }
 
+        /* Tutorial Overlay Box - Positioned in the Bottom-Right Corner */
+        #tutorial-overlay {
+            position: absolute;
+            bottom: 24px;
+            right: 24px;
+            top: auto;
+            left: auto;
+            transform: none;
+            background: rgba(13, 9, 20, 0.95);
+            border: 4px solid #00e5ff;
+            padding: 16px 20px;
+            width: 360px;
+            max-width: 90vw;
+            box-shadow: 0 0 20px rgba(0, 229, 255, 0.5);
+            z-index: 25;
+            display: none;
+            text-align: center;
+        }
+        #tutorial-overlay-step {
+            color: #ffd700;
+            font-size: 10px;
+            margin-bottom: 8px;
+        }
+        #tutorial-overlay-text {
+            color: #fff;
+            font-size: 8px;
+            line-height: 1.6;
+            margin-bottom: 12px;
+        }
+        #tutorial-overlay-btn {
+            background: #28a745;
+            color: #fff;
+            border: 2px solid #000;
+            padding: 10px 16px;
+            font-size: 9px;
+            cursor: pointer;
+            display: none;
+            margin: 0 auto;
+        }
+        #tutorial-overlay-btn:hover {
+            background: #34ce57;
+        }
+
         /* Achievement Popup Banner */
         #achievement-popup {
             position: absolute;
@@ -290,7 +333,7 @@
             padding-bottom: 10px;
         }
 
-        .upgrade-row, .achievement-row, .backpack-row {
+        .upgrade-row, .achievement-row, .backpack-row, .tutorial-section {
             background: #2a1b3d;
             border: 2px solid #4a2870;
             padding: 10px 12px;
@@ -298,6 +341,23 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
+        }
+
+        .tutorial-section {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 6px;
+        }
+
+        .tutorial-title {
+            color: #00ffff;
+            font-size: 10px;
+        }
+
+        .tutorial-text {
+            color: #ccc;
+            font-size: 8px;
+            line-height: 1.5;
         }
 
         .achievement-row.unlocked {
@@ -311,7 +371,7 @@
         .achievement-row.unlocked .achievement-title { color: #ffd700; }
         .upgrade-cost, .achievement-desc { font-size: 8px; color: #aaa; }
 
-        .buy-btn {
+        .buy-btn, .talk-btn {
             background: #28a745;
             color: #fff;
             border: 2px solid #000;
@@ -319,6 +379,14 @@
             font-size: 8px;
             cursor: pointer;
             text-align: center;
+        }
+
+        .talk-btn {
+            background: #ab47bc;
+            border-color: #ffd700;
+        }
+        .talk-btn:hover {
+            background: #8e24aa;
         }
 
         .buy-btn:disabled { background: #444; color: #777; cursor: not-allowed; }
@@ -347,6 +415,25 @@
             padding: 12px;
             font-size: 10px;
             cursor: pointer;
+        }
+
+        /* Hanru Dialogue Box */
+        #hanru-dialogue-box {
+            background: #0f0a19;
+            border: 3px solid #ab47bc;
+            padding: 12px;
+            margin-bottom: 12px;
+            border-radius: 4px;
+        }
+        #hanru-name {
+            color: #ffd700;
+            font-size: 10px;
+            margin-bottom: 6px;
+        }
+        #hanru-speech {
+            color: #00e5ff;
+            font-size: 8px;
+            line-height: 1.5;
         }
 
         /* --- Backpack Modal Custom Styles --- */
@@ -381,6 +468,12 @@
 <body>
 
 <div id="game-container">
+    <div id="tutorial-overlay">
+        <div id="tutorial-overlay-step">TUTORIAL STEP 1/5</div>
+        <div id="tutorial-overlay-text">Welcome! Use [A]/[D] or Left/Right arrows to move, and [W]/Space to jump. Dig your first block by walking into a wall or pressing [S]/Down!</div>
+        <button id="tutorial-overlay-btn">CONTINUE TO MAIN GAME</button>
+    </div>
+
     <div id="achievement-popup">
         <div style="font-size: 8px; color: #444; margin-bottom: 4px;">🏆 ACHIEVEMENT UNLOCKED!</div>
         <div id="achievement-popup-title" style="font-weight: bold; font-size: 10px;">TITLE</div>
@@ -397,6 +490,7 @@
         </div>
 
         <button class="menu-btn" id="sp-btn">SINGLE PLAYER</button>
+        <button class="menu-btn" id="tutorial-btn" style="background: #2b4c7e; border-color: #00e5ff;">PLAY TUTORIAL MODE</button>
 
         <div class="mp-row">
             <button class="menu-btn" id="mp-btn" disabled>MULTIPLAYER</button>
@@ -417,7 +511,7 @@
         <div class="hud-box emergency-info">STUCK? [R] (-50% CASH) <button class="reset-btn" id="reset-save-btn">RESET SAVE</button></div>
     </div>
 
-    <div id="shop-prompt" class="prompt">PRESS [E] TO ENTER OUTPOST SHOP & SELL ORE</div>
+    <div id="shop-prompt" class="prompt">PRESS [E] TO ENTER HANRU'S OUTPOST SHOP & SELL ORE</div>
     <div id="minecart-prompt" class="prompt">PRESS [E] TO MOUNT MINECART</div>
     <div id="call-prompt" class="prompt">PRESS [C] TO CALL MINECART HERE</div>
     <div id="easter-prompt" class="prompt">★ YOU FOUND THE SECRET RED-HAIRED BOY! ★</div>
@@ -427,6 +521,12 @@
     <div id="shop-modal" class="modal">
         <div id="shop-window" class="modal-window">
             <div class="modal-title">SURFACE OUTPOST & GEAR SHOP</div>
+
+            <div id="hanru-dialogue-box">
+                <div id="hanru-name">🧑‍🌾 HANRU (SHOPKEEPER):</div>
+                <div id="hanru-speech">"Welcome to my shop, miner! Bring me your dug-up ores and I'll buy them all. What upgrades do you need today?"</div>
+                <button class="talk-btn" id="talk-hanru-btn" style="margin-top: 8px;">TALK TO HANRU</button>
+            </div>
 
             <div class="upgrade-row" style="border-color: #ff3333;">
                 <div class="upgrade-details">
@@ -641,6 +741,89 @@
     let invulnerableTimer = 0;
     let attackTimer = 0;
     const MAX_ATTACK_TIMER = 12;
+
+    // Hanru's Dialogue Options
+    const hanruDialogues = [
+        `"Welcome to my shop, miner! Bring me your dug-up ores and I'll buy them all. What upgrades do you need today?"`,
+        `"Tip from Hanru: The deeper you dig down, the rarer the minerals! Dig past 600m for Diamonds and Rubies."`,
+        `"Watch out for goblins in the mines! You should buy my Goblin Slayer Sword to defend yourself with [F]."`,
+        `"Short on inventory space? Upgrade your backpack capacity right here so you can stay underground longer!"`,
+        `"If you get stuck deep in the mines, press [C] near the track to call my minecart right to your level!"`,
+        `"Legend says there is a giant Boss Goblin around 850M depth guarding a golden secret... prepare well!"`,
+        `"Swimming in lava down at the 1400M core? Make sure you equip my Heatproof Lava Suit first!"`
+    ];
+    let hanruDialogueIndex = 0;
+
+    // --- INTERACTIVE TUTORIAL MODE SYSTEM ---
+    let isTutorialMode = false;
+    let tutorialStep = 0;
+    const tutorialStepsData = [
+        {
+            title: "TUTORIAL STEP 1/5: DIGGING ORE",
+            text: "Welcome to Miners I Love Em! Use [A]/[D] to move and [W]/Space to jump. Walk into ground tiles or press [S]/Down to dig out your first piece of ore!",
+            condition: () => backpackCount > 0
+        },
+        {
+            title: "TUTORIAL STEP 2/5: SELLING ORE TO HANRU",
+            text: "Great job! Now head over to the Surface Shop on the right. Step close to Hanru's shop counter to automatically sell your mined ore for cash!",
+            condition: () => cash > 0
+        },
+        {
+            title: "TUTORIAL STEP 3/5: VISITING HANRU'S SHOP",
+            text: "Now press [E] while standing near the shop to open Hanru's Outpost. You can talk to Hanru or buy useful upgrades!",
+            condition: () => shopModal.style.display === 'flex'
+        },
+        {
+            title: "TUTORIAL STEP 4/5: MINECART TRAVEL",
+            text: "Close the shop [ESC]. Walk left to the minecart tracks. Stand on the tracks and press [C] to call the minecart, or press [E] to mount it!",
+            condition: () => player.inCart || shaftCart.isMovingToTarget
+        },
+        {
+            title: "TUTORIAL COMPLETE!",
+            text: "You've mastered the basics! You know how to dig, sell ore to Hanru, buy upgrades, and use minecarts. Click below to continue into the full main game!",
+            condition: () => false
+        }
+    ];
+
+    function startTutorialMode() {
+        isTutorialMode = true;
+        tutorialStep = 0;
+        document.getElementById('main-menu').style.display = 'none';
+        document.getElementById('tutorial-overlay').style.display = 'block';
+        updateTutorialOverlayUI();
+        canvas.focus();
+    }
+
+    function updateTutorialOverlayUI() {
+        if (!isTutorialMode) {
+            document.getElementById('tutorial-overlay').style.display = 'none';
+            return;
+        }
+        const stepData = tutorialStepsData[tutorialStep];
+        document.getElementById('tutorial-overlay-step').innerText = stepData.title;
+        document.getElementById('tutorial-overlay-text').innerText = stepData.text;
+
+        if (tutorialStep === tutorialStepsData.length - 1) {
+            document.getElementById('tutorial-overlay-btn').style.display = 'block';
+        } else {
+            document.getElementById('tutorial-overlay-btn').style.display = 'none';
+        }
+    }
+
+    function checkTutorialProgress() {
+        if (!isTutorialMode) return;
+        if (tutorialStep < tutorialStepsData.length - 1) {
+            if (tutorialStepsData[tutorialStep].condition()) {
+                tutorialStep++;
+                updateTutorialOverlayUI();
+            }
+        }
+    }
+
+    document.getElementById('tutorial-overlay-btn').addEventListener('click', () => {
+        isTutorialMode = false;
+        document.getElementById('tutorial-overlay').style.display = 'none';
+    });
 
     // --- ACHIEVEMENTS SYSTEM ---
     const achievements = {
@@ -1330,7 +1513,6 @@
         const left = Math.max(0, Math.floor(player.x / TILE_SIZE));
         const right = Math.min(WORLD_COLS - 1, Math.floor((player.x + player.width - 1) / TILE_SIZE));
         const top = Math.max(0, Math.floor(player.y / TILE_SIZE));
-        // Subtract 1px for X axis check so floor doesn't block horizontal walking
         const bottomY = axis === 'x' ? player.y + player.height - 2 : player.y + player.height - 1;
         const bottom = Math.min(WORLD_ROWS - 1, Math.floor(bottomY / TILE_SIZE));
 
@@ -1556,7 +1738,7 @@
         ctx.shadowColor = "#00e5ff";
         ctx.shadowBlur = 8;
         ctx.font = "8px 'Press Start 2P', monospace";
-        ctx.fillText("⭐ OUTPOST SHOP ⭐", signX + 7, signY + 16);
+        ctx.fillText("⭐ HANRU'S SHOP ⭐", signX + 2, signY + 16);
         ctx.shadowBlur = 0;
 
         // Glowing Lanterns
@@ -1592,7 +1774,7 @@
         ctx.fillStyle = "#8b4513";
         ctx.fillRect(shopX + 159, shopY + 63, 2, 8);
 
-        // Animated Merchant NPC
+        // Animated Merchant NPC (Hanru)
         const merchantY = shopY + 44 + Math.sin(time * 2) * 1.5;
         ctx.fillStyle = "#ffcc99"; // skin
         ctx.fillRect(shopX + 128, merchantY, 18, 18);
@@ -1614,6 +1796,11 @@
         // Friendly Mustache
         ctx.fillStyle = "#5d4037";
         ctx.fillRect(shopX + 131, merchantY + 12, 12, 3);
+
+        // Hanru Nameplate Above Shopkeeper
+        ctx.fillStyle = "#ffd700";
+        ctx.font = "7px 'Press Start 2P', monospace";
+        ctx.fillText("HANRU", shopX + 123, merchantY - 14);
     }
 
     function drawCoolBlock(type, x, y, r, c) {
@@ -2186,6 +2373,12 @@
             });
         });
 
+        // Hanru Dialogue Interaction Button
+        document.getElementById('talk-hanru-btn').addEventListener('click', () => {
+            hanruDialogueIndex = (hanruDialogueIndex + 1) % hanruDialogues.length;
+            document.getElementById('hanru-speech').innerText = hanruDialogues[hanruDialogueIndex];
+        });
+
         document.getElementById('close-shop').addEventListener('click', () => {
             shopModal.style.display = 'none';
         });
@@ -2196,6 +2389,10 @@
 
         document.getElementById('close-achievements').addEventListener('click', () => {
             achievementsModal.style.display = 'none';
+        });
+
+        document.getElementById('tutorial-btn').addEventListener('click', () => {
+            startTutorialMode();
         });
 
         document.getElementById('bag-box').addEventListener('click', () => {
@@ -2210,6 +2407,8 @@
     }
 
     document.getElementById('sp-btn').addEventListener('click', () => {
+        isTutorialMode = false;
+        document.getElementById('tutorial-overlay').style.display = 'none';
         document.getElementById('main-menu').style.display = 'none';
         canvas.focus();
     });
@@ -2270,6 +2469,12 @@
             updateGoblins();
             updateMinecartLogic();
         }
+
+        // Check tutorial progress every frame so opening modal triggers Step 3 -> 4 advance properly
+        if (document.getElementById('main-menu').style.display === 'none') {
+            checkTutorialProgress();
+        }
+
         updateCamera();
         checkProximity();
 

@@ -219,6 +219,7 @@
 
         #minecart-prompt { background: #ffaa00; box-shadow: 0 0 15px rgba(255, 170, 0, 0.8); }
         #call-prompt { background: #00e5ff; box-shadow: 0 0 15px rgba(0, 229, 255, 0.8); color: #000; }
+        #baxter-shop-prompt { background: #e65100; color: #fff; box-shadow: 0 0 15px rgba(230, 81, 0, 0.8); }
         #easter-prompt { background: #ff00ff; color: #fff; box-shadow: 0 0 15px rgba(255, 0, 255, 0.8); }
         #belive-prompt { background: #ffff00; color: #0000ff; border-color: #0000ff; }
         #recall-banner { 
@@ -417,24 +418,29 @@
             cursor: pointer;
         }
 
-        /* Hanru Dialogue Box */
-        #hanru-dialogue-box {
+        /* NPC Dialogue Box */
+        #hanru-dialogue-box, #baxter-dialogue-box {
             background: #0f0a19;
             border: 3px solid #ab47bc;
             padding: 12px;
             margin-bottom: 12px;
             border-radius: 4px;
         }
-        #hanru-name {
+        #baxter-dialogue-box {
+            border-color: #e65100;
+        }
+        #hanru-name, #baxter-name {
             color: #ffd700;
             font-size: 10px;
             margin-bottom: 6px;
         }
-        #hanru-speech {
+        #baxter-name { color: #ff9800; }
+        #hanru-speech, #baxter-speech {
             color: #00e5ff;
             font-size: 8px;
             line-height: 1.5;
         }
+        #baxter-speech { color: #ffcc80; }
 
         /* --- Backpack Modal Custom Styles --- */
         #map-meter-container {
@@ -512,6 +518,7 @@
     </div>
 
     <div id="shop-prompt" class="prompt">PRESS [E] TO ENTER HANRU'S OUTPOST SHOP & SELL ORE</div>
+    <div id="baxter-shop-prompt" class="prompt">PRESS [E] TO ENTER BAXTER'S MINECART GARAGE</div>
     <div id="minecart-prompt" class="prompt">PRESS [E] TO MOUNT MINECART</div>
     <div id="call-prompt" class="prompt">PRESS [C] TO CALL MINECART HERE</div>
     <div id="easter-prompt" class="prompt">★ YOU FOUND THE SECRET RED-HAIRED BOY! ★</div>
@@ -620,6 +627,52 @@
         </div>
     </div>
 
+    <div id="baxter-modal" class="modal">
+        <div class="modal-window" style="border-color: #ff9800; box-shadow: 0 0 30px rgba(255, 152, 0, 0.4);">
+            <div class="modal-title" style="color: #ff9800; border-color: #ff9800;">⚙️ BAXTER'S MINECART GARAGE ⚙️</div>
+
+            <div id="baxter-dialogue-box">
+                <div id="baxter-name">🔧 BAXTER (MECHANIC):</div>
+                <div id="baxter-speech">"Hey there, miner! Need your minecart tuned up? I can boost its speed, add armor, install turbo thrusters, or set up remote call beacons!"</div>
+                <button class="talk-btn" id="talk-baxter-btn" style="margin-top: 8px; background: #e65100; border-color: #ff9800;">TALK TO BAXTER</button>
+            </div>
+
+            <div class="upgrade-row" style="border-color: #ff9800;">
+                <div class="upgrade-details">
+                    <div class="upgrade-title" style="color:#ffb74d;">TURBO WHEELS</div>
+                    <div class="upgrade-cost">MINECART SPEED +50% | COST: $<span id="cost-cart-speed">75</span></div>
+                </div>
+                <button class="buy-btn" id="buy-cart-speed">BUY</button>
+            </div>
+
+            <div class="upgrade-row" style="border-color: #ff9800;">
+                <div class="upgrade-details">
+                    <div class="upgrade-title" style="color:#ffb74d;">NITRO BOOSTER ENGINE</div>
+                    <div class="upgrade-cost">MINECART SPEED +100% | COST: $<span id="cost-cart-engine">250</span></div>
+                </div>
+                <button class="buy-btn" id="buy-cart-engine">BUY</button>
+            </div>
+
+            <div class="upgrade-row" style="border-color: #ff9800;">
+                <div class="upgrade-details">
+                    <div class="upgrade-title" style="color:#ffb74d;">REINFORCED PLATING</div>
+                    <div class="upgrade-cost">TAKE 50% LESS DAMAGE IN MINECART | COST: $<span id="cost-cart-armor">180</span></div>
+                </div>
+                <button class="buy-btn" id="buy-cart-armor">BUY</button>
+            </div>
+
+            <div class="upgrade-row" style="border-color: #ff9800;">
+                <div class="upgrade-details">
+                    <div class="upgrade-title" style="color:#ffb74d;">HYPER-DRIVE TRACK ENGINE</div>
+                    <div class="upgrade-cost">MAXIMUM SPEED CARRIAGE | COST: $<span id="cost-cart-hyper">800</span></div>
+                </div>
+                <button class="buy-btn" id="buy-cart-hyper">BUY</button>
+            </div>
+
+            <button class="close-btn" id="close-baxter-shop" style="background: #e65100;">EXIT GARAGE [ESC]</button>
+        </div>
+    </div>
+
     <div id="achievements-modal" class="modal">
         <div class="modal-window">
             <div class="modal-title">🏆 ACHIEVEMENTS 🏆</div>
@@ -682,6 +735,9 @@
                     <div class="upgrade-cost" style="color:#aaa; margin-top:2px;">
                         SWORD DAMAGE: <span id="bp-sword-val" style="color:#ff6666;">0</span> | LAVA SUIT: <span id="bp-suit-val" style="color:#ffaa00;">NO</span>
                     </div>
+                    <div class="upgrade-cost" style="color:#aaa; margin-top:2px;">
+                        CART SPEED LEVEL: <span id="bp-cart-speed-val" style="color:#ff9800;">1.0x</span>
+                    </div>
                 </div>
             </div>
 
@@ -734,6 +790,10 @@
     let hasLavaSuit = false;
     let goblinsKilled = 0;
 
+    // Minecart Stats
+    let cartSpeedMultiplier = 1.0;
+    let cartArmorActive = false;
+
     // Health & Combat System
     let playerHp = 100;
     let playerMaxHp = 100;
@@ -742,7 +802,7 @@
     let attackTimer = 0;
     const MAX_ATTACK_TIMER = 12;
 
-    // Hanru's Dialogue Options
+    // Dialogue Options
     const hanruDialogues = [
         `"Welcome to my shop, miner! Bring me your dug-up ores and I'll buy them all. What upgrades do you need today?"`,
         `"Tip from Hanru: The deeper you dig down, the rarer the minerals! Dig past 600m for Diamonds and Rubies."`,
@@ -753,6 +813,14 @@
         `"Swimming in lava down at the 1400M core? Make sure you equip my Heatproof Lava Suit first!"`
     ];
     let hanruDialogueIndex = 0;
+
+    const baxterDialogues = [
+        `"Hey there, miner! I'm Baxter, the head mechanic around here. Want your minecart to zoom down the tracks?"`,
+        `"Tip from Baxter: Upgrade your Minecart Speed so you can traverse the deep shafts in seconds!"`,
+        `"My Reinforced Plating will protect your cart from taking as much damage while riding through goblin zones!"`,
+        `"Pair my Hyper-Drive Engine with Hanru's deep mining tools to explore the entire world lightning fast!"`
+    ];
+    let baxterDialogueIndex = 0;
 
     // --- INTERACTIVE TUTORIAL MODE SYSTEM ---
     let isTutorialMode = false;
@@ -813,6 +881,7 @@
     function checkTutorialProgress() {
         if (!isTutorialMode) return;
         if (tutorialStep < tutorialStepsData.length - 1) {
+            // Fix glitch by preventing step 3 auto-advance unless condition is actually true
             if (tutorialStepsData[tutorialStep].condition()) {
                 tutorialStep++;
                 updateTutorialOverlayUI();
@@ -890,6 +959,13 @@
         drill: { cost: 1200, power: 50, btnId: 'buy-drill', count: 0, singleUse: false },
         plasma: { cost: 3000, power: 120, btnId: 'buy-plasma', count: 0, singleUse: false },
         suit: { cost: 2500, btnId: 'buy-suit', count: 0, singleUse: true }
+    };
+
+    const baxterUpgrades = {
+        cartSpeed: { cost: 75, speedMult: 1.5, btnId: 'buy-cart-speed', count: 0, singleUse: true },
+        cartEngine: { cost: 250, speedMult: 2.2, btnId: 'buy-cart-engine', count: 0, singleUse: true },
+        cartArmor: { cost: 180, btnId: 'buy-cart-armor', count: 0, singleUse: true },
+        cartHyper: { cost: 800, speedMult: 3.5, btnId: 'buy-cart-hyper', count: 0, singleUse: true }
     };
 
     let shaftCart = {
@@ -1014,9 +1090,12 @@
         playerMaxHp = 100;
         swordDamage = 0;
         hasLavaSuit = false;
+        cartSpeedMultiplier = 1.0;
+        cartArmorActive = false;
         goblinsKilled = 0;
         player.speed = 4.0;
         Object.keys(upgrades).forEach(k => upgrades[k].count = 0);
+        Object.keys(baxterUpgrades).forEach(k => baxterUpgrades[k].count = 0);
         Object.keys(achievements).forEach(k => achievements[k].unlocked = false);
     }
 
@@ -1024,6 +1103,11 @@
         const upgradeCounts = {};
         Object.keys(upgrades).forEach(key => {
             upgradeCounts[key] = upgrades[key].count;
+        });
+
+        const baxterUpgradeCounts = {};
+        Object.keys(baxterUpgrades).forEach(key => {
+            baxterUpgradeCounts[key] = baxterUpgrades[key].count;
         });
 
         const achUnlocked = {};
@@ -1039,9 +1123,12 @@
             playerMaxHp: playerMaxHp,
             swordDamage: swordDamage,
             hasLavaSuit: hasLavaSuit,
+            cartSpeedMultiplier: cartSpeedMultiplier,
+            cartArmorActive: cartArmorActive,
             goblinsKilled: goblinsKilled,
             playerSpeed: player.speed,
             upgradeCounts: upgradeCounts,
+            baxterUpgradeCounts: baxterUpgradeCounts,
             achUnlocked: achUnlocked
         };
 
@@ -1061,12 +1148,20 @@
             playerMaxHp = data.playerMaxHp ?? 100;
             swordDamage = data.swordDamage ?? 0;
             hasLavaSuit = data.hasLavaSuit ?? false;
+            cartSpeedMultiplier = data.cartSpeedMultiplier ?? 1.0;
+            cartArmorActive = data.cartArmorActive ?? false;
             goblinsKilled = data.goblinsKilled ?? 0;
             if (data.playerSpeed) player.speed = data.playerSpeed;
 
             if (data.upgradeCounts) {
                 Object.keys(data.upgradeCounts).forEach(key => {
                     if (upgrades[key]) upgrades[key].count = data.upgradeCounts[key];
+                });
+            }
+
+            if (data.baxterUpgradeCounts) {
+                Object.keys(data.baxterUpgradeCounts).forEach(key => {
+                    if (baxterUpgrades[key]) baxterUpgrades[key].count = data.baxterUpgradeCounts[key];
                 });
             }
 
@@ -1320,11 +1415,15 @@
                 g.vy = 0;
             }
 
-            if (invulnerableTimer <= 0 && !player.inCart) {
+            if (invulnerableTimer <= 0) {
                 if (player.x < g.x + g.width && player.x + player.width > g.x &&
                     player.y < g.y + g.height && player.y + player.height > g.y) {
                     
-                    playerHp -= g.isBoss ? 45 : 20;
+                    let damageTaken = g.isBoss ? 45 : 20;
+                    if (player.inCart && cartArmorActive) {
+                        damageTaken = Math.floor(damageTaken * 0.5);
+                    }
+                    playerHp -= damageTaken;
                     invulnerableTimer = 40;
                     if (playerHp <= 0) {
                         playerHp = 0;
@@ -1403,8 +1502,9 @@
     function updateMinecartLogic() {
         if (shaftCart.isMovingToTarget) {
             const rowDiff = shaftCart.targetRow - shaftCart.rowProgress;
-            if (Math.abs(rowDiff) > 0.3) {
-                const step = 0.5 * Math.sign(rowDiff);
+            const stepSpeed = 0.5 * cartSpeedMultiplier;
+            if (Math.abs(rowDiff) > stepSpeed) {
+                const step = stepSpeed * Math.sign(rowDiff);
                 shaftCart.rowProgress += step;
             } else {
                 shaftCart.rowProgress = shaftCart.targetRow;
@@ -1423,7 +1523,7 @@
         if (currentDepth >= 1400) unlockAchievement('bottom_world');
 
         if (player.inCart) {
-            let rowSpeed = 0.4;
+            let rowSpeed = 0.4 * cartSpeedMultiplier;
             let currentMove = 0;
 
             if (keys['w'] || keys['arrowup']) currentMove = -rowSpeed;
@@ -1502,6 +1602,12 @@
             const feetRow = Math.max(0, Math.min(WORLD_ROWS - 1, Math.floor((player.y + player.height + 4) / TILE_SIZE)));
             const feetCol = Math.max(0, Math.min(WORLD_COLS - 1, Math.floor((player.x + player.width / 2) / TILE_SIZE)));
             digTile(feetRow, feetCol);
+        }
+
+        if ((keys['w'] || keys['arrowup'] || keys[' ']) && !touchingLava) {
+            const headRow = Math.max(0, Math.min(WORLD_ROWS - 1, Math.floor((player.y - 4) / TILE_SIZE)));
+            const headCol = Math.max(0, Math.min(WORLD_COLS - 1, Math.floor((player.x + player.width / 2) / TILE_SIZE)));
+            digTile(headRow, headCol);
         }
 
         if (player.x < 0) player.x = 0;
@@ -1801,6 +1907,114 @@
         ctx.fillStyle = "#ffd700";
         ctx.font = "7px 'Press Start 2P', monospace";
         ctx.fillText("HANRU", shopX + 123, merchantY - 14);
+    }
+
+    /* --- BAXTER'S MINECART GARAGE VISUALS --- */
+    function drawBaxterShopVisuals(shopX, shopY) {
+        const shopW = 190;
+        const time = Date.now() * 0.003;
+
+        // Steel Plate Foundation
+        ctx.fillStyle = "#263238";
+        ctx.fillRect(shopX, shopY + 90, shopW, 35);
+        ctx.fillStyle = "#37474f";
+        for (let bx = 0; bx < shopW; bx += 16) {
+            ctx.fillRect(shopX + bx, shopY + 90, 2, 35);
+            ctx.fillRect(shopX + bx + 4, shopY + 94, 3, 3); // Rivets
+        }
+
+        // Industrial Metallic Main Garage Structure
+        ctx.fillStyle = "#37474f";
+        ctx.fillRect(shopX + 10, shopY + 25, shopW - 20, 65);
+
+        // Steel Beams
+        ctx.fillStyle = "#1c313a";
+        ctx.fillRect(shopX + 10, shopY + 25, 10, 65);
+        ctx.fillRect(shopX + shopW - 20, shopY + 25, 10, 65);
+        ctx.fillRect(shopX + 90, shopY + 25, 10, 65);
+
+        // Striped Hazard Awning
+        const awningX = shopX + 105;
+        const awningY = shopY + 45;
+        const awningW = 75;
+        for (let stripe = 0; stripe < awningW; stripe += 12) {
+            ctx.fillStyle = (stripe / 12) % 2 === 0 ? "#ff9800" : "#212121";
+            ctx.fillRect(awningX + stripe, awningY, 12, 12);
+        }
+
+        // Industrial Roof with Exhaust Pipe
+        ctx.fillStyle = "#102027";
+        ctx.fillRect(shopX - 8, shopY + 20, shopW + 16, 8);
+        ctx.fillRect(shopX + 15, shopY - 15, 16, 35);
+
+        // Sparks & Exhaust Smoke
+        ctx.fillStyle = "rgba(255, 152, 0, 0.5)";
+        for (let s = 0; s < 3; s++) {
+            let sparkOffset = ((time * 30 + s * 12) % 40);
+            let sparkX = shopX + 23 + Math.sin(time * 2 + s) * 5;
+            let sparkY = shopY - 18 - sparkOffset;
+            ctx.fillRect(sparkX, sparkY, 4, 4);
+        }
+
+        // Glowing Garage Neon Signboard
+        const signX = shopX + 15;
+        const signY = shopY - 4;
+        const signW = 160;
+        const signH = 22;
+
+        ctx.fillStyle = "#000000";
+        ctx.fillRect(signX, signY, signW, signH);
+        ctx.strokeStyle = "#ff9800";
+        ctx.lineWidth = 2;
+        ctx.strokeRect(signX, signY, signW, signH);
+
+        const neonPulse = (Math.sin(time * 5) * 0.3) + 0.7;
+        ctx.fillStyle = `rgba(255, 152, 0, ${neonPulse})`;
+        ctx.shadowColor = "#ff9800";
+        ctx.shadowBlur = 8;
+        ctx.font = "7px 'Press Start 2P', monospace";
+        ctx.fillText("⚙️ BAXTER'S GARAGE ⚙️", signX + 4, signY + 15);
+        ctx.shadowBlur = 0;
+
+        // Garage Door Bay
+        ctx.fillStyle = "#1c313a";
+        ctx.fillRect(shopX + 26, shopY + 48, 42, 77);
+        ctx.fillStyle = "#000000";
+        for (let r = 52; r < 120; r += 8) {
+            ctx.fillRect(shopX + 26, shopY + r, 42, 2);
+        }
+
+        // Workbench & Mechanic NPC (Baxter)
+        ctx.fillStyle = "#455a64";
+        ctx.fillRect(shopX + 105, shopY + 68, 75, 12);
+        ctx.fillStyle = "#263238";
+        ctx.fillRect(shopX + 105, shopY + 80, 75, 45);
+
+        // Minecart Wheel Decorative Piece on Counter
+        ctx.fillStyle = "#ffd700";
+        ctx.beginPath();
+        ctx.arc(shopX + 160, shopY + 62, 6, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Baxter NPC Render
+        const baxterY = shopY + 44 + Math.sin(time * 2) * 1.5;
+        ctx.fillStyle = "#ffdbac"; // Skin
+        ctx.fillRect(shopX + 128, baxterY, 18, 18);
+
+        // Welder Goggles / Cap
+        ctx.fillStyle = "#e65100";
+        ctx.fillRect(shopX + 124, baxterY - 4, 26, 5);
+        ctx.fillStyle = "#212121";
+        ctx.fillRect(shopX + 128, baxterY + 3, 18, 4);
+
+        // Overalls
+        ctx.fillStyle = "#1565c0";
+        ctx.fillRect(shopX + 125, baxterY + 18, 24, 12);
+
+        // Baxter Nameplate
+        ctx.fillStyle = "#ff9800";
+        ctx.font = "7px 'Press Start 2P', monospace";
+        ctx.fillText("BAXTER", shopX + 120, baxterY - 14);
     }
 
     function drawCoolBlock(type, x, y, r, c) {
@@ -2113,7 +2327,7 @@
         ctx.save();
         ctx.translate(cart.x, cart.y);
 
-        ctx.fillStyle = "#78909c";
+        ctx.fillStyle = cartArmorActive ? "#ff9800" : "#78909c";
         ctx.fillRect(0, 0, cart.width, cart.height);
         ctx.fillStyle = "#37474f";
         ctx.fillRect(2, 2, cart.width - 4, cart.height - 4);
@@ -2169,6 +2383,10 @@
         const shopY = 1 * TILE_SIZE + 5;
         drawShopVisuals(shopX, shopY);
 
+        const baxterShopX = 87 * TILE_SIZE;
+        const baxterShopY = 1 * TILE_SIZE + 5;
+        drawBaxterShopVisuals(baxterShopX, baxterShopY);
+
         drawGoblins();
         drawMinecartObject(shaftCart);
 
@@ -2180,16 +2398,19 @@
     }
 
     const shopPrompt = document.getElementById('shop-prompt');
+    const baxterShopPrompt = document.getElementById('baxter-shop-prompt');
     const belivePrompt = document.getElementById('belive-prompt');
     const minecartPrompt = document.getElementById('minecart-prompt');
     const callPrompt = document.getElementById('call-prompt');
     const easterPrompt = document.getElementById('easter-prompt');
     const shopModal = document.getElementById('shop-modal');
+    const baxterModal = document.getElementById('baxter-modal');
     const achievementsModal = document.getElementById('achievements-modal');
     const backpackModal = document.getElementById('backpack-modal');
     const bagBox = document.getElementById('bag-box');
     
     let inShopZone = false;
+    let inBaxterShopZone = false;
     let nearSwervingTrack = false;
     let nearMinecart = false;
 
@@ -2205,6 +2426,18 @@
         } else {
             inShopZone = false;
             shopPrompt.style.display = "none";
+        }
+
+        const baxterDoorX = 87 * TILE_SIZE + 46;
+        const baxterDoorY = 5 * TILE_SIZE;
+        const baxterDist = Math.hypot(player.x - baxterDoorX, player.y - baxterDoorY);
+
+        if (baxterDist < 50) {
+            inBaxterShopZone = true;
+            baxterShopPrompt.style.display = "block";
+        } else {
+            inBaxterShopZone = false;
+            baxterShopPrompt.style.display = "none";
         }
 
         const pRow = Math.max(0, Math.min(WORLD_ROWS - 1, Math.floor((player.y + player.height / 2) / TILE_SIZE)));
@@ -2298,6 +2531,21 @@
                 }
             }
         });
+
+        Object.keys(baxterUpgrades).forEach(key => {
+            const up = baxterUpgrades[key];
+            const btn = document.getElementById(up.btnId);
+
+            if (up.singleUse && up.count > 0) {
+                btn.disabled = true;
+                btn.innerText = "EQUIPPED";
+                btn.classList.add('equipped');
+            } else {
+                btn.disabled = cash < up.cost;
+                btn.innerText = "BUY";
+                btn.classList.remove('equipped');
+            }
+        });
     }
 
     function openBackpackModal() {
@@ -2337,6 +2585,7 @@
         document.getElementById('bp-speed-val').innerText = player.speed.toFixed(1);
         document.getElementById('bp-sword-val').innerText = swordDamage;
         document.getElementById('bp-suit-val').innerText = hasLavaSuit ? "YES (HEATPROOF)" : "NO";
+        document.getElementById('bp-cart-speed-val').innerText = cartSpeedMultiplier.toFixed(1) + "x";
 
         backpackModal.style.display = 'flex';
     }
@@ -2373,14 +2622,44 @@
             });
         });
 
+        // Setup Baxter's Shop
+        Object.keys(baxterUpgrades).forEach(key => {
+            const up = baxterUpgrades[key];
+            document.getElementById(up.btnId).addEventListener('click', () => {
+                if (cash >= up.cost && (!up.singleUse || up.count === 0)) {
+                    cash -= up.cost;
+                    up.count++;
+
+                    if (key === 'cartArmor') {
+                        cartArmorActive = true;
+                    } else {
+                        cartSpeedMultiplier = Math.max(cartSpeedMultiplier, up.speedMult);
+                    }
+
+                    saveGame();
+                    updateHUD();
+                }
+            });
+        });
+
         // Hanru Dialogue Interaction Button
         document.getElementById('talk-hanru-btn').addEventListener('click', () => {
             hanruDialogueIndex = (hanruDialogueIndex + 1) % hanruDialogues.length;
             document.getElementById('hanru-speech').innerText = hanruDialogues[hanruDialogueIndex];
         });
 
+        // Baxter Dialogue Interaction Button
+        document.getElementById('talk-baxter-btn').addEventListener('click', () => {
+            baxterDialogueIndex = (baxterDialogueIndex + 1) % baxterDialogues.length;
+            document.getElementById('baxter-speech').innerText = baxterDialogues[baxterDialogueIndex];
+        });
+
         document.getElementById('close-shop').addEventListener('click', () => {
             shopModal.style.display = 'none';
+        });
+
+        document.getElementById('close-baxter-shop').addEventListener('click', () => {
+            baxterModal.style.display = 'none';
         });
 
         document.getElementById('achievements-hud-btn').addEventListener('click', () => {
@@ -2424,6 +2703,8 @@
         if (k === 'e') {
             if (inShopZone) {
                 shopModal.style.display = 'flex';
+            } else if (inBaxterShopZone) {
+                baxterModal.style.display = 'flex';
             } else {
                 toggleMinecart();
             }
@@ -2453,6 +2734,7 @@
 
         if (k === 'escape') {
             shopModal.style.display = 'none';
+            baxterModal.style.display = 'none';
             achievementsModal.style.display = 'none';
             backpackModal.style.display = 'none';
         }
@@ -2464,7 +2746,7 @@
     });
 
     function gameLoop() {
-        if (shopModal.style.display !== 'flex' && achievementsModal.style.display !== 'flex' && backpackModal.style.display !== 'flex' && document.getElementById('main-menu').style.display === 'none') {
+        if (shopModal.style.display !== 'flex' && baxterModal.style.display !== 'flex' && achievementsModal.style.display !== 'flex' && backpackModal.style.display !== 'flex' && document.getElementById('main-menu').style.display === 'none') {
             updatePlayer();
             updateGoblins();
             updateMinecartLogic();

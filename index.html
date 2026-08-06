@@ -548,6 +548,8 @@
         <div class="hud-box">POWER: <span id="power-val">1</span></div>
         <div class="hud-box clickable" id="bag-box">BAG [B]: <span id="bag-val">0</span>/<span id="bag-max">15</span></div>
         <div class="hud-box">DEPTH: <span id="depth-val">0.0</span>M</div>
+        <div class="hud-box" id="fragments-box" style="border-color:#ff6d00; color:#ffb74d;">🗝️ FRAGMENTS: <span id="fragments-val">0</span>/6</div>
+        <div class="hud-box" id="buff-box" style="display:none; border-color:#00e676; color:#69f0ae;"></div>
         <div class="hud-box">SLOT: <span id="active-slot-hud">1</span></div>
         <div class="hud-box clickable" id="achievements-hud-btn">🏆 TROPHIES</div>
         <div class="hud-box emergency-info">STUCK? [R] (-50% CASH) <button class="reset-btn" id="reset-save-btn">RESET SAVE</button></div>
@@ -555,6 +557,8 @@
 
     <div id="shop-prompt" class="prompt">PRESS [E] TO ENTER HANRU'S OUTPOST SHOP & SELL ORE</div>
     <div id="baxter-shop-prompt" class="prompt">PRESS [E] TO ENTER BAXTER'S MINECART GARAGE</div>
+    <div id="lucas-shop-prompt" class="prompt">PRESS [E] TO ENTER LUCAS' COSMETIC SHOP</div>
+    <div id="lachie-shop-prompt" class="prompt">PRESS [E] TO ENTER LACHIE'S POTION SHOP</div>
     <div id="minecart-prompt" class="prompt">PRESS [E] TO MOUNT MINECART</div>
     <div id="call-prompt" class="prompt">PRESS [C] TO CALL MINECART HERE</div>
     <div id="easter-prompt" class="prompt">★ YOU FOUND THE SECRET RED-HAIRED BOY! ★</div>
@@ -797,6 +801,38 @@
         </div>
     </div>
 
+    <div id="lucas-modal" class="modal">
+        <div class="modal-window" style="border-color: #8e24aa; box-shadow: 0 0 30px rgba(142, 36, 170, 0.4);">
+            <div class="modal-title" style="color: #ce93d8; border-color: #8e24aa;">✂ LUCAS' COSMETIC SHOP ✂</div>
+
+            <div id="lucas-dialogue-box">
+                <div id="lucas-name">💇 LUCAS (STYLIST):</div>
+                <div id="lucas-speech">"Darling, you've been down in the dirt WAY too long. Earn some achievements and I'll fix you right up with something fabulous!"</div>
+                <button class="talk-btn" id="talk-lucas-btn" style="margin-top: 8px; background: #8e24aa; border-color: #ce93d8;">TALK TO LUCAS</button>
+            </div>
+
+            <div id="cosmetic-list"></div>
+
+            <button class="close-btn" id="close-lucas-shop" style="background: #6a1b9a;">EXIT BOUTIQUE [ESC]</button>
+        </div>
+    </div>
+
+    <div id="lachie-modal" class="modal">
+        <div class="modal-window" style="border-color: #2e7d32; box-shadow: 0 0 30px rgba(46, 125, 50, 0.4);">
+            <div class="modal-title" style="color: #a5d6a7; border-color: #2e7d32;">🧪 LACHIE'S POTION SHOP 🧪</div>
+
+            <div id="lachie-dialogue-box">
+                <div id="lachie-name">🧑‍🔬 LACHIE (BREWER):</div>
+                <div id="lachie-speech">"G'day! These brews won't last forever, but while they're kicking you'll feel unstoppable. Grab one before you head back down!"</div>
+                <button class="talk-btn" id="talk-lachie-btn" style="margin-top: 8px; background: #2e7d32; border-color: #a5d6a7;">TALK TO LACHIE</button>
+            </div>
+
+            <div id="potion-list"></div>
+
+            <button class="close-btn" id="close-lachie-shop" style="background: #1b5e20;">EXIT SHOP [ESC]</button>
+        </div>
+    </div>
+
     <div id="achievements-modal" class="modal">
         <div class="modal-window">
             <div class="modal-title">🏆 ACHIEVEMENTS 🏆</div>
@@ -915,6 +951,10 @@
     let hasLavaSuit = false;
     let goblinsKilled = 0;
     let bossesDefeated = [];
+    let boyChamberUnlocked = false;
+    let ownedCosmetics = ['none'];
+    let equippedCosmetic = 'none';
+    let activeBuffs = {};
 
     // Minecart Stats
     let cartSpeedMultiplier = 1.0;
@@ -948,6 +988,22 @@
         `"Pair my Hyper-Drive Engine with Hanru's deep mining tools to explore the entire world lightning fast!"`
     ];
     let baxterDialogueIndex = 0;
+
+    const lucasDialogues = [
+        `"Darling, you've been down in the dirt WAY too long. Earn some achievements and I'll fix you right up with something fabulous!"`,
+        `"Every outfit in here is tied to something you've actually earned. No shortcuts, sweetie - go get those achievements!"`,
+        `"I heard the Obsidian Warden drops the sickest skin in the shop. Just saying."`,
+        `"Cosmetics don't change your stats, but baby, they change how you FEEL down there."`
+    ];
+    let lucasDialogueIndex = 0;
+
+    const lachieDialogues = [
+        `"G'day! These brews won't last forever, but while they're kicking you'll feel unstoppable. Grab one before you head back down!"`,
+        `"Fortune Elixir's my best seller - ore value up for a good while. Worth every cent before a big dig."`,
+        `"Fair warning, mate - these buffs are temporary. Don't go wasting one topside!"`,
+        `"Mix and match if your wallet allows it. Speed AND dig power at once? Get amongst it."`
+    ];
+    let lachieDialogueIndex = 0;
 
     // --- INTERACTIVE TUTORIAL MODE SYSTEM ---
     let isTutorialMode = false;
@@ -1038,6 +1094,8 @@
         'boss_celestial_overlord': { title: "Overlord Undone", desc: "Defeat the Celestial Overlord.", unlocked: false },
         'boss_magma_guardian': { title: "Core Guardian Fallen", desc: "Defeat the Magma Core Guardian.", unlocked: false },
         'boss_hunter': { title: "Boss Hunter", desc: "Defeat every boss guarding the mine.", unlocked: false },
+        'boss_final': { title: "Warden of the Core", desc: "Defeat the Obsidian Warden, the final boss.", unlocked: false },
+        'obsidian_broken': { title: "Seal Broken", desc: "Break the obsidian seal guarding the boy in glasses.", unlocked: false },
         'rare_ruby': { title: "Ruby Hunter", desc: "Mine an ultra-rare Ruby ore.", unlocked: false },
         'mythic_find': { title: "Mythic Discovery", desc: "Mine the mythical Mythic Crystal.", unlocked: false },
         'void_find': { title: "Rift Breaker", desc: "Mine a shard of unstable Voidstone.", unlocked: false },
@@ -1067,6 +1125,134 @@
         setTimeout(() => {
             popup.classList.remove('show');
         }, 3500);
+    }
+
+    function renderCosmeticShop() {
+        const container = document.getElementById('cosmetic-list');
+        if (!container) return;
+        container.innerHTML = '';
+
+        Object.keys(cosmetics).forEach(key => {
+            const c = cosmetics[key];
+            const owned = ownedCosmetics.includes(key);
+            const achievementMet = !c.requires || (achievements[c.requires] && achievements[c.requires].unlocked);
+            const equipped = equippedCosmetic === key;
+
+            const row = document.createElement('div');
+            row.className = 'upgrade-row';
+            row.style.borderColor = achievementMet ? '#8e24aa' : '#444';
+
+            const details = document.createElement('div');
+            details.className = 'upgrade-details';
+
+            const title = document.createElement('div');
+            title.className = 'upgrade-title';
+            title.style.color = achievementMet ? '#ce93d8' : '#777';
+            title.innerText = c.name;
+
+            const costLine = document.createElement('div');
+            costLine.className = 'upgrade-cost';
+            if (!achievementMet) {
+                costLine.innerText = `🔒 REQUIRES: ${achievements[c.requires].title}`;
+            } else if (owned) {
+                costLine.innerText = c.desc;
+            } else {
+                costLine.innerText = `${c.desc} | COST: $${c.cost}`;
+            }
+
+            details.appendChild(title);
+            details.appendChild(costLine);
+
+            const btn = document.createElement('button');
+            btn.className = 'buy-btn';
+
+            if (!achievementMet) {
+                btn.innerText = 'LOCKED';
+                btn.disabled = true;
+            } else if (equipped) {
+                btn.innerText = 'EQUIPPED';
+                btn.disabled = true;
+                btn.classList.add('equipped');
+            } else if (owned) {
+                btn.innerText = 'EQUIP';
+                btn.onclick = () => {
+                    equippedCosmetic = key;
+                    saveGame();
+                    renderCosmeticShop();
+                };
+            } else {
+                btn.innerText = 'BUY';
+                btn.disabled = cash < c.cost;
+                btn.onclick = () => {
+                    if (cash >= c.cost) {
+                        cash -= c.cost;
+                        ownedCosmetics.push(key);
+                        equippedCosmetic = key;
+                        saveGame();
+                        updateHUD();
+                        renderCosmeticShop();
+                    }
+                };
+            }
+
+            row.appendChild(details);
+            row.appendChild(btn);
+            container.appendChild(row);
+        });
+    }
+
+    function renderPotionShop() {
+        const container = document.getElementById('potion-list');
+        if (!container) return;
+        container.innerHTML = '';
+
+        Object.keys(potionBuffs).forEach(key => {
+            const p = potionBuffs[key];
+            const buff = activeBuffs[p.type];
+            const active = buff && buff.expiresAt > Date.now();
+
+            const row = document.createElement('div');
+            row.className = 'upgrade-row';
+            row.style.borderColor = '#2e7d32';
+
+            const details = document.createElement('div');
+            details.className = 'upgrade-details';
+
+            const title = document.createElement('div');
+            title.className = 'upgrade-title';
+            title.style.color = '#a5d6a7';
+            title.innerText = p.name;
+
+            const costLine = document.createElement('div');
+            costLine.className = 'upgrade-cost';
+            if (active) {
+                const secsLeft = Math.ceil((buff.expiresAt - Date.now()) / 1000);
+                costLine.innerText = `${p.desc} | ACTIVE (${secsLeft}s left)`;
+            } else {
+                costLine.innerText = `${p.desc} | COST: $${p.cost}`;
+            }
+
+            details.appendChild(title);
+            details.appendChild(costLine);
+
+            const btn = document.createElement('button');
+            btn.className = 'buy-btn';
+            btn.innerText = active ? 'ACTIVE' : 'BUY';
+            btn.disabled = cash < p.cost;
+            btn.onclick = () => {
+                if (cash >= p.cost) {
+                    cash -= p.cost;
+                    activeBuffs[p.type] = { amount: p.amount, expiresAt: Date.now() + p.duration };
+                    saveGame();
+                    updateHUD();
+                    renderPotionShop();
+                }
+            };
+
+            row.appendChild(details);
+            row.appendChild(btn);
+            container.appendChild(row);
+        });
     }
 
     function renderAchievementsList() {
@@ -1116,6 +1302,57 @@
         cartObsidian: { cost: 3000, btnId: 'buy-cart-obsidian', count: 0, singleUse: true },
         cartQuantum: { cost: 5000, speedMult: 5.0, btnId: 'buy-cart-quantum', count: 0, singleUse: true }
     };
+
+    const cosmetics = {
+        none: { name: "MINER DEFAULT", desc: "The classic overalls. No frills.", helmet: "#ffd700", shirt: "#d9381e", pants: "#2b4c7e", requires: null, cost: 0 },
+        crimson: { name: "CRIMSON RAIDER", desc: "Blood-red gear for the fearless.", helmet: "#b71c1c", shirt: "#7f0000", pants: "#212121", requires: 'deep_dive_100', cost: 200 },
+        goldrush: { name: "GOLD RUSH SUIT", desc: "Look as rich as you feel.", helmet: "#fff59d", shirt: "#ffd700", pants: "#8d6e63", requires: 'tycoon', cost: 1000 },
+        voidwalker: { name: "VOIDWALKER CLOAK", desc: "Threads pulled from the rift itself.", helmet: "#4a148c", shirt: "#1a0033", pants: "#e040fb", requires: 'void_find', cost: 3000 },
+        celestial: { name: "CELESTIAL VESTMENT", desc: "Glimmers like starlight.", helmet: "#e0f7fa", shirt: "#80d8ff", pants: "#ffffff", requires: 'celestial_find', cost: 8000 },
+        slayer: { name: "BOSS SLAYER ARMOR", desc: "Forged from the bones of fallen bosses.", helmet: "#212121", shirt: "#ff6d00", pants: "#212121", requires: 'boss_hunter', cost: 15000 },
+        obsidian: { name: "OBSIDIAN WARDEN SKIN", desc: "The final boss's own hide, repurposed.", helmet: "#000000", shirt: "#3e0d02", pants: "#bf360c", requires: 'boss_final', cost: 25000 }
+    };
+
+    const potionBuffs = {
+        speedBrew: { name: "ADRENALINE BREW", desc: "Speed +3 for 60 seconds.", cost: 150, duration: 60000, type: 'speed', amount: 3 },
+        focusTonic: { name: "MINER'S FOCUS", desc: "Dig Power x2 for 60 seconds.", cost: 200, duration: 60000, type: 'digMult', amount: 2 },
+        berserkerTonic: { name: "BERSERKER TONIC", desc: "Sword Damage +50 for 60 seconds.", cost: 250, duration: 60000, type: 'damage', amount: 50 },
+        fortuneElixir: { name: "FORTUNE ELIXIR", desc: "Ore Value x1.5 for 90 seconds.", cost: 400, duration: 90000, type: 'valueMult', amount: 1.5 }
+    };
+
+    function getBuffBonus(type) {
+        const b = activeBuffs[type];
+        if (b && b.expiresAt > Date.now()) return b.amount;
+        return 0;
+    }
+
+    function getBuffMultiplier(type) {
+        const b = activeBuffs[type];
+        if (b && b.expiresAt > Date.now()) return b.amount;
+        return 1;
+    }
+
+    function updateActiveBuffsHUD() {
+        const box = document.getElementById('buff-box');
+        if (!box) return;
+        const labels = { speed: 'SPEED+', digMult: 'DIG x2', damage: 'DMG+', valueMult: 'VALUE x' };
+        let parts = [];
+        Object.keys(activeBuffs).forEach(type => {
+            const b = activeBuffs[type];
+            if (b && b.expiresAt > Date.now()) {
+                const secs = Math.ceil((b.expiresAt - Date.now()) / 1000);
+                parts.push(`${labels[type] || type} (${secs}s)`);
+            } else if (b) {
+                delete activeBuffs[type];
+            }
+        });
+        if (parts.length > 0) {
+            box.style.display = 'block';
+            box.innerText = '⚡ ' + parts.join(' | ');
+        } else {
+            box.style.display = 'none';
+        }
+    }
 
     let shaftCart = {
         rowProgress: 4,
@@ -1248,6 +1485,10 @@
         cartObsidianActive = false;
         goblinsKilled = 0;
         bossesDefeated = [];
+        boyChamberUnlocked = false;
+        ownedCosmetics = ['none'];
+        equippedCosmetic = 'none';
+        activeBuffs = {};
         player.speed = 4.0;
         Object.keys(upgrades).forEach(k => upgrades[k].count = 0);
         Object.keys(baxterUpgrades).forEach(k => baxterUpgrades[k].count = 0);
@@ -1283,6 +1524,10 @@
             cartObsidianActive: cartObsidianActive,
             goblinsKilled: goblinsKilled,
             bossesDefeated: bossesDefeated,
+            boyChamberUnlocked: boyChamberUnlocked,
+            ownedCosmetics: ownedCosmetics,
+            equippedCosmetic: equippedCosmetic,
+            activeBuffs: activeBuffs,
             playerSpeed: player.speed,
             upgradeCounts: upgradeCounts,
             baxterUpgradeCounts: baxterUpgradeCounts,
@@ -1310,6 +1555,10 @@
             cartObsidianActive = data.cartObsidianActive ?? false;
             goblinsKilled = data.goblinsKilled ?? 0;
             bossesDefeated = data.bossesDefeated ?? [];
+            boyChamberUnlocked = data.boyChamberUnlocked ?? false;
+            ownedCosmetics = data.ownedCosmetics ?? ['none'];
+            equippedCosmetic = data.equippedCosmetic ?? 'none';
+            activeBuffs = data.activeBuffs ?? {};
             if (data.playerSpeed) player.speed = data.playerSpeed;
 
             if (data.upgradeCounts) {
@@ -1465,6 +1714,9 @@
         generateAllBosses();
         generateVoidSanctuary();
         generateCelestialShrine();
+        if (bossesDefeated.length >= 6) {
+            unlockBoyChamberGate();
+        }
         updateCartPositionFromProgress();
     }
 
@@ -1503,6 +1755,22 @@
                     tileHp[roomRow + h][col] = 0;
                 }
             }
+        }
+    }
+
+    function unlockBoyChamberGate() {
+        boyChamberUnlocked = true;
+        for (let c = 59; c <= 61; c++) {
+            world[WORLD_ROWS - 5][c] = AIR;
+            tileHp[WORLD_ROWS - 5][c] = 0;
+        }
+        unlockAchievement('obsidian_broken');
+    }
+
+    function checkBossHunterProgress() {
+        if (bossesDefeated.length >= 6) {
+            unlockAchievement('boss_hunter');
+            unlockBoyChamberGate();
         }
     }
 
@@ -1572,6 +1840,12 @@
             bossId: 'magma_guardian', name: 'MAGMA CORE GUARDIAN',
             color: '#bf360c', darkColor: '#3e0d02', glowColor: '#ff6d00',
             width: 56, height: 68, speed: 3.4, hp: 15000, contactDamage: 140, cashReward: 20000
+        });
+
+        createBossChamber(WORLD_ROWS - 11, 40, 80, {
+            bossId: 'obsidian_warden', name: 'THE OBSIDIAN WARDEN',
+            color: '#000000', darkColor: '#1a0000', glowColor: '#ff3d00',
+            width: 68, height: 82, speed: 2.8, hp: 60000, contactDamage: 220, cashReward: 50000
         });
     }
 
@@ -1696,7 +1970,7 @@
     }
 
     function attackGoblins() {
-        if (swordDamage <= 0) return;
+        if (swordDamage <= 0 && getBuffBonus('damage') <= 0) return;
         attackTimer = MAX_ATTACK_TIMER;
 
         const reach = 40;
@@ -1708,7 +1982,7 @@
             if (g.x < attackX + reach && g.x + g.width > attackX &&
                 g.y < attackY + player.height && g.y + g.height > attackY) {
                 
-                g.hp -= swordDamage;
+                g.hp -= swordDamage + getBuffBonus('damage');
                 if (g.hp <= 0) {
                     cash += g.isBoss ? (g.cashReward || 500) : 50;
                     goblinsKilled++;
@@ -1720,13 +1994,12 @@
                         if (g.bossId === 'void_warlord') unlockAchievement('boss_void_warlord');
                         if (g.bossId === 'celestial_overlord') unlockAchievement('boss_celestial_overlord');
                         if (g.bossId === 'magma_guardian') unlockAchievement('boss_magma_guardian');
+                        if (g.bossId === 'obsidian_warden') unlockAchievement('boss_final');
 
                         if (!bossesDefeated.includes(g.bossId)) {
                             bossesDefeated.push(g.bossId);
                         }
-                        if (bossesDefeated.length >= 5) {
-                            unlockAchievement('boss_hunter');
-                        }
+                        checkBossHunterProgress();
                     }
 
                     goblins.splice(i, 1);
@@ -1829,6 +2102,7 @@
         }
 
         let currentSpeed = (touchingLava && hasLavaSuit) ? player.speed * 0.6 : player.speed;
+        currentSpeed += getBuffBonus('speed');
         player.vx = 0;
 
         if (keys['a'] || keys['arrowleft']) {
@@ -1936,7 +2210,7 @@
         const tile = world[r][c];
         if (tile === GRASS || tile === OBSIDIAN_BRICK) return;
 
-        tileHp[r][c] -= digPower;
+        tileHp[r][c] -= digPower * getBuffMultiplier('digMult');
 
         spawnTileParticles(r, c, tile, 3);
 
@@ -1963,7 +2237,7 @@
             if (tile === VOIDSTONE) itemVal = Math.floor(6000 * depthValMultiplier);
             if (tile === CELESTITE) itemVal = Math.floor(15000 * depthValMultiplier);
 
-            backpackCargo.push(itemVal);
+            backpackCargo.push(Math.floor(itemVal * getBuffMultiplier('valueMult')));
             backpackCount++;
             world[r][c] = AIR;
             updateHUD();
@@ -2602,6 +2876,179 @@
         ctx.restore();
     }
 
+    function drawCosmeticShopVisuals(shopX, shopY) {
+        const shopW = 190;
+        const shopH = 125;
+        const time = Date.now() * 0.003;
+
+        ctx.fillStyle = "#4a2f5e";
+        ctx.fillRect(shopX, shopY + 90, shopW, 35);
+        ctx.fillStyle = "#3a2049";
+        for (let bx = 0; bx < shopW; bx += 20) {
+            ctx.fillRect(shopX + bx, shopY + 90, 2, 35);
+        }
+
+        ctx.fillStyle = "#7b4fa3";
+        ctx.fillRect(shopX, shopY + 20, shopW, 72);
+        ctx.fillStyle = "#5e3d82";
+        for (let bx = 0; bx < shopW; bx += 24) {
+            ctx.fillRect(shopX + bx, shopY + 20, 2, 72);
+        }
+
+        ctx.fillStyle = "#3d2a52";
+        ctx.beginPath();
+        ctx.moveTo(shopX - 10, shopY + 24);
+        ctx.lineTo(shopX + shopW / 2, shopY - 22);
+        ctx.lineTo(shopX + shopW + 10, shopY + 24);
+        ctx.closePath();
+        ctx.fill();
+
+        ctx.fillStyle = "#ffd700";
+        ctx.font = "8px 'Press Start 2P', monospace";
+        ctx.fillText("LUCAS' COSMETICS", shopX + 8, shopY + 12);
+
+        // Window with mannequin silhouette
+        ctx.fillStyle = "#26c6da";
+        ctx.fillRect(shopX + 12, shopY + 34, 34, 40);
+        ctx.strokeStyle = "#3d2a52";
+        ctx.lineWidth = 2;
+        ctx.strokeRect(shopX + 12, shopY + 34, 34, 40);
+        ctx.fillStyle = "#e0e0e0";
+        ctx.fillRect(shopX + 24, shopY + 40, 10, 14);
+        ctx.beginPath();
+        ctx.arc(shopX + 29, shopY + 38, 5, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Sparkle accents
+        const sparkle = Math.sin(time * 3) * 0.5 + 0.5;
+        ctx.fillStyle = `rgba(255, 215, 0, ${sparkle})`;
+        ctx.fillRect(shopX + 55, shopY + 40, 4, 4);
+        ctx.fillRect(shopX + 65, shopY + 55, 3, 3);
+        ctx.fillRect(shopX + 48, shopY + 60, 3, 3);
+
+        // Door
+        ctx.fillStyle = "#3d2a52";
+        ctx.fillRect(shopX + 105, shopY + 40, 34, 50);
+        ctx.fillStyle = "#8e24aa";
+        ctx.fillRect(shopX + 108, shopY + 43, 28, 44);
+
+        // Animated Merchant NPC (Lucas - blonde, glasses)
+        const npcY = shopY + 44 + Math.sin(time * 2) * 1.5;
+        ctx.fillStyle = "#ffcc99";
+        ctx.fillRect(shopX + 128, npcY, 18, 18);
+
+        // Blonde hair
+        ctx.fillStyle = "#f9e076";
+        ctx.fillRect(shopX + 125, npcY - 6, 24, 8);
+        ctx.fillRect(shopX + 123, npcY - 2, 4, 10);
+        ctx.fillRect(shopX + 149, npcY - 2, 4, 10);
+
+        // Glasses
+        ctx.strokeStyle = "#212121";
+        ctx.lineWidth = 1.5;
+        ctx.strokeRect(shopX + 129, npcY + 5, 6, 5);
+        ctx.strokeRect(shopX + 139, npcY + 5, 6, 5);
+        ctx.beginPath();
+        ctx.moveTo(shopX + 135, npcY + 7);
+        ctx.lineTo(shopX + 139, npcY + 7);
+        ctx.stroke();
+
+        // Clothes
+        ctx.fillStyle = "#26c6da";
+        ctx.fillRect(shopX + 125, npcY + 18, 24, 12);
+
+        // Nameplate
+        ctx.fillStyle = "#ffd700";
+        ctx.font = "7px 'Press Start 2P', monospace";
+        ctx.fillText("LUCAS", shopX + 124, npcY - 14);
+    }
+
+    function drawPotionShopVisuals(shopX, shopY) {
+        const shopW = 190;
+        const shopH = 125;
+        const time = Date.now() * 0.003;
+
+        ctx.fillStyle = "#33691e";
+        ctx.fillRect(shopX, shopY + 90, shopW, 35);
+        ctx.fillStyle = "#1b3409";
+        for (let bx = 0; bx < shopW; bx += 20) {
+            ctx.fillRect(shopX + bx, shopY + 90, 2, 35);
+        }
+
+        ctx.fillStyle = "#4e342e";
+        ctx.fillRect(shopX, shopY + 20, shopW, 72);
+        ctx.fillStyle = "#3e2723";
+        for (let bx = 0; bx < shopW; bx += 24) {
+            ctx.fillRect(shopX + bx, shopY + 20, 2, 72);
+        }
+
+        ctx.fillStyle = "#2e7d32";
+        ctx.beginPath();
+        ctx.moveTo(shopX - 10, shopY + 24);
+        ctx.lineTo(shopX + shopW / 2, shopY - 22);
+        ctx.lineTo(shopX + shopW + 10, shopY + 24);
+        ctx.closePath();
+        ctx.fill();
+
+        ctx.fillStyle = "#ffe082";
+        ctx.font = "8px 'Press Start 2P', monospace";
+        ctx.fillText("LACHIE'S POTIONS", shopX + 10, shopY + 12);
+
+        // Bubbling potion window
+        ctx.fillStyle = "#1b3409";
+        ctx.fillRect(shopX + 12, shopY + 34, 34, 40);
+        ctx.strokeStyle = "#3e2723";
+        ctx.lineWidth = 2;
+        ctx.strokeRect(shopX + 12, shopY + 34, 34, 40);
+
+        const bubbleColors = ["#00e676", "#e040fb", "#ff6d00"];
+        for (let i = 0; i < 3; i++) {
+            const bobY = Math.sin(time * 2 + i * 2) * 3;
+            ctx.fillStyle = "#5d4037";
+            ctx.fillRect(shopX + 17 + i * 9, shopY + 60, 5, 10);
+            ctx.fillStyle = bubbleColors[i];
+            ctx.shadowColor = bubbleColors[i];
+            ctx.shadowBlur = 6;
+            ctx.beginPath();
+            ctx.arc(shopX + 19 + i * 9, shopY + 50 + bobY, 5, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.shadowBlur = 0;
+        }
+
+        // Door
+        ctx.fillStyle = "#3e2723";
+        ctx.fillRect(shopX + 105, shopY + 40, 34, 50);
+        ctx.fillStyle = "#6d4c41";
+        ctx.fillRect(shopX + 108, shopY + 43, 28, 44);
+
+        // Animated Merchant NPC (Lachie - brown hair)
+        const npcY = shopY + 44 + Math.sin(time * 2) * 1.5;
+        ctx.fillStyle = "#ffcc99";
+        ctx.fillRect(shopX + 128, npcY, 18, 18);
+
+        // Brown hair
+        ctx.fillStyle = "#5d4037";
+        ctx.fillRect(shopX + 125, npcY - 6, 24, 9);
+        ctx.fillRect(shopX + 123, npcY - 2, 4, 10);
+        ctx.fillRect(shopX + 149, npcY - 2, 4, 10);
+
+        // Blinking Eyes
+        ctx.fillStyle = (Math.sin(time * 0.8) > 0.95) ? "#ffcc99" : "#000";
+        ctx.fillRect(shopX + 132, npcY + 6, 3, 3);
+        ctx.fillRect(shopX + 140, npcY + 6, 3, 3);
+
+        // Apron
+        ctx.fillStyle = "#2e7d32";
+        ctx.fillRect(shopX + 125, npcY + 18, 24, 12);
+        ctx.fillStyle = "#1b3409";
+        ctx.fillRect(shopX + 134, npcY + 18, 6, 12);
+
+        // Nameplate
+        ctx.fillStyle = "#ffd700";
+        ctx.font = "7px 'Press Start 2P', monospace";
+        ctx.fillText("LACHIE", shopX + 122, npcY - 14);
+    }
+
     function drawMineEntrance(x, y) {
         const w = 7 * TILE_SIZE;
         const legW = 16;
@@ -2758,9 +3205,11 @@
             ctx.translate(-player.width, 0);
         }
 
+        const cosmetic = cosmetics[equippedCosmetic] || cosmetics.none;
         const skinColor = "#ffcc99";
-        const helmetColor = lavaSuitActive ? "#ff4500" : "#ffd700";
-        const shirtColor = lavaSuitActive ? "#cc1100" : "#d9381e";
+        const helmetColor = lavaSuitActive ? "#ff4500" : cosmetic.helmet;
+        const shirtColor = lavaSuitActive ? "#cc1100" : cosmetic.shirt;
+        const pantsColor = lavaSuitActive ? "#2b4c7e" : cosmetic.pants;
 
         const legOffset = Math.sin(frame) * 4;
         const armOffset = Math.cos(frame) * 3;
@@ -2784,7 +3233,7 @@
         ctx.fillRect(1, 16 + armOffset, 3, 6);
         ctx.fillRect(14, 16 - armOffset, 3, 6);
 
-        ctx.fillStyle = "#2b4c7e";
+        ctx.fillStyle = pantsColor;
         ctx.fillRect(4 + legOffset, 23, 4, 7);
         ctx.fillRect(10 - legOffset, 23, 4, 7);
 
@@ -2897,6 +3346,14 @@
         const baxterShopY = 1 * TILE_SIZE + 5;
         drawBaxterShopVisuals(baxterShopX, baxterShopY);
 
+        const lucasShopX = 96 * TILE_SIZE;
+        const lucasShopY = 1 * TILE_SIZE + 5;
+        drawCosmeticShopVisuals(lucasShopX, lucasShopY);
+
+        const lachieShopX = 105 * TILE_SIZE;
+        const lachieShopY = 1 * TILE_SIZE + 5;
+        drawPotionShopVisuals(lachieShopX, lachieShopY);
+
         const entranceX = (railCols[6] - 3) * TILE_SIZE;
         const entranceY = 2 * TILE_SIZE;
         drawMineEntrance(entranceX, entranceY);
@@ -2913,6 +3370,8 @@
 
     const shopPrompt = document.getElementById('shop-prompt');
     const baxterShopPrompt = document.getElementById('baxter-shop-prompt');
+    const lucasShopPrompt = document.getElementById('lucas-shop-prompt');
+    const lachieShopPrompt = document.getElementById('lachie-shop-prompt');
     const belivePrompt = document.getElementById('belive-prompt');
     const minecartPrompt = document.getElementById('minecart-prompt');
     const callPrompt = document.getElementById('call-prompt');
@@ -2921,12 +3380,16 @@
     const celestialEggPrompt = document.getElementById('celestial-egg-prompt');
     const shopModal = document.getElementById('shop-modal');
     const baxterModal = document.getElementById('baxter-modal');
+    const lucasModal = document.getElementById('lucas-modal');
+    const lachieModal = document.getElementById('lachie-modal');
     const achievementsModal = document.getElementById('achievements-modal');
     const backpackModal = document.getElementById('backpack-modal');
     const bagBox = document.getElementById('bag-box');
     
     let inShopZone = false;
     let inBaxterShopZone = false;
+    let inLucasShopZone = false;
+    let inLachieShopZone = false;
     let nearSwervingTrack = false;
     let nearMinecart = false;
 
@@ -2954,6 +3417,30 @@
         } else {
             inBaxterShopZone = false;
             baxterShopPrompt.style.display = "none";
+        }
+
+        const lucasDoorX = 96 * TILE_SIZE + 46;
+        const lucasDoorY = 5 * TILE_SIZE;
+        const lucasDist = Math.hypot(player.x - lucasDoorX, player.y - lucasDoorY);
+
+        if (lucasDist < 50) {
+            inLucasShopZone = true;
+            lucasShopPrompt.style.display = "block";
+        } else {
+            inLucasShopZone = false;
+            lucasShopPrompt.style.display = "none";
+        }
+
+        const lachieDoorX = 105 * TILE_SIZE + 46;
+        const lachieDoorY = 5 * TILE_SIZE;
+        const lachieDist = Math.hypot(player.x - lachieDoorX, player.y - lachieDoorY);
+
+        if (lachieDist < 50) {
+            inLachieShopZone = true;
+            lachieShopPrompt.style.display = "block";
+        } else {
+            inLachieShopZone = false;
+            lachieShopPrompt.style.display = "none";
         }
 
         const pRow = Math.max(0, Math.min(WORLD_ROWS - 1, Math.floor((player.y + player.height / 2) / TILE_SIZE)));
@@ -3047,6 +3534,7 @@
         }
 
         document.getElementById('depth-val').innerText = getExactDepth();
+        document.getElementById('fragments-val').innerText = bossesDefeated.length;
 
         Object.keys(upgrades).forEach(key => {
             const up = upgrades[key];
@@ -3055,6 +3543,10 @@
             if (up.singleUse && up.count > 0) {
                 btn.disabled = true;
                 btn.innerText = "EQUIPPED";
+                btn.classList.add('equipped');
+            } else if (key === 'boots' && player.speed >= 67) {
+                btn.disabled = true;
+                btn.innerText = "MAX SPEED REACHED";
                 btn.classList.add('equipped');
             } else {
                 btn.disabled = cash < up.cost;
@@ -3158,7 +3650,7 @@
         } else if (key === 'bag' || key === 'titanbag') {
             backpackMax += up.capacity;
         } else if (key === 'boots') {
-            player.speed += up.speedInc;
+            player.speed = Math.min(67, player.speed + up.speedInc);
         } else if (key === 'suit') {
             hasLavaSuit = true;
             unlockAchievement('lava_survivor');
@@ -3183,7 +3675,7 @@
             document.getElementById(up.btnId).addEventListener('click', () => {
                 let qty = getPurchaseQty(up);
                 let bought = 0;
-                while (bought < qty && cash >= up.cost && (!up.singleUse || up.count === 0)) {
+                while (bought < qty && cash >= up.cost && (!up.singleUse || up.count === 0) && (key !== 'boots' || player.speed < 67)) {
                     cash -= up.cost;
                     up.count++;
                     applyUpgradeEffect(key, up);
@@ -3229,12 +3721,32 @@
             document.getElementById('baxter-speech').innerText = baxterDialogues[baxterDialogueIndex];
         });
 
+        // Lucas Dialogue Interaction Button
+        document.getElementById('talk-lucas-btn').addEventListener('click', () => {
+            lucasDialogueIndex = (lucasDialogueIndex + 1) % lucasDialogues.length;
+            document.getElementById('lucas-speech').innerText = lucasDialogues[lucasDialogueIndex];
+        });
+
+        // Lachie Dialogue Interaction Button
+        document.getElementById('talk-lachie-btn').addEventListener('click', () => {
+            lachieDialogueIndex = (lachieDialogueIndex + 1) % lachieDialogues.length;
+            document.getElementById('lachie-speech').innerText = lachieDialogues[lachieDialogueIndex];
+        });
+
         document.getElementById('close-shop').addEventListener('click', () => {
             shopModal.style.display = 'none';
         });
 
         document.getElementById('close-baxter-shop').addEventListener('click', () => {
             baxterModal.style.display = 'none';
+        });
+
+        document.getElementById('close-lucas-shop').addEventListener('click', () => {
+            lucasModal.style.display = 'none';
+        });
+
+        document.getElementById('close-lachie-shop').addEventListener('click', () => {
+            lachieModal.style.display = 'none';
         });
 
         document.getElementById('achievements-hud-btn').addEventListener('click', () => {
@@ -3280,6 +3792,12 @@
                 shopModal.style.display = 'flex';
             } else if (inBaxterShopZone) {
                 baxterModal.style.display = 'flex';
+            } else if (inLucasShopZone) {
+                lucasModal.style.display = 'flex';
+                renderCosmeticShop();
+            } else if (inLachieShopZone) {
+                lachieModal.style.display = 'flex';
+                renderPotionShop();
             } else {
                 toggleMinecart();
             }
@@ -3310,6 +3828,8 @@
         if (k === 'escape') {
             shopModal.style.display = 'none';
             baxterModal.style.display = 'none';
+            lucasModal.style.display = 'none';
+            lachieModal.style.display = 'none';
             achievementsModal.style.display = 'none';
             backpackModal.style.display = 'none';
         }
@@ -3321,7 +3841,7 @@
     });
 
     function gameLoop() {
-        if (shopModal.style.display !== 'flex' && baxterModal.style.display !== 'flex' && achievementsModal.style.display !== 'flex' && backpackModal.style.display !== 'flex' && document.getElementById('main-menu').style.display === 'none') {
+        if (shopModal.style.display !== 'flex' && baxterModal.style.display !== 'flex' && lucasModal.style.display !== 'flex' && lachieModal.style.display !== 'flex' && achievementsModal.style.display !== 'flex' && backpackModal.style.display !== 'flex' && document.getElementById('main-menu').style.display === 'none') {
             updatePlayer();
             updateGoblins();
             updateMinecartLogic();
@@ -3337,6 +3857,7 @@
 
         // Continuously update depth display accurately in real-time frame by frame
         document.getElementById('depth-val').innerText = getExactDepth();
+        updateActiveBuffsHUD();
 
         draw();
         requestAnimationFrame(gameLoop);

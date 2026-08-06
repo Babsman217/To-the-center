@@ -60,6 +60,35 @@
             text-align: center;
         }
 
+        #archie-banner {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 28px;
+            background: #ffd700;
+            overflow: hidden;
+            white-space: nowrap;
+            border-bottom: 3px solid #212121;
+            z-index: 21;
+        }
+
+        #archie-banner span {
+            display: inline-block;
+            padding-left: 100%;
+            font-family: 'Courier New', monospace;
+            font-weight: bold;
+            font-size: 14px;
+            color: #212121;
+            line-height: 28px;
+            animation: archie-scroll 9s linear infinite;
+        }
+
+        @keyframes archie-scroll {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-200%); }
+        }
+
         .slot-select-container {
             display: flex;
             gap: 10px;
@@ -393,6 +422,10 @@
         }
 
         .buy-btn:disabled { background: #444; color: #777; cursor: not-allowed; }
+        .qty-selector { display: flex; gap: 6px; justify-content: center; margin: 10px 0 14px; }
+        .qty-btn { background: #263238; color: #90a4ae; border: 2px solid #455a64; border-radius: 4px; padding: 6px 14px; font-family: 'Courier New', monospace; font-weight: bold; cursor: pointer; font-size: 13px; }
+        .qty-btn:hover { border-color: #78909c; color: #fff; }
+        .qty-btn.active { background: #ffd700; color: #212121; border-color: #ffd700; }
         .buy-btn.equipped { background: #007bff; color: #fff; border-color: #00ffff; }
 
         .achievement-badge {
@@ -488,6 +521,7 @@
     </div>
 
     <div id="main-menu">
+        <div id="archie-banner"><span>★ ARCHIE WAS HERE ★ ARCHIE WAS HERE ★ ARCHIE WAS HERE ★</span></div>
         <h1>MINERS I LOVE EM</h1>
         
         <div style="font-size: 9px; color: #aaa; margin-bottom: 8px;">SELECT SAVE SLOT:</div>
@@ -537,6 +571,13 @@
                 <div id="hanru-name">🧑‍🌾 HANRU (SHOPKEEPER):</div>
                 <div id="hanru-speech">"Welcome to my shop, miner! Bring me your dug-up ores and I'll buy them all. What upgrades do you need today?"</div>
                 <button class="talk-btn" id="talk-hanru-btn" style="margin-top: 8px;">TALK TO HANRU</button>
+            </div>
+
+            <div class="qty-selector">
+                <button class="qty-btn active" data-qty="1" onclick="setBuyMultiplier(1)">×1</button>
+                <button class="qty-btn" data-qty="10" onclick="setBuyMultiplier(10)">×10</button>
+                <button class="qty-btn" data-qty="100" onclick="setBuyMultiplier(100)">×100</button>
+                <button class="qty-btn" data-qty="max" onclick="setBuyMultiplier('max')">MAX</button>
             </div>
 
             <div class="upgrade-row" style="border-color: #ff3333;">
@@ -695,6 +736,13 @@
                 <div id="baxter-name">🔧 BAXTER (MECHANIC):</div>
                 <div id="baxter-speech">"Hey there, miner! Need your minecart tuned up? I can boost its speed, add armor, install turbo thrusters, or set up remote call beacons!"</div>
                 <button class="talk-btn" id="talk-baxter-btn" style="margin-top: 8px; background: #e65100; border-color: #ff9800;">TALK TO BAXTER</button>
+            </div>
+
+            <div class="qty-selector">
+                <button class="qty-btn active" data-qty="1" onclick="setBuyMultiplier(1)">×1</button>
+                <button class="qty-btn" data-qty="10" onclick="setBuyMultiplier(10)">×10</button>
+                <button class="qty-btn" data-qty="100" onclick="setBuyMultiplier(100)">×100</button>
+                <button class="qty-btn" data-qty="max" onclick="setBuyMultiplier('max')">MAX</button>
             </div>
 
             <div class="upgrade-row" style="border-color: #ff9800;">
@@ -866,6 +914,7 @@
     let backpackCargo = [];
     let hasLavaSuit = false;
     let goblinsKilled = 0;
+    let bossesDefeated = [];
 
     // Minecart Stats
     let cartSpeedMultiplier = 1.0;
@@ -983,6 +1032,12 @@
         'rich_miner': { title: "Pocket Change", desc: "Accumulate $1,000 cash.", unlocked: false },
         'tycoon': { title: "Mining Tycoon", desc: "Accumulate $10,000 cash.", unlocked: false },
         'goblin_slayer': { title: "Goblin Pest Control", desc: "Defeat your first Goblin.", unlocked: false },
+        'boss_sentinel': { title: "Sentinel Slayer", desc: "Defeat the Sentinel Goblin.", unlocked: false },
+        'boss_ancient_king': { title: "Regicide", desc: "Defeat the Ancient Greenskin King.", unlocked: false },
+        'boss_void_warlord': { title: "Warlord of the Rift", desc: "Defeat the Void Warlord.", unlocked: false },
+        'boss_celestial_overlord': { title: "Overlord Undone", desc: "Defeat the Celestial Overlord.", unlocked: false },
+        'boss_magma_guardian': { title: "Core Guardian Fallen", desc: "Defeat the Magma Core Guardian.", unlocked: false },
+        'boss_hunter': { title: "Boss Hunter", desc: "Defeat every boss guarding the mine.", unlocked: false },
         'rare_ruby': { title: "Ruby Hunter", desc: "Mine an ultra-rare Ruby ore.", unlocked: false },
         'mythic_find': { title: "Mythic Discovery", desc: "Mine the mythical Mythic Crystal.", unlocked: false },
         'void_find': { title: "Rift Breaker", desc: "Mine a shard of unstable Voidstone.", unlocked: false },
@@ -1192,6 +1247,7 @@
         cartArmorActive = false;
         cartObsidianActive = false;
         goblinsKilled = 0;
+        bossesDefeated = [];
         player.speed = 4.0;
         Object.keys(upgrades).forEach(k => upgrades[k].count = 0);
         Object.keys(baxterUpgrades).forEach(k => baxterUpgrades[k].count = 0);
@@ -1226,6 +1282,7 @@
             cartArmorActive: cartArmorActive,
             cartObsidianActive: cartObsidianActive,
             goblinsKilled: goblinsKilled,
+            bossesDefeated: bossesDefeated,
             playerSpeed: player.speed,
             upgradeCounts: upgradeCounts,
             baxterUpgradeCounts: baxterUpgradeCounts,
@@ -1252,6 +1309,7 @@
             cartArmorActive = data.cartArmorActive ?? false;
             cartObsidianActive = data.cartObsidianActive ?? false;
             goblinsKilled = data.goblinsKilled ?? 0;
+            bossesDefeated = data.bossesDefeated ?? [];
             if (data.playerSpeed) player.speed = data.playerSpeed;
 
             if (data.upgradeCounts) {
@@ -1404,7 +1462,7 @@
         }
 
         generateAbandonedMines();
-        generateDeepBossMineshaft();
+        generateAllBosses();
         generateVoidSanctuary();
         generateCelestialShrine();
         updateCartPositionFromProgress();
@@ -1448,36 +1506,72 @@
         }
     }
 
-    function generateDeepBossMineshaft() {
-        const bossRow = 850;
-        const bossColStart = 15;
-        const bossColEnd = 45;
-
-        for (let col = bossColStart; col <= bossColEnd; col++) {
-            for (let r = bossRow; r < bossRow + 6; r++) {
+    function createBossChamber(row, colStart, colEnd, config) {
+        for (let col = colStart; col <= colEnd; col++) {
+            for (let r = row; r < row + 6; r++) {
                 world[r][col] = AIR;
                 tileHp[r][col] = 0;
             }
             if (col % 6 === 0) {
                 for (let h = 0; h < 6; h++) {
-                    world[bossRow + h][col] = WOOD_SUPPORT;
+                    world[row + h][col] = WOOD_SUPPORT;
+                    tileHp[row + h][col] = 0;
                 }
             }
         }
 
         goblins.push({
             isBoss: true,
-            x: 32 * TILE_SIZE,
-            y: (bossRow + 6) * TILE_SIZE - 54,
+            bossId: config.bossId,
+            bossName: config.name,
+            bossColor: config.color,
+            bossDarkColor: config.darkColor,
+            bossGlowColor: config.glowColor,
+            contactDamage: config.contactDamage,
+            cashReward: config.cashReward,
+            x: Math.floor((colStart + colEnd) / 2 - 4) * TILE_SIZE,
+            y: (row + 6) * TILE_SIZE - config.height,
             vy: 0,
-            width: 42,
-            height: 54,
-            speed: 2.2,
+            width: config.width,
+            height: config.height,
+            speed: config.speed,
             dir: 1,
-            hp: 650,
-            maxHp: 650,
-            minX: (bossColStart + 2) * TILE_SIZE,
-            maxX: (bossColEnd - 2) * TILE_SIZE
+            hp: config.hp,
+            maxHp: config.hp,
+            minX: (colStart + 2) * TILE_SIZE,
+            maxX: (colEnd - 2) * TILE_SIZE
+        });
+    }
+
+    function generateAllBosses() {
+        createBossChamber(300, 60, 90, {
+            bossId: 'sentinel', name: 'SENTINEL GOBLIN',
+            color: '#33691e', darkColor: '#1b3409', glowColor: '#ffeb3b',
+            width: 36, height: 46, speed: 2.0, hp: 1200, contactDamage: 35, cashReward: 600
+        });
+
+        createBossChamber(850, 15, 45, {
+            bossId: 'ancient_king', name: 'ANCIENT GREENSKIN KING',
+            color: '#1b5e20', darkColor: '#0d3311', glowColor: '#ff0000',
+            width: 42, height: 54, speed: 2.2, hp: 2200, contactDamage: 55, cashReward: 1500
+        });
+
+        createBossChamber(1600, 70, 95, {
+            bossId: 'void_warlord', name: 'VOID WARLORD',
+            color: '#4a148c', darkColor: '#1a0033', glowColor: '#e040fb',
+            width: 46, height: 58, speed: 2.6, hp: 4500, contactDamage: 75, cashReward: 4000
+        });
+
+        createBossChamber(2000, 30, 60, {
+            bossId: 'celestial_overlord', name: 'CELESTIAL OVERLORD',
+            color: '#0d47a1', darkColor: '#0d1b2a', glowColor: '#80d8ff',
+            width: 50, height: 62, speed: 3.0, hp: 8000, contactDamage: 100, cashReward: 9000
+        });
+
+        createBossChamber(2150, 60, 95, {
+            bossId: 'magma_guardian', name: 'MAGMA CORE GUARDIAN',
+            color: '#bf360c', darkColor: '#3e0d02', glowColor: '#ff6d00',
+            width: 56, height: 68, speed: 3.4, hp: 15000, contactDamage: 140, cashReward: 20000
         });
     }
 
@@ -1582,7 +1676,7 @@
                 if (player.x < g.x + g.width && player.x + player.width > g.x &&
                     player.y < g.y + g.height && player.y + player.height > g.y) {
                     
-                    let damageTaken = g.isBoss ? 45 : 20;
+                    let damageTaken = g.isBoss ? (g.contactDamage || 45) : 20;
                     if (player.inCart && cartArmorActive) {
                         damageTaken = Math.floor(damageTaken * 0.5);
                     }
@@ -1616,10 +1710,26 @@
                 
                 g.hp -= swordDamage;
                 if (g.hp <= 0) {
-                    cash += g.isBoss ? 500 : 50;
-                    goblins.splice(i, 1);
+                    cash += g.isBoss ? (g.cashReward || 500) : 50;
                     goblinsKilled++;
                     unlockAchievement('goblin_slayer');
+
+                    if (g.isBoss && g.bossId) {
+                        if (g.bossId === 'sentinel') unlockAchievement('boss_sentinel');
+                        if (g.bossId === 'ancient_king') unlockAchievement('boss_ancient_king');
+                        if (g.bossId === 'void_warlord') unlockAchievement('boss_void_warlord');
+                        if (g.bossId === 'celestial_overlord') unlockAchievement('boss_celestial_overlord');
+                        if (g.bossId === 'magma_guardian') unlockAchievement('boss_magma_guardian');
+
+                        if (!bossesDefeated.includes(g.bossId)) {
+                            bossesDefeated.push(g.bossId);
+                        }
+                        if (bossesDefeated.length >= 5) {
+                            unlockAchievement('boss_hunter');
+                        }
+                    }
+
+                    goblins.splice(i, 1);
                     saveGame();
                     updateHUD();
                 }
@@ -1742,6 +1852,7 @@
             else if (keys['s'] || keys['arrowdown']) player.vy += 0.8;
         } else {
             player.vy += player.gravity;
+            if (player.vy > 22) player.vy = 22;
         }
 
         if ((keys[' '] || keys['w'] || keys['arrowup']) && player.grounded && !touchingLava) {
@@ -1749,24 +1860,9 @@
             player.grounded = false;
         }
 
-        player.x += player.vx;
-        if (checkTileCollision('x')) {
-            const centerRow = Math.max(0, Math.min(WORLD_ROWS - 1, Math.floor((player.y + player.height / 2) / TILE_SIZE)));
-            if (player.facing === 'left') {
-                digTile(centerRow, Math.floor((player.x - 2) / TILE_SIZE));
-            } else {
-                digTile(centerRow, Math.floor((player.x + player.width + 2) / TILE_SIZE));
-            }
-            player.x -= player.vx;
-        }
-
+        moveAxisWithCollision('x');
         player.grounded = false;
-        player.y += player.vy;
-        if (checkTileCollision('y')) {
-            if (player.vy > 0) player.grounded = true;
-            player.y -= player.vy;
-            player.vy = 0;
-        }
+        moveAxisWithCollision('y');
 
         if ((keys['s'] || keys['arrowdown']) && !touchingLava) {
             const feetRow = Math.max(0, Math.min(WORLD_ROWS - 1, Math.floor((player.y + player.height + 4) / TILE_SIZE)));
@@ -1783,6 +1879,39 @@
         if (player.x < 0) player.x = 0;
         if (player.x + player.width > WORLD_COLS * TILE_SIZE) player.x = WORLD_COLS * TILE_SIZE - player.width;
         if (player.y + player.height > WORLD_ROWS * TILE_SIZE) player.y = WORLD_ROWS * TILE_SIZE - player.height;
+    }
+
+    function moveAxisWithCollision(axis) {
+        const maxStep = TILE_SIZE / 2;
+        let remaining = axis === 'x' ? player.vx : player.vy;
+        const dir = Math.sign(remaining);
+        if (dir === 0) return;
+
+        while (remaining !== 0) {
+            const step = Math.abs(remaining) > maxStep ? maxStep * dir : remaining;
+
+            if (axis === 'x') player.x += step;
+            else player.y += step;
+
+            if (checkTileCollision(axis)) {
+                if (axis === 'x') {
+                    const centerRow = Math.max(0, Math.min(WORLD_ROWS - 1, Math.floor((player.y + player.height / 2) / TILE_SIZE)));
+                    if (player.facing === 'left') {
+                        digTile(centerRow, Math.floor((player.x - 2) / TILE_SIZE));
+                    } else {
+                        digTile(centerRow, Math.floor((player.x + player.width + 2) / TILE_SIZE));
+                    }
+                    player.x -= step;
+                } else {
+                    player.y -= step;
+                    if (player.vy > 0) player.grounded = true;
+                    player.vy = 0;
+                }
+                return;
+            }
+
+            remaining -= step;
+        }
     }
 
     function checkTileCollision(axis) {
@@ -1820,19 +1949,19 @@
             if (tile === VOIDSTONE) unlockAchievement('void_find');
             if (tile === CELESTITE) unlockAchievement('celestial_find');
 
-            const depthValMultiplier = 1 + Math.floor(r / 20) * 0.8;
+            const depthValMultiplier = 1 + Math.floor(r / 40) * 0.5;
             let itemVal = 1;
 
-            if (tile === DIRT) itemVal = Math.floor(2 * depthValMultiplier);
-            if (tile === STONE) itemVal = Math.floor(5 * depthValMultiplier);
-            if (tile === GOLD) itemVal = Math.floor(35 * depthValMultiplier);
-            if (tile === GEM) itemVal = Math.floor(140 * depthValMultiplier);
-            if (tile === DIAMOND) itemVal = Math.floor(500 * depthValMultiplier);
-            if (tile === RUBY) itemVal = Math.floor(1200 * depthValMultiplier);
-            if (tile === EMERALD) itemVal = Math.floor(2800 * depthValMultiplier);
-            if (tile === MYTHIC) itemVal = Math.floor(7500 * depthValMultiplier);
-            if (tile === VOIDSTONE) itemVal = Math.floor(18000 * depthValMultiplier);
-            if (tile === CELESTITE) itemVal = Math.floor(45000 * depthValMultiplier);
+            if (tile === DIRT) itemVal = Math.floor(1 * depthValMultiplier);
+            if (tile === STONE) itemVal = Math.floor(2 * depthValMultiplier);
+            if (tile === GOLD) itemVal = Math.floor(12 * depthValMultiplier);
+            if (tile === GEM) itemVal = Math.floor(45 * depthValMultiplier);
+            if (tile === DIAMOND) itemVal = Math.floor(150 * depthValMultiplier);
+            if (tile === RUBY) itemVal = Math.floor(400 * depthValMultiplier);
+            if (tile === EMERALD) itemVal = Math.floor(900 * depthValMultiplier);
+            if (tile === MYTHIC) itemVal = Math.floor(2500 * depthValMultiplier);
+            if (tile === VOIDSTONE) itemVal = Math.floor(6000 * depthValMultiplier);
+            if (tile === CELESTITE) itemVal = Math.floor(15000 * depthValMultiplier);
 
             backpackCargo.push(itemVal);
             backpackCount++;
@@ -1878,8 +2007,12 @@
     function drawGoblins() {
         goblins.forEach(g => {
             if (g.isBoss) {
+                const bodyColor = g.bossColor || "#1b5e20";
+                const darkColor = g.bossDarkColor || "#0d3311";
+                const glowColor = g.bossGlowColor || "#ff0000";
+
                 // Boss Goblin Render
-                ctx.fillStyle = "#1b5e20";
+                ctx.fillStyle = bodyColor;
                 ctx.fillRect(g.x, g.y, g.width, g.height);
 
                 // Crown
@@ -1890,16 +2023,25 @@
                 ctx.fillRect(g.x + g.width/2 - 4, g.y - 16, 8, 8);
 
                 // Glowing Eyes
-                ctx.fillStyle = "#ff0000";
-                ctx.shadowColor = "#ff0000";
+                ctx.fillStyle = glowColor;
+                ctx.shadowColor = glowColor;
                 ctx.shadowBlur = 10;
                 ctx.fillRect(g.dir === 1 ? g.x + 24 : g.x + 6, g.y + 12, 10, 8);
                 ctx.shadowBlur = 0;
 
                 // Ears & Shoulders
-                ctx.fillStyle = "#0d3311";
+                ctx.fillStyle = darkColor;
                 ctx.fillRect(g.x - 6, g.y + 6, 8, 14);
                 ctx.fillRect(g.x + g.width - 2, g.y + 6, 8, 14);
+
+                // Name Tag
+                if (g.bossName) {
+                    ctx.fillStyle = glowColor;
+                    ctx.font = "bold 11px monospace";
+                    ctx.textAlign = "center";
+                    ctx.fillText(g.bossName, g.x + g.width / 2, g.y - 30);
+                    ctx.textAlign = "left";
+                }
 
                 // HP Bar
                 ctx.fillStyle = "#000";
@@ -2986,34 +3128,69 @@
         backpackModal.style.display = 'flex';
     }
 
+    let buyMultiplier = 1;
+
+    function setBuyMultiplier(val) {
+        buyMultiplier = val;
+        document.querySelectorAll('.qty-btn').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll(`.qty-btn[data-qty="${val}"]`).forEach(b => b.classList.add('active'));
+    }
+
+    function getPurchaseQty(up) {
+        if (up.singleUse) return 1;
+        if (buyMultiplier === 'max') {
+            if (up.cost <= 0) return 1;
+            return Math.max(1, Math.min(9999, Math.floor(cash / up.cost)));
+        }
+        return buyMultiplier;
+    }
+
+    function applyUpgradeEffect(key, up) {
+        if (key === 'potion') {
+            playerHp = Math.min(playerMaxHp, playerHp + 50);
+        } else if (key === 'megapotion') {
+            playerHp = playerMaxHp;
+        } else if (key === 'health' || key === 'voidarmor') {
+            playerMaxHp += up.hpInc;
+            playerHp += up.hpInc;
+        } else if (key === 'sword' || key === 'relicblade') {
+            swordDamage += up.dmgInc;
+        } else if (key === 'bag' || key === 'titanbag') {
+            backpackMax += up.capacity;
+        } else if (key === 'boots') {
+            player.speed += up.speedInc;
+        } else if (key === 'suit') {
+            hasLavaSuit = true;
+            unlockAchievement('lava_survivor');
+        } else {
+            digPower += up.power;
+        }
+    }
+
+    function applyBaxterUpgradeEffect(key, up) {
+        if (key === 'cartArmor') {
+            cartArmorActive = true;
+        } else if (key === 'cartObsidian') {
+            cartObsidianActive = true;
+        } else {
+            cartSpeedMultiplier = Math.max(cartSpeedMultiplier, up.speedMult);
+        }
+    }
+
     function setupShop() {
         Object.keys(upgrades).forEach(key => {
             const up = upgrades[key];
             document.getElementById(up.btnId).addEventListener('click', () => {
-                if (cash >= up.cost && (!up.singleUse || up.count === 0)) {
+                let qty = getPurchaseQty(up);
+                let bought = 0;
+                while (bought < qty && cash >= up.cost && (!up.singleUse || up.count === 0)) {
                     cash -= up.cost;
                     up.count++;
+                    applyUpgradeEffect(key, up);
+                    bought++;
+                }
 
-                    if (key === 'potion') {
-                        playerHp = Math.min(playerMaxHp, playerHp + 50);
-                    } else if (key === 'megapotion') {
-                        playerHp = playerMaxHp;
-                    } else if (key === 'health' || key === 'voidarmor') {
-                        playerMaxHp += up.hpInc;
-                        playerHp += up.hpInc;
-                    } else if (key === 'sword' || key === 'relicblade') {
-                        swordDamage += up.dmgInc;
-                    } else if (key === 'bag' || key === 'titanbag') {
-                        backpackMax += up.capacity;
-                    } else if (key === 'boots') {
-                        player.speed += up.speedInc;
-                    } else if (key === 'suit') {
-                        hasLavaSuit = true;
-                        unlockAchievement('lava_survivor');
-                    } else {
-                        digPower += up.power;
-                    }
-
+                if (bought > 0) {
                     saveGame();
                     updateHUD();
                 }
@@ -3024,18 +3201,16 @@
         Object.keys(baxterUpgrades).forEach(key => {
             const up = baxterUpgrades[key];
             document.getElementById(up.btnId).addEventListener('click', () => {
-                if (cash >= up.cost && (!up.singleUse || up.count === 0)) {
+                let qty = getPurchaseQty(up);
+                let bought = 0;
+                while (bought < qty && cash >= up.cost && (!up.singleUse || up.count === 0)) {
                     cash -= up.cost;
                     up.count++;
+                    applyBaxterUpgradeEffect(key, up);
+                    bought++;
+                }
 
-                    if (key === 'cartArmor') {
-                        cartArmorActive = true;
-                    } else if (key === 'cartObsidian') {
-                        cartObsidianActive = true;
-                    } else {
-                        cartSpeedMultiplier = Math.max(cartSpeedMultiplier, up.speedMult);
-                    }
-
+                if (bought > 0) {
                     saveGame();
                     updateHUD();
                 }

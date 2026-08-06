@@ -561,7 +561,7 @@
     <div id="lachie-shop-prompt" class="prompt">PRESS [E] TO ENTER LACHIE'S POTION SHOP</div>
     <div id="minecart-prompt" class="prompt">PRESS [E] TO MOUNT MINECART</div>
     <div id="call-prompt" class="prompt">PRESS [C] TO CALL MINECART HERE</div>
-    <div id="easter-prompt" class="prompt">★ YOU FOUND THE SECRET RED-HAIRED BOY! ★</div>
+    <div id="easter-prompt" class="prompt">★ YOU FOUND ARCHIE, THE BOY IN GLASSES! ★</div>
     <div id="belive-prompt" class="prompt">★ BELIVE IN BLUE PAINT ★</div>
     <div id="void-egg-prompt" class="prompt">✦ YOU FOUND THE VOID SANCTUARY! ✦</div>
     <div id="celestial-egg-prompt" class="prompt">✦ YOU FOUND THE CELESTIAL SHRINE! ✦</div>
@@ -1102,7 +1102,7 @@
         'celestial_find': { title: "Starborn", desc: "Mine a fragment of glimmering Celestite.", unlocked: false },
         'lava_survivor': { title: "Lava Swimmer", desc: "Equip the Heatproof Lava Suit.", unlocked: false },
         'lava_cart_dive': { title: "Magma Daredevil", desc: "Ride the minecart down into the lava layer and escape.", unlocked: false },
-        'easter_egg': { title: "Boy in Glasses", desc: "Find the secret Red-Haired Boy at the bottom.", unlocked: false },
+        'easter_egg': { title: "Boy in Glasses", desc: "Find Archie, the secret red-haired boy at the bottom.", unlocked: false },
         'belive_sign': { title: "True Beliver", desc: "Find the giant Believe Sign guarded by the Boss Goblin.", unlocked: false },
         'void_sanctuary': { title: "Rift Wanderer", desc: "Discover the hidden Void Sanctuary and its Crystal Golem.", unlocked: false },
         'celestial_shrine': { title: "Stargazer", desc: "Discover the hidden Celestial Shrine near the world's core.", unlocked: false }
@@ -1310,7 +1310,8 @@
         voidwalker: { name: "VOIDWALKER CLOAK", desc: "Threads pulled from the rift itself.", helmet: "#4a148c", shirt: "#1a0033", pants: "#e040fb", requires: 'void_find', cost: 3000 },
         celestial: { name: "CELESTIAL VESTMENT", desc: "Glimmers like starlight.", helmet: "#e0f7fa", shirt: "#80d8ff", pants: "#ffffff", requires: 'celestial_find', cost: 8000 },
         slayer: { name: "BOSS SLAYER ARMOR", desc: "Forged from the bones of fallen bosses.", helmet: "#212121", shirt: "#ff6d00", pants: "#212121", requires: 'boss_hunter', cost: 15000 },
-        obsidian: { name: "OBSIDIAN WARDEN SKIN", desc: "The final boss's own hide, repurposed.", helmet: "#000000", shirt: "#3e0d02", pants: "#bf360c", requires: 'boss_final', cost: 25000 }
+        obsidian: { name: "OBSIDIAN WARDEN SKIN", desc: "The final boss's own hide, repurposed.", helmet: "#000000", shirt: "#3e0d02", pants: "#bf360c", requires: 'boss_final', cost: 25000 },
+        archie: { name: "ARCHIE", desc: "Become the boy in the glasses himself.", helmet: "#ff3300", shirt: "#009944", pants: "#224488", requires: 'easter_egg', cost: 0, glasses: true }
     };
 
     const potionBuffs = {
@@ -2284,36 +2285,104 @@
                 const bodyColor = g.bossColor || "#1b5e20";
                 const darkColor = g.bossDarkColor || "#0d3311";
                 const glowColor = g.bossGlowColor || "#ff0000";
+                const bossTime = Date.now() * 0.003;
+                const pulse = Math.sin(bossTime * 2) * 0.35 + 0.65;
 
-                // Boss Goblin Render
+                // Flowing cape behind the boss
+                ctx.fillStyle = darkColor;
+                ctx.beginPath();
+                ctx.moveTo(g.x + 4, g.y + 4);
+                ctx.lineTo(g.x - 10 + Math.sin(bossTime) * 3, g.y + g.height + 10);
+                ctx.lineTo(g.x + g.width / 2, g.y + g.height - 6);
+                ctx.lineTo(g.x + g.width + 10 - Math.sin(bossTime) * 3, g.y + g.height + 10);
+                ctx.lineTo(g.x + g.width - 4, g.y + 4);
+                ctx.closePath();
+                ctx.fill();
+
+                // Outer glow aura around the whole body
+                ctx.save();
+                ctx.shadowColor = glowColor;
+                ctx.shadowBlur = 16 + pulse * 14;
+
+                // Boss body (two-tone for depth)
                 ctx.fillStyle = bodyColor;
                 ctx.fillRect(g.x, g.y, g.width, g.height);
+                ctx.fillStyle = darkColor;
+                ctx.fillRect(g.x, g.y + g.height * 0.55, g.width, g.height * 0.45);
 
-                // Crown
+                // Body highlight strip
+                ctx.fillStyle = `rgba(255,255,255,${0.12 * pulse})`;
+                ctx.fillRect(g.x + 4, g.y + 4, g.width - 8, 6);
+
+                // Chest emblem gem
+                ctx.fillStyle = glowColor;
+                ctx.beginPath();
+                ctx.moveTo(g.x + g.width / 2, g.y + g.height * 0.42);
+                ctx.lineTo(g.x + g.width / 2 + 6, g.y + g.height * 0.5);
+                ctx.lineTo(g.x + g.width / 2, g.y + g.height * 0.58);
+                ctx.lineTo(g.x + g.width / 2 - 6, g.y + g.height * 0.5);
+                ctx.closePath();
+                ctx.fill();
+
+                // Spiked shoulder pauldrons
+                ctx.fillStyle = darkColor;
+                ctx.beginPath();
+                ctx.moveTo(g.x - 10, g.y + 18);
+                ctx.lineTo(g.x - 2, g.y + 4);
+                ctx.lineTo(g.x + 6, g.y + 18);
+                ctx.closePath();
+                ctx.fill();
+                ctx.beginPath();
+                ctx.moveTo(g.x + g.width + 10, g.y + 18);
+                ctx.lineTo(g.x + g.width + 2, g.y + 4);
+                ctx.lineTo(g.x + g.width - 6, g.y + 18);
+                ctx.closePath();
+                ctx.fill();
+                ctx.fillRect(g.x - 8, g.y + 14, 10, 16);
+                ctx.fillRect(g.x + g.width - 2, g.y + 14, 10, 16);
+
+                // Horned crown
                 ctx.fillStyle = "#ffd700";
                 ctx.fillRect(g.x + 8, g.y - 10, g.width - 16, 10);
-                ctx.fillRect(g.x + 4, g.y - 14, 8, 6);
-                ctx.fillRect(g.x + g.width - 12, g.y - 14, 8, 6);
-                ctx.fillRect(g.x + g.width/2 - 4, g.y - 16, 8, 8);
+                ctx.beginPath();
+                ctx.moveTo(g.x + 2, g.y - 8);
+                ctx.lineTo(g.x + 10, g.y - 24);
+                ctx.lineTo(g.x + 14, g.y - 8);
+                ctx.closePath();
+                ctx.fill();
+                ctx.beginPath();
+                ctx.moveTo(g.x + g.width - 2, g.y - 8);
+                ctx.lineTo(g.x + g.width - 10, g.y - 24);
+                ctx.lineTo(g.x + g.width - 14, g.y - 8);
+                ctx.closePath();
+                ctx.fill();
+                ctx.fillRect(g.x + g.width / 2 - 4, g.y - 18, 8, 10);
 
-                // Glowing Eyes
+                // Twin glowing eyes
                 ctx.fillStyle = glowColor;
-                ctx.shadowColor = glowColor;
-                ctx.shadowBlur = 10;
-                ctx.fillRect(g.dir === 1 ? g.x + 24 : g.x + 6, g.y + 12, 10, 8);
-                ctx.shadowBlur = 0;
+                ctx.shadowBlur = 12;
+                const eyeBaseX = g.dir === 1 ? g.x + g.width * 0.55 : g.x + g.width * 0.15;
+                ctx.fillRect(eyeBaseX, g.y + 12, 8, 6);
+                ctx.fillRect(eyeBaseX + 14, g.y + 12, 8, 6);
 
-                // Ears & Shoulders
+                ctx.restore();
+
+                // Clawed fists
                 ctx.fillStyle = darkColor;
-                ctx.fillRect(g.x - 6, g.y + 6, 8, 14);
-                ctx.fillRect(g.x + g.width - 2, g.y + 6, 8, 14);
+                ctx.fillRect(g.x - 4, g.y + g.height - 10, 8, 10);
+                ctx.fillRect(g.x + g.width - 4, g.y + g.height - 10, 8, 10);
+                ctx.fillStyle = "#e0e0e0";
+                ctx.fillRect(g.x - 4, g.y + g.height - 4, 3, 5);
+                ctx.fillRect(g.x + 1, g.y + g.height - 4, 3, 5);
+                ctx.fillRect(g.x + g.width - 4, g.y + g.height - 4, 3, 5);
+                ctx.fillRect(g.x + g.width + 1, g.y + g.height - 4, 3, 5);
 
                 // Name Tag
                 if (g.bossName) {
                     ctx.fillStyle = glowColor;
                     ctx.font = "bold 11px monospace";
                     ctx.textAlign = "center";
-                    ctx.fillText(g.bossName, g.x + g.width / 2, g.y - 30);
+                    ctx.fillText(g.bossName, g.x + g.width / 2, g.y - 34);
                     ctx.textAlign = "left";
                 }
 
@@ -3207,9 +3276,9 @@
 
         const cosmetic = cosmetics[equippedCosmetic] || cosmetics.none;
         const skinColor = "#ffcc99";
-        const helmetColor = lavaSuitActive ? "#ff4500" : cosmetic.helmet;
-        const shirtColor = lavaSuitActive ? "#cc1100" : cosmetic.shirt;
-        const pantsColor = lavaSuitActive ? "#2b4c7e" : cosmetic.pants;
+        const helmetColor = cosmetic.helmet;
+        const shirtColor = cosmetic.shirt;
+        const pantsColor = cosmetic.pants;
 
         const legOffset = Math.sin(frame) * 4;
         const armOffset = Math.cos(frame) * 3;
@@ -3226,6 +3295,15 @@
         ctx.fillStyle = "#000";
         ctx.fillRect(11, 10, 2, 2);
 
+        if (cosmetic.glasses) {
+            ctx.fillStyle = "#000000";
+            ctx.fillRect(3, 10, 5, 4);
+            ctx.fillRect(10, 10, 5, 4);
+            ctx.fillStyle = "#00ffff";
+            ctx.fillRect(4, 11, 3, 2);
+            ctx.fillRect(11, 11, 3, 2);
+        }
+
         ctx.fillStyle = shirtColor;
         ctx.fillRect(3, 15, 12, 8);
 
@@ -3236,6 +3314,21 @@
         ctx.fillStyle = pantsColor;
         ctx.fillRect(4 + legOffset, 23, 4, 7);
         ctx.fillRect(10 - legOffset, 23, 4, 7);
+
+        if (lavaSuitActive) {
+            ctx.save();
+            ctx.globalAlpha = 0.4;
+            ctx.fillStyle = "#ff4500";
+            ctx.fillRect(0, 0, 18, 31);
+            ctx.restore();
+
+            ctx.strokeStyle = "#ff6600";
+            ctx.lineWidth = 1.5;
+            ctx.shadowColor = "#ff8c00";
+            ctx.shadowBlur = 8;
+            ctx.strokeRect(0, 0, 18, 31);
+            ctx.shadowBlur = 0;
+        }
 
         if (currentAttackTimer > 0) {
             const swingProgress = (MAX_ATTACK_TIMER - currentAttackTimer) / MAX_ATTACK_TIMER;

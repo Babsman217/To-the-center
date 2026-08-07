@@ -549,6 +549,7 @@
         <div class="hud-box clickable" id="bag-box">BAG [B]: <span id="bag-val">0</span>/<span id="bag-max">15</span></div>
         <div class="hud-box">DEPTH: <span id="depth-val">0.0</span>M</div>
         <div class="hud-box" id="fragments-box" style="border-color:#ff6d00; color:#ffb74d;">🗝️ FRAGMENTS: <span id="fragments-val">0</span>/6</div>
+        <div class="hud-box" id="dynamite-box" style="border-color:#e65100; color:#ffab40;">🧨 [Q]: <span id="dyn-hud-val">0</span></div>
         <div class="hud-box" id="buff-box" style="display:none; border-color:#00e676; color:#69f0ae;"></div>
         <div class="hud-box">SLOT: <span id="active-slot-hud">1</span></div>
         <div class="hud-box clickable" id="achievements-hud-btn">🏆 TROPHIES</div>
@@ -559,6 +560,7 @@
     <div id="baxter-shop-prompt" class="prompt">PRESS [E] TO ENTER BAXTER'S MINECART GARAGE</div>
     <div id="lucas-shop-prompt" class="prompt">PRESS [E] TO ENTER LUCAS' COSMETIC SHOP</div>
     <div id="lachie-shop-prompt" class="prompt">PRESS [E] TO ENTER LACHIE'S POTION SHOP</div>
+    <div id="ben-shop-prompt" class="prompt">PRESS [E] TO BROWSE BEN'S DYNAMITE STAND</div>
     <div id="minecart-prompt" class="prompt">PRESS [E] TO MOUNT MINECART</div>
     <div id="call-prompt" class="prompt">PRESS [C] TO CALL MINECART HERE</div>
     <div id="easter-prompt" class="prompt">★ YOU FOUND ARCHIE, THE BOY IN GLASSES! ★</div>
@@ -566,6 +568,7 @@
     <div id="void-egg-prompt" class="prompt">✦ YOU FOUND THE VOID SANCTUARY! ✦</div>
     <div id="celestial-egg-prompt" class="prompt">✦ YOU FOUND THE CELESTIAL SHRINE! ✦</div>
     <div id="recall-banner" class="prompt">⚠️ EMERGENCY RECALL! LOST 50% CASH ⚠️</div>
+    <div id="no-cart-banner" class="prompt" style="background:#e65100; color:#fff;">🛒 YOU NEED TO BUY A MINECART FROM BAXTER FIRST! ($100)</div>
 
     <div id="shop-modal" class="modal">
         <div id="shop-window" class="modal-window">
@@ -664,14 +667,6 @@
                 <button class="buy-btn" id="buy-plasma">BUY</button>
             </div>
 
-            <div class="upgrade-row" style="border-color: #ff4500;">
-                <div class="upgrade-details">
-                    <div class="upgrade-title" style="color:#ff6600;">HEATPROOF LAVA SUIT</div>
-                    <div class="upgrade-cost">SWIM IN LAVA POOLS | COST: $<span id="cost-suit">2500</span></div>
-                </div>
-                <button class="buy-btn" id="buy-suit">BUY</button>
-            </div>
-
             <div class="upgrade-row" style="border-color: #ff3333;">
                 <div class="upgrade-details">
                     <div class="upgrade-title" style="color:#ff6666;">MEGA HEALTH ELIXIR</div>
@@ -738,7 +733,7 @@
 
             <div id="baxter-dialogue-box">
                 <div id="baxter-name">🔧 BAXTER (MECHANIC):</div>
-                <div id="baxter-speech">"Hey there, miner! Need your minecart tuned up? I can boost its speed, add armor, install turbo thrusters, or set up remote call beacons!"</div>
+                <div id="baxter-speech">"Hey there, miner! First things first - you'll need to buy an actual minecart from me before I can upgrade anything. After that, I can boost its speed, add armor, install turbo thrusters, or set up remote call beacons!"</div>
                 <button class="talk-btn" id="talk-baxter-btn" style="margin-top: 8px; background: #e65100; border-color: #ff9800;">TALK TO BAXTER</button>
             </div>
 
@@ -747,6 +742,14 @@
                 <button class="qty-btn" data-qty="10" onclick="setBuyMultiplier(10)">×10</button>
                 <button class="qty-btn" data-qty="100" onclick="setBuyMultiplier(100)">×100</button>
                 <button class="qty-btn" data-qty="max" onclick="setBuyMultiplier('max')">MAX</button>
+            </div>
+
+            <div class="upgrade-row" style="border-color: #4caf50;">
+                <div class="upgrade-details">
+                    <div class="upgrade-title" style="color:#81c784;">🛒 PURCHASE MINECART</div>
+                    <div class="upgrade-cost">REQUIRED BEFORE YOU CAN RIDE | COST: $<span id="cost-cart-purchase">100</span></div>
+                </div>
+                <button class="buy-btn" id="buy-cart-purchase">BUY</button>
             </div>
 
             <div class="upgrade-row" style="border-color: #ff9800;">
@@ -833,6 +836,53 @@
         </div>
     </div>
 
+    <div id="ben-modal" class="modal">
+        <div class="modal-window" style="border-color: #e65100; box-shadow: 0 0 30px rgba(230, 81, 0, 0.4);">
+            <div class="modal-title" style="color: #ffab40; border-color: #e65100;">🧨 BEN'S DYNAMITE STAND 🧨</div>
+
+            <div id="ben-dialogue-box">
+                <div id="ben-name">💣 BEN (BLASTER):</div>
+                <div id="ben-speech">"Need to clear a room fast? I've got just the thing. Just don't light it near me, yeah?"</div>
+                <button class="talk-btn" id="talk-ben-btn" style="margin-top: 8px; background: #e65100; border-color: #ffab40;">TALK TO BEN</button>
+            </div>
+
+            <div class="upgrade-row" style="border-color: #e65100;">
+                <div class="upgrade-details">
+                    <div class="upgrade-title" style="color:#ffab40;">STICK OF DYNAMITE</div>
+                    <div class="upgrade-cost">A quick small blast. Clears a tight pocket. | COST: $<span id="cost-dyn-stick">60</span></div>
+                </div>
+                <button class="buy-btn" id="buy-dyn-stick">BUY</button>
+            </div>
+
+            <div class="upgrade-row" style="border-color: #e65100;">
+                <div class="upgrade-details">
+                    <div class="upgrade-title" style="color:#ffab40;">BUNDLE OF DYNAMITE</div>
+                    <div class="upgrade-cost">Tied-together sticks for a bigger bang. | COST: $<span id="cost-dyn-bundle">250</span></div>
+                </div>
+                <button class="buy-btn" id="buy-dyn-bundle">BUY</button>
+            </div>
+
+            <div class="upgrade-row" style="border-color: #e65100;">
+                <div class="upgrade-details">
+                    <div class="upgrade-title" style="color:#ffab40;">BARREL OF DYNAMITE</div>
+                    <div class="upgrade-cost">Ben's biggest boom. Clears a massive cavity. | COST: $<span id="cost-dyn-barrel">900</span></div>
+                </div>
+                <button class="buy-btn" id="buy-dyn-barrel">BUY</button>
+            </div>
+
+            <div class="qty-selector">
+                <button class="qty-btn active" data-qty="1" onclick="setBuyMultiplier(1)">×1</button>
+                <button class="qty-btn" data-qty="10" onclick="setBuyMultiplier(10)">×10</button>
+                <button class="qty-btn" data-qty="100" onclick="setBuyMultiplier(100)">×100</button>
+                <button class="qty-btn" data-qty="max" onclick="setBuyMultiplier('max')">MAX</button>
+            </div>
+
+            <div class="upgrade-cost" style="text-align:center; margin: 6px 0;">Press [Q] near danger to detonate your biggest stash!</div>
+
+            <button class="close-btn" id="close-ben-shop" style="background: #bf360c;">EXIT STAND [ESC]</button>
+        </div>
+    </div>
+
     <div id="achievements-modal" class="modal">
         <div class="modal-window">
             <div class="modal-title">🏆 ACHIEVEMENTS 🏆</div>
@@ -898,6 +948,9 @@
                     <div class="upgrade-cost" style="color:#aaa; margin-top:2px;">
                         CART SPEED LEVEL: <span id="bp-cart-speed-val" style="color:#ff9800;">1.0x</span>
                     </div>
+                    <div class="upgrade-cost" style="color:#aaa; margin-top:2px;">
+                        DYNAMITE: STICK x<span id="bp-dyn-stick" style="color:#ffab40;">0</span> | BUNDLE x<span id="bp-dyn-bundle" style="color:#ffab40;">0</span> | BARREL x<span id="bp-dyn-barrel" style="color:#ffab40;">0</span>
+                    </div>
                 </div>
             </div>
 
@@ -955,11 +1008,13 @@
     let ownedCosmetics = ['none'];
     let equippedCosmetic = 'none';
     let activeBuffs = {};
+    let dynamiteCounts = { stick: 0, bundle: 0, barrel: 0 };
 
     // Minecart Stats
     let cartSpeedMultiplier = 1.0;
     let cartArmorActive = false;
     let cartObsidianActive = false;
+    let hasMinecart = false;
 
     // Health & Combat System
     let playerHp = 100;
@@ -982,7 +1037,7 @@
     let hanruDialogueIndex = 0;
 
     const baxterDialogues = [
-        `"Hey there, miner! I'm Baxter, the head mechanic around here. Want your minecart to zoom down the tracks?"`,
+        `"Hey there, miner! I'm Baxter, the head mechanic around here. First, buy a minecart off me for $100 - then we'll talk upgrades!"`,
         `"Tip from Baxter: Upgrade your Minecart Speed so you can traverse the deep shafts in seconds!"`,
         `"My Reinforced Plating will protect your cart from taking as much damage while riding through goblin zones!"`,
         `"Pair my Hyper-Drive Engine with Hanru's deep mining tools to explore the entire world lightning fast!"`
@@ -1004,6 +1059,14 @@
         `"Mix and match if your wallet allows it. Speed AND dig power at once? Get amongst it."`
     ];
     let lachieDialogueIndex = 0;
+
+    const benDialogues = [
+        `"Need to clear a room fast? I've got just the thing. Just don't light it near me, yeah?"`,
+        `"Sticks for tight pockets, bundles for real work, barrels when you mean it."`,
+        `"Press Q to let one off - biggest stick in your bag goes first."`,
+        `"I don't ask what you're blasting. Ore, goblins, your own tunnel - not my business."`
+    ];
+    let benDialogueIndex = 0;
 
     // --- INTERACTIVE TUTORIAL MODE SYSTEM ---
     let isTutorialMode = false;
@@ -1208,6 +1271,54 @@
 
         Object.keys(potionBuffs).forEach(key => {
             const p = potionBuffs[key];
+
+            if (p.permanent) {
+                const row = document.createElement('div');
+                row.className = 'upgrade-row';
+                row.style.borderColor = '#ff6600';
+
+                const details = document.createElement('div');
+                details.className = 'upgrade-details';
+
+                const title = document.createElement('div');
+                title.className = 'upgrade-title';
+                title.style.color = '#ffab40';
+                title.innerText = p.name;
+
+                const costLine = document.createElement('div');
+                costLine.className = 'upgrade-cost';
+                costLine.innerText = hasLavaSuit ? p.desc + " | OWNED" : `${p.desc} | COST: $${p.cost}`;
+
+                details.appendChild(title);
+                details.appendChild(costLine);
+
+                const btn = document.createElement('button');
+                btn.className = 'buy-btn';
+                if (hasLavaSuit) {
+                    btn.innerText = 'OWNED';
+                    btn.disabled = true;
+                    btn.classList.add('equipped');
+                } else {
+                    btn.innerText = 'BUY';
+                    btn.disabled = cash < p.cost;
+                    btn.onclick = () => {
+                        if (cash >= p.cost && !hasLavaSuit) {
+                            cash -= p.cost;
+                            hasLavaSuit = true;
+                            unlockAchievement('lava_survivor');
+                            saveGame();
+                            updateHUD();
+                            renderPotionShop();
+                        }
+                    };
+                }
+
+                row.appendChild(details);
+                row.appendChild(btn);
+                container.appendChild(row);
+                return;
+            }
+
             const buff = activeBuffs[p.type];
             const active = buff && buff.expiresAt > Date.now();
 
@@ -1285,7 +1396,6 @@
         laser: { cost: 500, power: 20, btnId: 'buy-laser', count: 0, singleUse: false },
         drill: { cost: 1200, power: 50, btnId: 'buy-drill', count: 0, singleUse: false },
         plasma: { cost: 3000, power: 120, btnId: 'buy-plasma', count: 0, singleUse: false },
-        suit: { cost: 2500, btnId: 'buy-suit', count: 0, singleUse: true },
         voidarmor: { cost: 6000, hpInc: 150, btnId: 'buy-voidarmor', count: 0, singleUse: false },
         relicblade: { cost: 12000, dmgInc: 100, btnId: 'buy-relicblade', count: 0, singleUse: false },
         titanbag: { cost: 5000, capacity: 40, btnId: 'buy-titanbag', count: 0, singleUse: false },
@@ -1295,6 +1405,7 @@
     };
 
     const baxterUpgrades = {
+        cartPurchase: { cost: 100, btnId: 'buy-cart-purchase', count: 0, singleUse: true },
         cartSpeed: { cost: 75, speedMult: 1.5, btnId: 'buy-cart-speed', count: 0, singleUse: true },
         cartEngine: { cost: 250, speedMult: 2.2, btnId: 'buy-cart-engine', count: 0, singleUse: true },
         cartArmor: { cost: 180, btnId: 'buy-cart-armor', count: 0, singleUse: true },
@@ -1318,7 +1429,8 @@
         speedBrew: { name: "ADRENALINE BREW", desc: "Speed +3 for 60 seconds.", cost: 150, duration: 60000, type: 'speed', amount: 3 },
         focusTonic: { name: "MINER'S FOCUS", desc: "Dig Power x2 for 60 seconds.", cost: 200, duration: 60000, type: 'digMult', amount: 2 },
         berserkerTonic: { name: "BERSERKER TONIC", desc: "Sword Damage +50 for 60 seconds.", cost: 250, duration: 60000, type: 'damage', amount: 50 },
-        fortuneElixir: { name: "FORTUNE ELIXIR", desc: "Ore Value x1.5 for 90 seconds.", cost: 400, duration: 90000, type: 'valueMult', amount: 1.5 }
+        fortuneElixir: { name: "FORTUNE ELIXIR", desc: "Ore Value x1.5 for 90 seconds.", cost: 400, duration: 90000, type: 'valueMult', amount: 1.5 },
+        obsidianHeart: { name: "OBSIDIAN HEART DRAUGHT", desc: "Permanent immunity to lava. One sip, forever.", cost: 5000, permanent: true }
     };
 
     function getBuffBonus(type) {
@@ -1331,6 +1443,66 @@
         const b = activeBuffs[type];
         if (b && b.expiresAt > Date.now()) return b.amount;
         return 1;
+    }
+
+    const dynamiteItems = {
+        stick: { name: "STICK OF DYNAMITE", desc: "A quick small blast. Clears a tight pocket.", cost: 60, radius: 2, btnId: 'buy-dyn-stick' },
+        bundle: { name: "BUNDLE OF DYNAMITE", desc: "Tied-together sticks for a bigger bang.", cost: 250, radius: 4, btnId: 'buy-dyn-bundle' },
+        barrel: { name: "BARREL OF DYNAMITE", desc: "Ben's biggest boom. Clears a massive cavity.", cost: 900, radius: 6, btnId: 'buy-dyn-barrel' }
+    };
+
+    function useDynamite() {
+        let type = null;
+        if (dynamiteCounts.barrel > 0) type = 'barrel';
+        else if (dynamiteCounts.bundle > 0) type = 'bundle';
+        else if (dynamiteCounts.stick > 0) type = 'stick';
+        if (!type) return;
+
+        dynamiteCounts[type]--;
+        const radius = dynamiteItems[type].radius;
+
+        const pRow = Math.floor((player.y + player.height / 2) / TILE_SIZE);
+        const pCol = Math.floor((player.x + player.width / 2) / TILE_SIZE);
+
+        for (let dr = -radius; dr <= radius; dr++) {
+            for (let dc = -radius; dc <= radius; dc++) {
+                if (dr * dr + dc * dc > radius * radius) continue;
+                const r = pRow + dr, c = pCol + dc;
+                if (!world[r] || world[r][c] === undefined) continue;
+
+                const t = world[r][c];
+                if (!isSolidTile(t) || t === GRASS || t === OBSIDIAN_BRICK) continue;
+                if (backpackCount >= backpackMax) continue;
+
+                const depthValMultiplier = 1 + Math.floor(r / 40) * 0.5;
+                let itemVal = 1;
+                if (t === DIRT) itemVal = Math.floor(1 * depthValMultiplier);
+                if (t === STONE) itemVal = Math.floor(2 * depthValMultiplier);
+                if (t === GOLD) itemVal = Math.floor(12 * depthValMultiplier);
+                if (t === GEM) itemVal = Math.floor(45 * depthValMultiplier);
+                if (t === DIAMOND) itemVal = Math.floor(150 * depthValMultiplier);
+                if (t === RUBY) itemVal = Math.floor(400 * depthValMultiplier);
+                if (t === EMERALD) itemVal = Math.floor(900 * depthValMultiplier);
+                if (t === MYTHIC) itemVal = Math.floor(2500 * depthValMultiplier);
+                if (t === VOIDSTONE) itemVal = Math.floor(6000 * depthValMultiplier);
+                if (t === CELESTITE) itemVal = Math.floor(15000 * depthValMultiplier);
+
+                backpackCargo.push(Math.floor(itemVal * getBuffMultiplier('valueMult')));
+                backpackCount++;
+                world[r][c] = AIR;
+                tileHp[r][c] = 0;
+                spawnTileParticles(r, c, t, 4);
+
+                unlockAchievement('first_dirt');
+                if (t === RUBY) unlockAchievement('rare_ruby');
+                if (t === MYTHIC) unlockAchievement('mythic_find');
+                if (t === VOIDSTONE) unlockAchievement('void_find');
+                if (t === CELESTITE) unlockAchievement('celestial_find');
+            }
+        }
+
+        saveGame();
+        updateHUD();
     }
 
     function updateActiveBuffsHUD() {
@@ -1484,12 +1656,14 @@
         cartSpeedMultiplier = 1.0;
         cartArmorActive = false;
         cartObsidianActive = false;
+        hasMinecart = false;
         goblinsKilled = 0;
         bossesDefeated = [];
         boyChamberUnlocked = false;
         ownedCosmetics = ['none'];
         equippedCosmetic = 'none';
         activeBuffs = {};
+        dynamiteCounts = { stick: 0, bundle: 0, barrel: 0 };
         player.speed = 4.0;
         Object.keys(upgrades).forEach(k => upgrades[k].count = 0);
         Object.keys(baxterUpgrades).forEach(k => baxterUpgrades[k].count = 0);
@@ -1523,12 +1697,14 @@
             cartSpeedMultiplier: cartSpeedMultiplier,
             cartArmorActive: cartArmorActive,
             cartObsidianActive: cartObsidianActive,
+            hasMinecart: hasMinecart,
             goblinsKilled: goblinsKilled,
             bossesDefeated: bossesDefeated,
             boyChamberUnlocked: boyChamberUnlocked,
             ownedCosmetics: ownedCosmetics,
             equippedCosmetic: equippedCosmetic,
             activeBuffs: activeBuffs,
+            dynamiteCounts: dynamiteCounts,
             playerSpeed: player.speed,
             upgradeCounts: upgradeCounts,
             baxterUpgradeCounts: baxterUpgradeCounts,
@@ -1554,12 +1730,14 @@
             cartSpeedMultiplier = data.cartSpeedMultiplier ?? 1.0;
             cartArmorActive = data.cartArmorActive ?? false;
             cartObsidianActive = data.cartObsidianActive ?? false;
+            hasMinecart = data.hasMinecart ?? false;
             goblinsKilled = data.goblinsKilled ?? 0;
             bossesDefeated = data.bossesDefeated ?? [];
             boyChamberUnlocked = data.boyChamberUnlocked ?? false;
             ownedCosmetics = data.ownedCosmetics ?? ['none'];
             equippedCosmetic = data.equippedCosmetic ?? 'none';
             activeBuffs = data.activeBuffs ?? {};
+            dynamiteCounts = data.dynamiteCounts ?? { stick: 0, bundle: 0, barrel: 0 };
             if (data.playerSpeed) player.speed = data.playerSpeed;
 
             if (data.upgradeCounts) {
@@ -1970,6 +2148,33 @@
         });
     }
 
+    function damageGoblin(g, i, amount) {
+        g.hp -= amount;
+        if (g.hp <= 0) {
+            cash += g.isBoss ? (g.cashReward || 500) : 50;
+            goblinsKilled++;
+            unlockAchievement('goblin_slayer');
+
+            if (g.isBoss && g.bossId) {
+                if (g.bossId === 'sentinel') unlockAchievement('boss_sentinel');
+                if (g.bossId === 'ancient_king') unlockAchievement('boss_ancient_king');
+                if (g.bossId === 'void_warlord') unlockAchievement('boss_void_warlord');
+                if (g.bossId === 'celestial_overlord') unlockAchievement('boss_celestial_overlord');
+                if (g.bossId === 'magma_guardian') unlockAchievement('boss_magma_guardian');
+                if (g.bossId === 'obsidian_warden') unlockAchievement('boss_final');
+
+                if (!bossesDefeated.includes(g.bossId)) {
+                    bossesDefeated.push(g.bossId);
+                }
+                checkBossHunterProgress();
+            }
+
+            goblins.splice(i, 1);
+            saveGame();
+            updateHUD();
+        }
+    }
+
     function attackGoblins() {
         if (swordDamage <= 0 && getBuffBonus('damage') <= 0) return;
         attackTimer = MAX_ATTACK_TIMER;
@@ -1982,31 +2187,7 @@
             const g = goblins[i];
             if (g.x < attackX + reach && g.x + g.width > attackX &&
                 g.y < attackY + player.height && g.y + g.height > attackY) {
-                
-                g.hp -= swordDamage + getBuffBonus('damage');
-                if (g.hp <= 0) {
-                    cash += g.isBoss ? (g.cashReward || 500) : 50;
-                    goblinsKilled++;
-                    unlockAchievement('goblin_slayer');
-
-                    if (g.isBoss && g.bossId) {
-                        if (g.bossId === 'sentinel') unlockAchievement('boss_sentinel');
-                        if (g.bossId === 'ancient_king') unlockAchievement('boss_ancient_king');
-                        if (g.bossId === 'void_warlord') unlockAchievement('boss_void_warlord');
-                        if (g.bossId === 'celestial_overlord') unlockAchievement('boss_celestial_overlord');
-                        if (g.bossId === 'magma_guardian') unlockAchievement('boss_magma_guardian');
-                        if (g.bossId === 'obsidian_warden') unlockAchievement('boss_final');
-
-                        if (!bossesDefeated.includes(g.bossId)) {
-                            bossesDefeated.push(g.bossId);
-                        }
-                        checkBossHunterProgress();
-                    }
-
-                    goblins.splice(i, 1);
-                    saveGame();
-                    updateHUD();
-                }
+                damageGoblin(g, i, swordDamage + getBuffBonus('damage'));
             }
         }
     }
@@ -2048,6 +2229,14 @@
         setTimeout(() => {
             banner.style.display = 'none';
         }, 3000);
+    }
+
+    function showNoMinecartBanner() {
+        const banner = document.getElementById('no-cart-banner');
+        banner.style.display = 'block';
+        setTimeout(() => {
+            banner.style.display = 'none';
+        }, 2500);
     }
 
     function updateMinecartLogic() {
@@ -2262,6 +2451,10 @@
 
     function callMinecartToPlayer() {
         if (player.inCart) return;
+        if (!hasMinecart) {
+            showNoMinecartBanner();
+            return;
+        }
         const targetRow = Math.max(3, Math.min(WORLD_ROWS - 7, (player.y + player.height / 2) / TILE_SIZE));
         shaftCart.targetRow = targetRow;
         shaftCart.isMovingToTarget = true;
@@ -3118,6 +3311,86 @@
         ctx.fillText("LACHIE", shopX + 122, npcY - 14);
     }
 
+    function drawBenStand(standX, standY) {
+        const standW = 100;
+        const time = Date.now() * 0.003;
+
+        // Table/counter
+        ctx.fillStyle = "#5d4037";
+        ctx.fillRect(standX, standY + 30, standW, 8);
+        ctx.fillStyle = "#3e2723";
+        ctx.fillRect(standX + 4, standY + 38, 6, 20);
+        ctx.fillRect(standX + standW - 10, standY + 38, 6, 20);
+
+        // Striped awning canopy
+        for (let i = 0; i < 5; i++) {
+            ctx.fillStyle = i % 2 === 0 ? "#c62828" : "#fff3e0";
+            ctx.beginPath();
+            ctx.moveTo(standX + i * (standW / 5), standY - 4);
+            ctx.lineTo(standX + (i + 1) * (standW / 5), standY - 4);
+            ctx.lineTo(standX + (i + 1) * (standW / 5) - 4, standY + 10);
+            ctx.lineTo(standX + i * (standW / 5) + 4, standY + 10);
+            ctx.closePath();
+            ctx.fill();
+        }
+
+        // Awning support poles
+        ctx.fillStyle = "#4e342e";
+        ctx.fillRect(standX - 4, standY + 10, 4, 28);
+        ctx.fillRect(standX + standW, standY + 10, 4, 28);
+
+        // Sign
+        ctx.fillStyle = "#ffab40";
+        ctx.font = "7px 'Press Start 2P', monospace";
+        ctx.fillText("BEN'S DYNAMITE", standX + 2, standY + 22);
+
+        // Dynamite crates on the counter
+        const wobble = Math.sin(time * 3) * 0.5;
+        ctx.fillStyle = "#8d6e63";
+        ctx.fillRect(standX + 6, standY + 14, 16, 16);
+        ctx.fillRect(standX + 26, standY + 18, 14, 12);
+        ctx.fillStyle = "#d32f2f";
+        ctx.fillRect(standX + 9, standY + 16, 3, 10);
+        ctx.fillRect(standX + 14, standY + 16, 3, 10);
+        ctx.fillRect(standX + 29, standY + 19 + wobble, 3, 8);
+
+        // Fuse spark on one crate
+        ctx.fillStyle = `rgba(255, 171, 64, ${0.6 + Math.sin(time * 6) * 0.4})`;
+        ctx.shadowColor = "#ffab40";
+        ctx.shadowBlur = 6;
+        ctx.fillRect(standX + 10, standY + 12, 2, 2);
+        ctx.shadowBlur = 0;
+
+        // Ben NPC - black skin, black afro
+        const npcY = standY + 2 + Math.sin(time * 2) * 1.5;
+        const npcX = standX + standW - 26;
+
+        ctx.fillStyle = "#4a2c17";
+        ctx.fillRect(npcX, npcY, 18, 18);
+
+        // Afro
+        ctx.fillStyle = "#1a1a1a";
+        ctx.beginPath();
+        ctx.arc(npcX + 9, npcY - 3, 13, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Eyes
+        ctx.fillStyle = "#000";
+        ctx.fillRect(npcX + 4, npcY + 8, 3, 3);
+        ctx.fillRect(npcX + 11, npcY + 8, 3, 3);
+
+        // Work vest
+        ctx.fillStyle = "#ff6f00";
+        ctx.fillRect(npcX - 3, npcY + 18, 24, 12);
+        ctx.fillStyle = "#e65100";
+        ctx.fillRect(npcX + 6, npcY + 18, 6, 12);
+
+        // Nameplate
+        ctx.fillStyle = "#ffab40";
+        ctx.font = "7px 'Press Start 2P', monospace";
+        ctx.fillText("BEN", npcX - 2, npcY - 16);
+    }
+
     function drawMineEntrance(x, y) {
         const w = 7 * TILE_SIZE;
         const legW = 16;
@@ -3315,21 +3588,6 @@
         ctx.fillRect(4 + legOffset, 23, 4, 7);
         ctx.fillRect(10 - legOffset, 23, 4, 7);
 
-        if (lavaSuitActive) {
-            ctx.save();
-            ctx.globalAlpha = 0.4;
-            ctx.fillStyle = "#ff4500";
-            ctx.fillRect(0, 0, 18, 31);
-            ctx.restore();
-
-            ctx.strokeStyle = "#ff6600";
-            ctx.lineWidth = 1.5;
-            ctx.shadowColor = "#ff8c00";
-            ctx.shadowBlur = 8;
-            ctx.strokeRect(0, 0, 18, 31);
-            ctx.shadowBlur = 0;
-        }
-
         if (currentAttackTimer > 0) {
             const swingProgress = (MAX_ATTACK_TIMER - currentAttackTimer) / MAX_ATTACK_TIMER;
             const startAngle = -Math.PI / 2.2;
@@ -3447,12 +3705,18 @@
         const lachieShopY = 1 * TILE_SIZE + 5;
         drawPotionShopVisuals(lachieShopX, lachieShopY);
 
+        const benStandX = 113 * TILE_SIZE;
+        const benStandY = 102;
+        drawBenStand(benStandX, benStandY);
+
         const entranceX = (railCols[6] - 3) * TILE_SIZE;
         const entranceY = 2 * TILE_SIZE;
         drawMineEntrance(entranceX, entranceY);
 
         drawGoblins();
-        drawMinecartObject(shaftCart);
+        if (hasMinecart) {
+            drawMinecartObject(shaftCart);
+        }
 
         drawHumanPlayer(player.x, player.y, player.facing, player.animFrame, hasLavaSuit, attackTimer);
 
@@ -3475,14 +3739,17 @@
     const baxterModal = document.getElementById('baxter-modal');
     const lucasModal = document.getElementById('lucas-modal');
     const lachieModal = document.getElementById('lachie-modal');
+    const benModal = document.getElementById('ben-modal');
     const achievementsModal = document.getElementById('achievements-modal');
     const backpackModal = document.getElementById('backpack-modal');
     const bagBox = document.getElementById('bag-box');
+    const benShopPrompt = document.getElementById('ben-shop-prompt');
     
     let inShopZone = false;
     let inBaxterShopZone = false;
     let inLucasShopZone = false;
     let inLachieShopZone = false;
+    let inBenShopZone = false;
     let nearSwervingTrack = false;
     let nearMinecart = false;
 
@@ -3534,6 +3801,18 @@
         } else {
             inLachieShopZone = false;
             lachieShopPrompt.style.display = "none";
+        }
+
+        const benStandX = 113 * TILE_SIZE + 30;
+        const benStandY = 5 * TILE_SIZE;
+        const benDist = Math.hypot(player.x - benStandX, player.y - benStandY);
+
+        if (benDist < 45) {
+            inBenShopZone = true;
+            benShopPrompt.style.display = "block";
+        } else {
+            inBenShopZone = false;
+            benShopPrompt.style.display = "none";
         }
 
         const pRow = Math.max(0, Math.min(WORLD_ROWS - 1, Math.floor((player.y + player.height / 2) / TILE_SIZE)));
@@ -3590,11 +3869,15 @@
             minecartPrompt.style.display = "block";
             minecartPrompt.innerText = "PRESS [E] TO EXIT MINECART (USE W/S TO DRIVE)";
             callPrompt.style.display = "none";
-        } else if (nearMinecart) {
+        } else if (nearMinecart && hasMinecart) {
             minecartPrompt.style.display = "block";
             minecartPrompt.innerText = "PRESS [E] TO BOARD MINECART";
             callPrompt.style.display = "none";
-        } else if (nearSwervingTrack && !shaftCart.isMovingToTarget) {
+        } else if (nearMinecart && !hasMinecart) {
+            minecartPrompt.style.display = "block";
+            minecartPrompt.innerText = "BUY A MINECART FROM BAXTER FIRST ($100)";
+            callPrompt.style.display = "none";
+        } else if (nearSwervingTrack && !shaftCart.isMovingToTarget && hasMinecart) {
             minecartPrompt.style.display = "none";
             callPrompt.style.display = "block";
         } else {
@@ -3607,8 +3890,10 @@
         if (player.inCart) {
             player.x += 24;
             player.inCart = false;
-        } else if (nearMinecart) {
+        } else if (nearMinecart && hasMinecart) {
             player.inCart = true;
+        } else if (nearMinecart && !hasMinecart) {
+            showNoMinecartBanner();
         }
     }
 
@@ -3667,6 +3952,14 @@
                 btn.classList.remove('equipped');
             }
         });
+
+        Object.keys(dynamiteItems).forEach(key => {
+            const item = dynamiteItems[key];
+            const btn = document.getElementById(item.btnId);
+            if (!btn) return;
+            btn.disabled = cash < item.cost;
+            btn.innerText = dynamiteCounts[key] > 0 ? `BUY (OWN ${dynamiteCounts[key]})` : "BUY";
+        });
     }
 
     function openBackpackModal() {
@@ -3708,6 +4001,10 @@
         document.getElementById('bp-speed-val').innerText = player.speed.toFixed(1);
         document.getElementById('bp-sword-val').innerText = swordDamage;
         document.getElementById('bp-suit-val').innerText = hasLavaSuit ? "YES (HEATPROOF)" : "NO";
+        document.getElementById('bp-dyn-stick').innerText = dynamiteCounts.stick;
+        document.getElementById('bp-dyn-bundle').innerText = dynamiteCounts.bundle;
+        document.getElementById('bp-dyn-barrel').innerText = dynamiteCounts.barrel;
+        document.getElementById('dyn-hud-val').innerText = dynamiteCounts.stick + dynamiteCounts.bundle + dynamiteCounts.barrel;
         document.getElementById('bp-cart-speed-val').innerText = cartSpeedMultiplier.toFixed(1) + "x";
 
         backpackModal.style.display = 'flex';
@@ -3744,16 +4041,15 @@
             backpackMax += up.capacity;
         } else if (key === 'boots') {
             player.speed = Math.min(67, player.speed + up.speedInc);
-        } else if (key === 'suit') {
-            hasLavaSuit = true;
-            unlockAchievement('lava_survivor');
         } else {
             digPower += up.power;
         }
     }
 
     function applyBaxterUpgradeEffect(key, up) {
-        if (key === 'cartArmor') {
+        if (key === 'cartPurchase') {
+            hasMinecart = true;
+        } else if (key === 'cartArmor') {
             cartArmorActive = true;
         } else if (key === 'cartObsidian') {
             cartObsidianActive = true;
@@ -3826,6 +4122,12 @@
             document.getElementById('lachie-speech').innerText = lachieDialogues[lachieDialogueIndex];
         });
 
+        // Ben Dialogue Interaction Button
+        document.getElementById('talk-ben-btn').addEventListener('click', () => {
+            benDialogueIndex = (benDialogueIndex + 1) % benDialogues.length;
+            document.getElementById('ben-speech').innerText = benDialogues[benDialogueIndex];
+        });
+
         document.getElementById('close-shop').addEventListener('click', () => {
             shopModal.style.display = 'none';
         });
@@ -3840,6 +4142,27 @@
 
         document.getElementById('close-lachie-shop').addEventListener('click', () => {
             lachieModal.style.display = 'none';
+        });
+
+        document.getElementById('close-ben-shop').addEventListener('click', () => {
+            benModal.style.display = 'none';
+        });
+
+        Object.keys(dynamiteItems).forEach(key => {
+            const item = dynamiteItems[key];
+            document.getElementById(item.btnId).addEventListener('click', () => {
+                let qty = buyMultiplier === 'max' ? Math.max(1, Math.min(9999, Math.floor(cash / item.cost))) : buyMultiplier;
+                let bought = 0;
+                while (bought < qty && cash >= item.cost) {
+                    cash -= item.cost;
+                    dynamiteCounts[key]++;
+                    bought++;
+                }
+                if (bought > 0) {
+                    saveGame();
+                    updateHUD();
+                }
+            });
         });
 
         document.getElementById('achievements-hud-btn').addEventListener('click', () => {
@@ -3891,6 +4214,8 @@
             } else if (inLachieShopZone) {
                 lachieModal.style.display = 'flex';
                 renderPotionShop();
+            } else if (inBenShopZone) {
+                benModal.style.display = 'flex';
             } else {
                 toggleMinecart();
             }
@@ -3918,11 +4243,18 @@
             emergencySurfaceRecall();
         }
 
+        if (k === 'q') {
+            if (shopModal.style.display !== 'flex' && baxterModal.style.display !== 'flex' && lucasModal.style.display !== 'flex' && lachieModal.style.display !== 'flex' && benModal.style.display !== 'flex' && achievementsModal.style.display !== 'flex' && backpackModal.style.display !== 'flex') {
+                useDynamite();
+            }
+        }
+
         if (k === 'escape') {
             shopModal.style.display = 'none';
             baxterModal.style.display = 'none';
             lucasModal.style.display = 'none';
             lachieModal.style.display = 'none';
+            benModal.style.display = 'none';
             achievementsModal.style.display = 'none';
             backpackModal.style.display = 'none';
         }

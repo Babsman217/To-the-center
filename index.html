@@ -139,41 +139,6 @@
             opacity: 0.7;
         }
 
-        .mp-row {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 12px;
-            margin-top: 10px;
-            position: relative;
-        }
-
-        .wooden-sign {
-            background: #5c3a21;
-            color: #ffd700;
-            border: 3px solid #3d2312;
-            border-radius: 4px;
-            padding: 8px 10px;
-            font-size: 7px;
-            line-height: 1.4;
-            text-align: center;
-            box-shadow: 0 3px 0 #261408, inset 0 0 5px rgba(0,0,0,0.5);
-            text-shadow: 1px 1px #000;
-            white-space: nowrap;
-            position: relative;
-        }
-
-        .wooden-sign::before {
-            content: '';
-            position: absolute;
-            bottom: -8px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 6px;
-            height: 8px;
-            background: #3d2312;
-        }
-
         /* --- HUD Overlay --- */
         #hud {
             position: absolute;
@@ -533,11 +498,6 @@
 
         <button class="menu-btn" id="sp-btn">SINGLE PLAYER</button>
         <button class="menu-btn" id="tutorial-btn" style="background: #2b4c7e; border-color: #00e5ff;">PLAY TUTORIAL MODE</button>
-
-        <div class="mp-row">
-            <button class="menu-btn" id="mp-btn" disabled>MULTIPLAYER</button>
-            <div class="wooden-sign">🪵 WORK IN<br>PROGRESS</div>
-        </div>
     </div>
 
     <canvas id="gameCanvas" tabindex="1"></canvas>
@@ -553,6 +513,7 @@
         <div class="hud-box" id="buff-box" style="display:none; border-color:#00e676; color:#69f0ae;"></div>
         <div class="hud-box">SLOT: <span id="active-slot-hud">1</span></div>
         <div class="hud-box clickable" id="achievements-hud-btn">🏆 TROPHIES</div>
+        <div class="hud-box clickable" id="sound-toggle-btn">🔊 SOUND</div>
         <div class="hud-box emergency-info">STUCK? [R] (-50% CASH) <button class="reset-btn" id="reset-save-btn">RESET SAVE</button></div>
     </div>
 
@@ -723,6 +684,38 @@
                 <button class="buy-btn" id="buy-omega">BUY</button>
             </div>
 
+            <div class="upgrade-row" style="border-color: #00e676;">
+                <div class="upgrade-details">
+                    <div class="upgrade-title" style="color:#69f0ae;">MINING DRONE COMPANION</div>
+                    <div class="upgrade-cost">A LOYAL DRONE THAT ZAPS NEARBY GOBLINS FOR YOU | COST: $<span id="cost-companion">5000</span></div>
+                </div>
+                <button class="buy-btn" id="buy-companion">BUY</button>
+            </div>
+
+            <div class="upgrade-row" style="border-color: #ffd54f;">
+                <div class="upgrade-details">
+                    <div class="upgrade-title" style="color:#ffe082;">BASIC HEADLAMP</div>
+                    <div class="upgrade-cost">LIGHT RADIUS +90 | COST: $<span id="cost-headlamp-basic">150</span></div>
+                </div>
+                <button class="buy-btn" id="buy-headlamp-basic">BUY</button>
+            </div>
+
+            <div class="upgrade-row" style="border-color: #ffca28;">
+                <div class="upgrade-details">
+                    <div class="upgrade-title" style="color:#ffd54f;">HALOGEN HEADLAMP</div>
+                    <div class="upgrade-cost">LIGHT RADIUS +140 | COST: $<span id="cost-headlamp-halogen">700</span></div>
+                </div>
+                <button class="buy-btn" id="buy-headlamp-halogen">BUY</button>
+            </div>
+
+            <div class="upgrade-row" style="border-color: #ff4081;">
+                <div class="upgrade-details">
+                    <div class="upgrade-title" style="color:#ff80ab;">PRISMATIC HEADLAMP</div>
+                    <div class="upgrade-cost">LIGHT RADIUS +220, SHIFTING RAINBOW BEAM | COST: $<span id="cost-headlamp-prismatic">3000</span></div>
+                </div>
+                <button class="buy-btn" id="buy-headlamp-prismatic">BUY</button>
+            </div>
+
             <button class="close-btn" id="close-shop">EXIT SHOP [ESC]</button>
         </div>
     </div>
@@ -784,6 +777,38 @@
                 <button class="buy-btn" id="buy-cart-hyper">BUY</button>
             </div>
 
+            <div class="upgrade-row" style="border-color: #66bb6a;">
+                <div class="upgrade-details">
+                    <div class="upgrade-title" style="color:#a5d6a7;">CARGO EXPANSION RIG</div>
+                    <div class="upgrade-cost">BACKPACK CAPACITY +25 | COST: $<span id="cost-cart-cargo">600</span></div>
+                </div>
+                <button class="buy-btn" id="buy-cart-cargo">BUY</button>
+            </div>
+
+            <div class="upgrade-row" style="border-color: #4fc3f7;">
+                <div class="upgrade-details">
+                    <div class="upgrade-title" style="color:#81d4fa;">AUTO-SELL HOPPER</div>
+                    <div class="upgrade-cost">CARGO AUTO-SELLS THE MOMENT YOU BOARD | COST: $<span id="cost-cart-autosell">1200</span></div>
+                </div>
+                <button class="buy-btn" id="buy-cart-autosell">BUY</button>
+            </div>
+
+            <div class="upgrade-row" style="border-color: #ffd54f;">
+                <div class="upgrade-details">
+                    <div class="upgrade-title" style="color:#ffe082;">REMOTE CALL BEACON</div>
+                    <div class="upgrade-cost">SUMMON THE CART FROM ANYWHERE IN THE MINE | COST: $<span id="cost-cart-beacon">1500</span></div>
+                </div>
+                <button class="buy-btn" id="buy-cart-beacon">BUY</button>
+            </div>
+
+            <div class="upgrade-row" style="border-color: #ef5350;">
+                <div class="upgrade-details">
+                    <div class="upgrade-title" style="color:#ef9a9a;">MEDICAL BAY MODULE</div>
+                    <div class="upgrade-cost">SLOWLY REGEN HP WHILE RIDING | COST: $<span id="cost-cart-regen">2200</span></div>
+                </div>
+                <button class="buy-btn" id="buy-cart-regen">BUY</button>
+            </div>
+
             <div class="upgrade-row" style="border-color: #4a148c;">
                 <div class="upgrade-details">
                     <div class="upgrade-title" style="color:#ce93d8;">OBSIDIAN HULL PLATING</div>
@@ -798,6 +823,22 @@
                     <div class="upgrade-cost">MINECART SPEED +400% | COST: $<span id="cost-cart-quantum">5000</span></div>
                 </div>
                 <button class="buy-btn" id="buy-cart-quantum">BUY</button>
+            </div>
+
+            <div class="upgrade-row" style="border-color: #b0bec5;">
+                <div class="upgrade-details">
+                    <div class="upgrade-title" style="color:#eceff1;">TITANIUM PLATING</div>
+                    <div class="upgrade-cost">TAKE ANOTHER 50% LESS DAMAGE - THIRD STACK | COST: $<span id="cost-cart-titanium">6000</span></div>
+                </div>
+                <button class="buy-btn" id="buy-cart-titanium">BUY</button>
+            </div>
+
+            <div class="upgrade-row" style="border-color: #00e5ff;">
+                <div class="upgrade-details">
+                    <div class="upgrade-title" style="color:#84ffff;">OVERDRIVE CORE</div>
+                    <div class="upgrade-cost">MINECART SPEED +600% - ULTIMATE TIER | COST: $<span id="cost-cart-overdrive">12000</span></div>
+                </div>
+                <button class="buy-btn" id="buy-cart-overdrive">BUY</button>
             </div>
 
             <button class="close-btn" id="close-baxter-shop" style="background: #e65100;">EXIT GARAGE [ESC]</button>
@@ -849,7 +890,7 @@
             <div class="upgrade-row" style="border-color: #e65100;">
                 <div class="upgrade-details">
                     <div class="upgrade-title" style="color:#ffab40;">STICK OF DYNAMITE</div>
-                    <div class="upgrade-cost">A quick small blast. Clears a tight pocket. | COST: $<span id="cost-dyn-stick">60</span></div>
+                    <div class="upgrade-cost">A quick small blast. Clears a tight pocket. | COST: $<span id="cost-dyn-stick">80</span></div>
                 </div>
                 <button class="buy-btn" id="buy-dyn-stick">BUY</button>
             </div>
@@ -857,7 +898,7 @@
             <div class="upgrade-row" style="border-color: #e65100;">
                 <div class="upgrade-details">
                     <div class="upgrade-title" style="color:#ffab40;">BUNDLE OF DYNAMITE</div>
-                    <div class="upgrade-cost">Tied-together sticks for a bigger bang. | COST: $<span id="cost-dyn-bundle">250</span></div>
+                    <div class="upgrade-cost">Tied-together sticks for a bigger bang. | COST: $<span id="cost-dyn-bundle">350</span></div>
                 </div>
                 <button class="buy-btn" id="buy-dyn-bundle">BUY</button>
             </div>
@@ -865,9 +906,25 @@
             <div class="upgrade-row" style="border-color: #e65100;">
                 <div class="upgrade-details">
                     <div class="upgrade-title" style="color:#ffab40;">BARREL OF DYNAMITE</div>
-                    <div class="upgrade-cost">Ben's biggest boom. Clears a massive cavity. | COST: $<span id="cost-dyn-barrel">900</span></div>
+                    <div class="upgrade-cost">Ben's biggest boom. Clears a solid cavity. | COST: $<span id="cost-dyn-barrel">1300</span></div>
                 </div>
                 <button class="buy-btn" id="buy-dyn-barrel">BUY</button>
+            </div>
+
+            <div class="upgrade-row" style="border-color: #ffab00;">
+                <div class="upgrade-details">
+                    <div class="upgrade-title" style="color:#ffd54f;">CRATE OF TNT</div>
+                    <div class="upgrade-cost">A full crate wired together. Serious excavation. | COST: $<span id="cost-dyn-crate">4000</span></div>
+                </div>
+                <button class="buy-btn" id="buy-dyn-crate">BUY</button>
+            </div>
+
+            <div class="upgrade-row" style="border-color: #ff3d00;">
+                <div class="upgrade-details">
+                    <div class="upgrade-title" style="color:#ff8a65;">SEISMIC CHARGE</div>
+                    <div class="upgrade-cost">Ben's pride and joy. Reshapes the cave itself. | COST: $<span id="cost-dyn-seismic">13000</span></div>
+                </div>
+                <button class="buy-btn" id="buy-dyn-seismic">BUY</button>
             </div>
 
             <div class="qty-selector">
@@ -951,6 +1008,9 @@
                     <div class="upgrade-cost" style="color:#aaa; margin-top:2px;">
                         DYNAMITE: STICK x<span id="bp-dyn-stick" style="color:#ffab40;">0</span> | BUNDLE x<span id="bp-dyn-bundle" style="color:#ffab40;">0</span> | BARREL x<span id="bp-dyn-barrel" style="color:#ffab40;">0</span>
                     </div>
+                    <div class="upgrade-cost" style="color:#aaa; margin-top:2px;">
+                        LIGHT RADIUS: <span id="bp-light-val" style="color:#ffe082;">230</span>px
+                    </div>
                 </div>
             </div>
 
@@ -963,6 +1023,85 @@
     const canvas = document.getElementById('gameCanvas');
     const ctx = canvas.getContext('2d');
 
+    /* --- LIGHTWEIGHT PROCEDURAL SOUND ENGINE (no external audio files) --- */
+    let audioCtx = null;
+    let soundEnabled = localStorage.getItem('minerSoundEnabled') !== '0';
+
+    function getAudioCtx() {
+        if (!audioCtx) {
+            try {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            } catch (e) {
+                soundEnabled = false;
+            }
+        }
+        if (audioCtx && audioCtx.state === 'suspended') {
+            audioCtx.resume();
+        }
+        return audioCtx;
+    }
+
+    function playTone(freq, duration, type, startGain, opts) {
+        if (!soundEnabled) return;
+        const ac = getAudioCtx();
+        if (!ac) return;
+        opts = opts || {};
+
+        const osc = ac.createOscillator();
+        const gain = ac.createGain();
+        osc.type = type || 'square';
+        osc.frequency.setValueAtTime(freq, ac.currentTime);
+        if (opts.slideTo) {
+            osc.frequency.exponentialRampToValueAtTime(Math.max(1, opts.slideTo), ac.currentTime + duration);
+        }
+        gain.gain.setValueAtTime(startGain, ac.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, ac.currentTime + duration);
+        osc.connect(gain);
+        gain.connect(ac.destination);
+        osc.start(ac.currentTime);
+        osc.stop(ac.currentTime + duration);
+    }
+
+    function playNoise(duration, startGain) {
+        if (!soundEnabled) return;
+        const ac = getAudioCtx();
+        if (!ac) return;
+        const bufferSize = ac.sampleRate * duration;
+        const buffer = ac.createBuffer(1, bufferSize, ac.sampleRate);
+        const data = buffer.getChannelData(0);
+        for (let i = 0; i < bufferSize; i++) {
+            data[i] = (Math.random() * 2 - 1) * (1 - i / bufferSize);
+        }
+        const noise = ac.createBufferSource();
+        noise.buffer = buffer;
+        const gain = ac.createGain();
+        gain.gain.setValueAtTime(startGain, ac.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, ac.currentTime + duration);
+        noise.connect(gain);
+        gain.connect(ac.destination);
+        noise.start(ac.currentTime);
+    }
+
+    const sfx = {
+        digHit: () => playTone(140 + Math.random() * 40, 0.06, 'square', 0.05),
+        tileBreak: () => { playNoise(0.12, 0.12); playTone(90, 0.1, 'square', 0.06); },
+        jump: () => playTone(220, 0.15, 'triangle', 0.06, { slideTo: 440 }),
+        land: () => playTone(90, 0.08, 'square', 0.05),
+        cashSell: () => { playTone(660, 0.08, 'square', 0.05); setTimeout(() => playTone(880, 0.1, 'square', 0.05), 60); },
+        purchase: () => { playTone(520, 0.07, 'square', 0.05); setTimeout(() => playTone(780, 0.09, 'square', 0.05), 50); },
+        achievement: () => { [523, 659, 784, 1046].forEach((f, i) => setTimeout(() => playTone(f, 0.15, 'triangle', 0.07), i * 90)); },
+        goblinHit: () => playTone(180, 0.08, 'sawtooth', 0.06),
+        goblinDeath: () => { playNoise(0.2, 0.1); playTone(110, 0.25, 'sawtooth', 0.07, { slideTo: 40 }); },
+        bossDeath: () => { [220, 180, 140, 100, 60].forEach((f, i) => setTimeout(() => playTone(f, 0.3, 'sawtooth', 0.09), i * 110)); },
+        playerHurt: () => playTone(150, 0.15, 'sawtooth', 0.08, { slideTo: 60 }),
+        explosion: () => { playNoise(0.4, 0.18); playTone(70, 0.4, 'sawtooth', 0.1, { slideTo: 20 }); },
+        minecartBoard: () => playTone(300, 0.12, 'square', 0.06, { slideTo: 500 }),
+        minecartExit: () => playTone(500, 0.1, 'square', 0.05, { slideTo: 250 }),
+        uiClick: () => playTone(440, 0.05, 'square', 0.04),
+        potionDrink: () => { playTone(400, 0.1, 'sine', 0.06, { slideTo: 700 }); },
+        lavaHiss: () => playNoise(0.15, 0.05)
+    };
+
     function resizeCanvas() {
         canvas.width = window.innerWidth;
         canvas.height = window.innerHeight;
@@ -973,7 +1112,7 @@
     // World Config - DEEPER MAP (2200 Rows)
     const TILE_SIZE = 32;
     const WORLD_COLS = 120;
-    const WORLD_ROWS = 2200;
+    const WORLD_ROWS = 3000;
     const SURFACE_ROW = 4; // Precise surface ground baseline where depth = 0m
     
     // Save Slot System
@@ -988,6 +1127,7 @@
     const GRASS = 8; const WOOD_SUPPORT = 9; const LAVA = 10; const OBSIDIAN_BRICK = 11;
     const RUBY = 12; const EMERALD = 13; const MYTHIC = 14;
     const VOIDSTONE = 15; const CELESTITE = 16;
+    const PRISMATIC = 17;
 
     let world = [];
     let tileHp = [];
@@ -1008,13 +1148,26 @@
     let ownedCosmetics = ['none'];
     let equippedCosmetic = 'none';
     let activeBuffs = {};
-    let dynamiteCounts = { stick: 0, bundle: 0, barrel: 0 };
+    let dynamiteCounts = { stick: 0, bundle: 0, barrel: 0, crate: 0, seismic: 0 };
 
     // Minecart Stats
     let cartSpeedMultiplier = 1.0;
     let cartArmorActive = false;
     let cartObsidianActive = false;
     let hasMinecart = false;
+    let cartBeaconActive = false;
+    let cartAutoSellActive = false;
+    let cartTitaniumActive = false;
+    let cartRegenActive = false;
+
+    // Mining Companion
+    let hasCompanion = false;
+    let companionTargetIndex = -1;
+    let lastCompanionZapTime = 0;
+    let companionZapFlashTimer = 0;
+
+    // Headlamp / Light Radius
+    let lightRadius = 230;
 
     // Health & Combat System
     let playerHp = 100;
@@ -1032,7 +1185,8 @@
         `"Short on inventory space? Upgrade your backpack capacity right here so you can stay underground longer!"`,
         `"If you get stuck deep in the mines, press [C] near the track to call my minecart right to your level!"`,
         `"Legend says there is a giant Boss Goblin around 850M depth guarding a golden secret... prepare well!"`,
-        `"Swimming in lava down at the 1400M core? Make sure you equip my Heatproof Lava Suit first!"`
+        `"Looking for something to protect you from the lava? Lachie brews a permanent draught for that - ask him!"`,
+        `"My Mining Drone Companion will zap nearby goblins for you automatically. Never fight alone again!"`
     ];
     let hanruDialogueIndex = 0;
 
@@ -1040,7 +1194,11 @@
         `"Hey there, miner! I'm Baxter, the head mechanic around here. First, buy a minecart off me for $100 - then we'll talk upgrades!"`,
         `"Tip from Baxter: Upgrade your Minecart Speed so you can traverse the deep shafts in seconds!"`,
         `"My Reinforced Plating will protect your cart from taking as much damage while riding through goblin zones!"`,
-        `"Pair my Hyper-Drive Engine with Hanru's deep mining tools to explore the entire world lightning fast!"`
+        `"Pair my Hyper-Drive Engine with Hanru's deep mining tools to explore the entire world lightning fast!"`,
+        `"Grab my Auto-Sell Hopper and your cargo cashes out the second you hop in - no more shop trips!"`,
+        `"The Remote Call Beacon is my favorite install. Summon your cart from anywhere in the mine, no track nearby needed."`,
+        `"Stack Obsidian and Titanium plating together and you'll barely feel a goblin hit while riding."`,
+        `"The Overdrive Core is the fastest thing I've ever built. Not for the faint of heart."`
     ];
     let baxterDialogueIndex = 0;
 
@@ -1147,7 +1305,8 @@
         'deep_dive_500': { title: "Abyssal Miner", desc: "Reach a depth of 500 meters.", unlocked: false },
         'deep_dive_1500': { title: "Void Delver", desc: "Reach a depth of 1500 meters.", unlocked: false },
         'deep_dive_2000': { title: "Celestial Depths", desc: "Reach a depth of 2000 meters.", unlocked: false },
-        'bottom_world': { title: "Core Explorer", desc: "Reach the lava depth (2180+ meters).", unlocked: false },
+        'deep_dive_2500': { title: "Prismatic Frontier", desc: "Reach a depth of 2500 meters.", unlocked: false },
+        'bottom_world': { title: "Core Explorer", desc: "Reach the lava depth (2980+ meters).", unlocked: false },
         'rich_miner': { title: "Pocket Change", desc: "Accumulate $1,000 cash.", unlocked: false },
         'tycoon': { title: "Mining Tycoon", desc: "Accumulate $10,000 cash.", unlocked: false },
         'goblin_slayer': { title: "Goblin Pest Control", desc: "Defeat your first Goblin.", unlocked: false },
@@ -1163,6 +1322,7 @@
         'mythic_find': { title: "Mythic Discovery", desc: "Mine the mythical Mythic Crystal.", unlocked: false },
         'void_find': { title: "Rift Breaker", desc: "Mine a shard of unstable Voidstone.", unlocked: false },
         'celestial_find': { title: "Starborn", desc: "Mine a fragment of glimmering Celestite.", unlocked: false },
+        'prismatic_find': { title: "Prismatic Fortune", desc: "Mine a shard of the ultra-rare Prismatic Core.", unlocked: false },
         'lava_survivor': { title: "Lava Swimmer", desc: "Equip the Heatproof Lava Suit.", unlocked: false },
         'lava_cart_dive': { title: "Magma Daredevil", desc: "Ride the minecart down into the lava layer and escape.", unlocked: false },
         'easter_egg': { title: "Boy in Glasses", desc: "Find Archie, the secret red-haired boy at the bottom.", unlocked: false },
@@ -1174,6 +1334,7 @@
     function unlockAchievement(id) {
         if (achievements[id] && !achievements[id].unlocked) {
             achievements[id].unlocked = true;
+            sfx.achievement();
             showAchievementPopup(achievements[id].title);
             saveGame();
             renderAchievementsList();
@@ -1240,6 +1401,7 @@
                 btn.innerText = 'EQUIP';
                 btn.onclick = () => {
                     equippedCosmetic = key;
+                    sfx.uiClick();
                     saveGame();
                     renderCosmeticShop();
                 };
@@ -1249,6 +1411,7 @@
                 btn.onclick = () => {
                     if (cash >= c.cost) {
                         cash -= c.cost;
+                        sfx.purchase();
                         ownedCosmetics.push(key);
                         equippedCosmetic = key;
                         saveGame();
@@ -1304,6 +1467,7 @@
                     btn.onclick = () => {
                         if (cash >= p.cost && !hasLavaSuit) {
                             cash -= p.cost;
+                            sfx.potionDrink();
                             hasLavaSuit = true;
                             unlockAchievement('lava_survivor');
                             saveGame();
@@ -1353,6 +1517,7 @@
             btn.onclick = () => {
                 if (cash >= p.cost) {
                     cash -= p.cost;
+                    sfx.potionDrink();
                     activeBuffs[p.type] = { amount: p.amount, expiresAt: Date.now() + p.duration };
                     saveGame();
                     updateHUD();
@@ -1401,7 +1566,11 @@
         titanbag: { cost: 5000, capacity: 40, btnId: 'buy-titanbag', count: 0, singleUse: false },
         voidpick: { cost: 8000, power: 250, btnId: 'buy-voidpick', count: 0, singleUse: false },
         celestialdrill: { cost: 25000, power: 600, btnId: 'buy-celestialdrill', count: 0, singleUse: false },
-        omegaexcavator: { cost: 75000, power: 1500, btnId: 'buy-omega', count: 0, singleUse: false }
+        omegaexcavator: { cost: 75000, power: 1500, btnId: 'buy-omega', count: 0, singleUse: false },
+        companion: { cost: 5000, btnId: 'buy-companion', count: 0, singleUse: true },
+        headlampBasic: { cost: 150, lightInc: 90, btnId: 'buy-headlamp-basic', count: 0, singleUse: true },
+        headlampHalogen: { cost: 700, lightInc: 140, btnId: 'buy-headlamp-halogen', count: 0, singleUse: true },
+        headlampPrismatic: { cost: 3000, lightInc: 220, btnId: 'buy-headlamp-prismatic', count: 0, singleUse: true }
     };
 
     const baxterUpgrades = {
@@ -1410,18 +1579,42 @@
         cartEngine: { cost: 250, speedMult: 2.2, btnId: 'buy-cart-engine', count: 0, singleUse: true },
         cartArmor: { cost: 180, btnId: 'buy-cart-armor', count: 0, singleUse: true },
         cartHyper: { cost: 800, speedMult: 3.5, btnId: 'buy-cart-hyper', count: 0, singleUse: true },
+        cartCargo: { cost: 600, capacity: 25, btnId: 'buy-cart-cargo', count: 0, singleUse: true },
+        cartAutoSell: { cost: 1200, btnId: 'buy-cart-autosell', count: 0, singleUse: true },
+        cartBeacon: { cost: 1500, btnId: 'buy-cart-beacon', count: 0, singleUse: true },
+        cartRegen: { cost: 2200, btnId: 'buy-cart-regen', count: 0, singleUse: true },
         cartObsidian: { cost: 3000, btnId: 'buy-cart-obsidian', count: 0, singleUse: true },
-        cartQuantum: { cost: 5000, speedMult: 5.0, btnId: 'buy-cart-quantum', count: 0, singleUse: true }
+        cartQuantum: { cost: 5000, speedMult: 5.0, btnId: 'buy-cart-quantum', count: 0, singleUse: true },
+        cartTitanium: { cost: 6000, btnId: 'buy-cart-titanium', count: 0, singleUse: true },
+        cartOverdrive: { cost: 12000, speedMult: 7.0, btnId: 'buy-cart-overdrive', count: 0, singleUse: true }
     };
 
     const cosmetics = {
         none: { name: "MINER DEFAULT", desc: "The classic overalls. No frills.", helmet: "#ffd700", shirt: "#d9381e", pants: "#2b4c7e", requires: null, cost: 0 },
+        dusty: { name: "DUSTY OVERALLS", desc: "Earthy tones for a brand new digger.", helmet: "#8d6e63", shirt: "#5d4037", pants: "#3e2723", requires: 'first_dirt', cost: 50 },
         crimson: { name: "CRIMSON RAIDER", desc: "Blood-red gear for the fearless.", helmet: "#b71c1c", shirt: "#7f0000", pants: "#212121", requires: 'deep_dive_100', cost: 200 },
+        abyssal: { name: "ABYSSAL GEAR", desc: "Weathered dark blues from the deep dark.", helmet: "#37474f", shirt: "#263238", pants: "#01579b", requires: 'deep_dive_500', cost: 500 },
         goldrush: { name: "GOLD RUSH SUIT", desc: "Look as rich as you feel.", helmet: "#fff59d", shirt: "#ffd700", pants: "#8d6e63", requires: 'tycoon', cost: 1000 },
+        brawler: { name: "GOBLIN BRAWLER GEAR", desc: "Scuffed leathers from your first kill.", helmet: "#6d4c41", shirt: "#33691e", pants: "#4e342e", requires: 'goblin_slayer', cost: 300 },
+        ember: { name: "EMBER PROSPECTOR", desc: "Warm tones, forged for the Prismatic Frontier.", helmet: "#ff7043", shirt: "#bf360c", pants: "#3e2723", requires: 'deep_dive_2500', cost: 4000 },
+        coreDiver: { name: "CORE DIVER SUIT", desc: "Rated for the deepest, hottest depths.", helmet: "#ff4500", shirt: "#ff8c00", pants: "#212121", requires: 'lava_survivor', cost: 3500 },
+        gemcutter: { name: "GEMCUTTER'S FINERY", desc: "Polished to match your finest ruby.", helmet: "#e53935", shirt: "#880e4f", pants: "#4a148c", requires: 'rare_ruby', cost: 1200 },
+        believer: { name: "TRUE BELIVER GARB", desc: "Blue and gold, just like the sign.", helmet: "#0000ff", shirt: "#ffff00", pants: "#0000ff", requires: 'belive_sign', cost: 700 },
         voidwalker: { name: "VOIDWALKER CLOAK", desc: "Threads pulled from the rift itself.", helmet: "#4a148c", shirt: "#1a0033", pants: "#e040fb", requires: 'void_find', cost: 3000 },
+        sanctuary: { name: "SANCTUARY ROBES", desc: "Woven with echoes of the Crystal Golem.", helmet: "#7c4dff", shirt: "#311b92", pants: "#b388ff", requires: 'void_sanctuary', cost: 3200 },
         celestial: { name: "CELESTIAL VESTMENT", desc: "Glimmers like starlight.", helmet: "#e0f7fa", shirt: "#80d8ff", pants: "#ffffff", requires: 'celestial_find', cost: 8000 },
+        shrineKeeper: { name: "SHRINE KEEPER ROBES", desc: "Blessed by the Celestial Guardian.", helmet: "#b3e5fc", shirt: "#0288d1", pants: "#e1f5fe", requires: 'celestial_shrine', cost: 4500 },
+        prismatic: { name: "PRISMATIC RAIMENT", desc: "Shifts color like the core itself.", helmet: "#ff4081", shirt: "#40c4ff", pants: "#ffeb3b", requires: 'prismatic_find', cost: 20000 },
+        daredevil: { name: "DAREDEVIL JUMPSUIT", desc: "Singed at the edges. Smells like magma.", helmet: "#ff6f00", shirt: "#212121", pants: "#ff6f00", requires: 'lava_cart_dive', cost: 6000 },
+        coreExplorer: { name: "CORE EXPLORER PLATE", desc: "Rated for the deepest floor of the mine.", helmet: "#5d4037", shirt: "#212121", pants: "#8d6e63", requires: 'bottom_world', cost: 10000 },
+        sentinel: { name: "SENTINEL'S HIDE", desc: "Trophy gear from the Sentinel Goblin.", helmet: "#ffeb3b", shirt: "#33691e", pants: "#1b3409", requires: 'boss_sentinel', cost: 800 },
+        kingsGuard: { name: "KING'S GUARD ARMOR", desc: "Claimed from the Ancient Greenskin King.", helmet: "#ff0000", shirt: "#1b5e20", pants: "#0d3311", requires: 'boss_ancient_king', cost: 2000 },
+        riftborn: { name: "RIFTBORN VESTMENT", desc: "Torn from the Void Warlord's banner.", helmet: "#e040fb", shirt: "#4a148c", pants: "#1a0033", requires: 'boss_void_warlord', cost: 5000 },
+        starforged: { name: "STARFORGED PLATE", desc: "Radiant armor of the Celestial Overlord.", helmet: "#80d8ff", shirt: "#0d47a1", pants: "#0d1b2a", requires: 'boss_celestial_overlord', cost: 10000 },
+        magmaPlate: { name: "MAGMA PLATE ARMOR", desc: "Still warm from the Core Guardian's forge.", helmet: "#ff6d00", shirt: "#bf360c", pants: "#3e0d02", requires: 'boss_magma_guardian', cost: 12000 },
         slayer: { name: "BOSS SLAYER ARMOR", desc: "Forged from the bones of fallen bosses.", helmet: "#212121", shirt: "#ff6d00", pants: "#212121", requires: 'boss_hunter', cost: 15000 },
         obsidian: { name: "OBSIDIAN WARDEN SKIN", desc: "The final boss's own hide, repurposed.", helmet: "#000000", shirt: "#3e0d02", pants: "#bf360c", requires: 'boss_final', cost: 25000 },
+        sealbreaker: { name: "SEALBREAKER VESTMENT", desc: "Worn by whoever broke the obsidian seal.", helmet: "#212121", shirt: "#616161", pants: "#000000", requires: 'obsidian_broken', cost: 5000 },
         archie: { name: "ARCHIE", desc: "Become the boy in the glasses himself.", helmet: "#ff3300", shirt: "#009944", pants: "#224488", requires: 'easter_egg', cost: 0, glasses: true }
     };
 
@@ -1430,6 +1623,7 @@
         focusTonic: { name: "MINER'S FOCUS", desc: "Dig Power x2 for 60 seconds.", cost: 200, duration: 60000, type: 'digMult', amount: 2 },
         berserkerTonic: { name: "BERSERKER TONIC", desc: "Sword Damage +50 for 60 seconds.", cost: 250, duration: 60000, type: 'damage', amount: 50 },
         fortuneElixir: { name: "FORTUNE ELIXIR", desc: "Ore Value x1.5 for 90 seconds.", cost: 400, duration: 90000, type: 'valueMult', amount: 1.5 },
+        nightVisionDraught: { name: "NIGHT VISION DRAUGHT", desc: "See clearly in total darkness for 90 seconds.", cost: 350, duration: 90000, type: 'nightVision', amount: 1 },
         obsidianHeart: { name: "OBSIDIAN HEART DRAUGHT", desc: "Permanent immunity to lava. One sip, forever.", cost: 5000, permanent: true }
     };
 
@@ -1446,19 +1640,24 @@
     }
 
     const dynamiteItems = {
-        stick: { name: "STICK OF DYNAMITE", desc: "A quick small blast. Clears a tight pocket.", cost: 60, radius: 2, btnId: 'buy-dyn-stick' },
-        bundle: { name: "BUNDLE OF DYNAMITE", desc: "Tied-together sticks for a bigger bang.", cost: 250, radius: 4, btnId: 'buy-dyn-bundle' },
-        barrel: { name: "BARREL OF DYNAMITE", desc: "Ben's biggest boom. Clears a massive cavity.", cost: 900, radius: 6, btnId: 'buy-dyn-barrel' }
+        stick: { name: "STICK OF DYNAMITE", desc: "A quick small blast. Clears a tight pocket.", cost: 80, radius: 1, btnId: 'buy-dyn-stick' },
+        bundle: { name: "BUNDLE OF DYNAMITE", desc: "Tied-together sticks for a bigger bang.", cost: 350, radius: 2, btnId: 'buy-dyn-bundle' },
+        barrel: { name: "BARREL OF DYNAMITE", desc: "Ben's biggest boom. Clears a solid cavity.", cost: 1300, radius: 3, btnId: 'buy-dyn-barrel' },
+        crate: { name: "CRATE OF TNT", desc: "A full crate wired together. Serious excavation.", cost: 4000, radius: 5, btnId: 'buy-dyn-crate' },
+        seismic: { name: "SEISMIC CHARGE", desc: "Ben's pride and joy. Reshapes the cave itself.", cost: 13000, radius: 8, btnId: 'buy-dyn-seismic' }
     };
 
     function useDynamite() {
         let type = null;
-        if (dynamiteCounts.barrel > 0) type = 'barrel';
+        if (dynamiteCounts.seismic > 0) type = 'seismic';
+        else if (dynamiteCounts.crate > 0) type = 'crate';
+        else if (dynamiteCounts.barrel > 0) type = 'barrel';
         else if (dynamiteCounts.bundle > 0) type = 'bundle';
         else if (dynamiteCounts.stick > 0) type = 'stick';
         if (!type) return;
 
         dynamiteCounts[type]--;
+        sfx.explosion();
         const radius = dynamiteItems[type].radius;
 
         const pRow = Math.floor((player.y + player.height / 2) / TILE_SIZE);
@@ -1474,20 +1673,21 @@
                 if (!isSolidTile(t) || t === GRASS || t === OBSIDIAN_BRICK) continue;
                 if (backpackCount >= backpackMax) continue;
 
-                const depthValMultiplier = 1 + Math.floor(r / 40) * 0.5;
+                const depthValMultiplier = 1 + Math.floor(r / 35) * 0.6;
                 let itemVal = 1;
-                if (t === DIRT) itemVal = Math.floor(1 * depthValMultiplier);
-                if (t === STONE) itemVal = Math.floor(2 * depthValMultiplier);
-                if (t === GOLD) itemVal = Math.floor(12 * depthValMultiplier);
-                if (t === GEM) itemVal = Math.floor(45 * depthValMultiplier);
-                if (t === DIAMOND) itemVal = Math.floor(150 * depthValMultiplier);
-                if (t === RUBY) itemVal = Math.floor(400 * depthValMultiplier);
-                if (t === EMERALD) itemVal = Math.floor(900 * depthValMultiplier);
-                if (t === MYTHIC) itemVal = Math.floor(2500 * depthValMultiplier);
-                if (t === VOIDSTONE) itemVal = Math.floor(6000 * depthValMultiplier);
-                if (t === CELESTITE) itemVal = Math.floor(15000 * depthValMultiplier);
+                if (t === DIRT) itemVal = Math.floor(2 * depthValMultiplier);
+                if (t === STONE) itemVal = Math.floor(4 * depthValMultiplier);
+                if (t === GOLD) itemVal = Math.floor(25 * depthValMultiplier);
+                if (t === GEM) itemVal = Math.floor(90 * depthValMultiplier);
+                if (t === DIAMOND) itemVal = Math.floor(300 * depthValMultiplier);
+                if (t === RUBY) itemVal = Math.floor(800 * depthValMultiplier);
+                if (t === EMERALD) itemVal = Math.floor(1800 * depthValMultiplier);
+                if (t === MYTHIC) itemVal = Math.floor(5000 * depthValMultiplier);
+                if (t === VOIDSTONE) itemVal = Math.floor(12000 * depthValMultiplier);
+                if (t === CELESTITE) itemVal = Math.floor(28000 * depthValMultiplier);
+                if (t === PRISMATIC) itemVal = Math.floor(60000 * depthValMultiplier);
 
-                backpackCargo.push(Math.floor(itemVal * getBuffMultiplier('valueMult')));
+                backpackCargo.push(Math.floor(itemVal * 0.6 * getBuffMultiplier('valueMult')));
                 backpackCount++;
                 world[r][c] = AIR;
                 tileHp[r][c] = 0;
@@ -1498,6 +1698,7 @@
                 if (t === MYTHIC) unlockAchievement('mythic_find');
                 if (t === VOIDSTONE) unlockAchievement('void_find');
                 if (t === CELESTITE) unlockAchievement('celestial_find');
+                if (t === PRISMATIC) unlockAchievement('prismatic_find');
             }
         }
 
@@ -1572,6 +1773,7 @@
         if (type === MYTHIC) colors = ["#aa00ff", "#ea80fc", "#4a148c"];
         if (type === VOIDSTONE) colors = ["#e040fb", "#000000", "#1a0033"];
         if (type === CELESTITE) colors = ["#e0f7fa", "#ffffff", "#40c4ff"];
+        if (type === PRISMATIC) colors = ["#ff4081", "#40c4ff", "#ffeb3b", "#ffffff"];
 
         const centerX = c * TILE_SIZE + TILE_SIZE / 2;
         const centerY = r * TILE_SIZE + TILE_SIZE / 2;
@@ -1626,6 +1828,7 @@
         if (type === MYTHIC) baseHp = 4000;
         if (type === VOIDSTONE) baseHp = 8000;
         if (type === CELESTITE) baseHp = 16000;
+        if (type === PRISMATIC) baseHp = 32000;
 
         return Math.floor(baseHp * depthMultiplier);
     }
@@ -1657,13 +1860,19 @@
         cartArmorActive = false;
         cartObsidianActive = false;
         hasMinecart = false;
+        cartBeaconActive = false;
+        cartAutoSellActive = false;
+        cartRegenActive = false;
+        cartTitaniumActive = false;
+        hasCompanion = false;
+        lightRadius = 230;
         goblinsKilled = 0;
         bossesDefeated = [];
         boyChamberUnlocked = false;
         ownedCosmetics = ['none'];
         equippedCosmetic = 'none';
         activeBuffs = {};
-        dynamiteCounts = { stick: 0, bundle: 0, barrel: 0 };
+        dynamiteCounts = { stick: 0, bundle: 0, barrel: 0, crate: 0, seismic: 0 };
         player.speed = 4.0;
         Object.keys(upgrades).forEach(k => upgrades[k].count = 0);
         Object.keys(baxterUpgrades).forEach(k => baxterUpgrades[k].count = 0);
@@ -1698,6 +1907,12 @@
             cartArmorActive: cartArmorActive,
             cartObsidianActive: cartObsidianActive,
             hasMinecart: hasMinecart,
+            cartBeaconActive: cartBeaconActive,
+            cartAutoSellActive: cartAutoSellActive,
+            cartRegenActive: cartRegenActive,
+            cartTitaniumActive: cartTitaniumActive,
+            hasCompanion: hasCompanion,
+            lightRadius: lightRadius,
             goblinsKilled: goblinsKilled,
             bossesDefeated: bossesDefeated,
             boyChamberUnlocked: boyChamberUnlocked,
@@ -1731,13 +1946,19 @@
             cartArmorActive = data.cartArmorActive ?? false;
             cartObsidianActive = data.cartObsidianActive ?? false;
             hasMinecart = data.hasMinecart ?? false;
+            cartBeaconActive = data.cartBeaconActive ?? false;
+            cartAutoSellActive = data.cartAutoSellActive ?? false;
+            cartRegenActive = data.cartRegenActive ?? false;
+            cartTitaniumActive = data.cartTitaniumActive ?? false;
+            hasCompanion = data.hasCompanion ?? false;
+            lightRadius = data.lightRadius ?? 230;
             goblinsKilled = data.goblinsKilled ?? 0;
             bossesDefeated = data.bossesDefeated ?? [];
             boyChamberUnlocked = data.boyChamberUnlocked ?? false;
             ownedCosmetics = data.ownedCosmetics ?? ['none'];
             equippedCosmetic = data.equippedCosmetic ?? 'none';
             activeBuffs = data.activeBuffs ?? {};
-            dynamiteCounts = data.dynamiteCounts ?? { stick: 0, bundle: 0, barrel: 0 };
+            dynamiteCounts = data.dynamiteCounts ?? { stick: 0, bundle: 0, barrel: 0, crate: 0, seismic: 0 };
             if (data.playerSpeed) player.speed = data.playerSpeed;
 
             if (data.upgradeCounts) {
@@ -1859,7 +2080,7 @@
                         else if (rand < 0.985) world[r][c] = EMERALD;
                         else if (rand < 0.996) world[r][c] = MYTHIC;
                         else world[r][c] = VOIDSTONE;
-                    } else {
+                    } else if (r < 2400) {
                         if (rand < 0.05) world[r][c] = DIRT;
                         else if (rand < 0.35) world[r][c] = STONE;
                         else if (rand < 0.55) world[r][c] = GOLD;
@@ -1870,6 +2091,18 @@
                         else if (rand < 0.975) world[r][c] = MYTHIC;
                         else if (rand < 0.994) world[r][c] = VOIDSTONE;
                         else world[r][c] = CELESTITE;
+                    } else {
+                        if (rand < 0.03) world[r][c] = DIRT;
+                        else if (rand < 0.25) world[r][c] = STONE;
+                        else if (rand < 0.42) world[r][c] = GOLD;
+                        else if (rand < 0.58) world[r][c] = GEM;
+                        else if (rand < 0.72) world[r][c] = DIAMOND;
+                        else if (rand < 0.83) world[r][c] = RUBY;
+                        else if (rand < 0.90) world[r][c] = EMERALD;
+                        else if (rand < 0.95) world[r][c] = MYTHIC;
+                        else if (rand < 0.98) world[r][c] = VOIDSTONE;
+                        else if (rand < 0.994) world[r][c] = CELESTITE;
+                        else world[r][c] = PRISMATIC;
                     }
                 }
 
@@ -2015,7 +2248,7 @@
             width: 50, height: 62, speed: 3.0, hp: 8000, contactDamage: 100, cashReward: 9000
         });
 
-        createBossChamber(2150, 60, 95, {
+        createBossChamber(2600, 60, 95, {
             bossId: 'magma_guardian', name: 'MAGMA CORE GUARDIAN',
             color: '#bf360c', darkColor: '#3e0d02', glowColor: '#ff6d00',
             width: 56, height: 68, speed: 3.4, hp: 15000, contactDamage: 140, cashReward: 20000
@@ -2136,8 +2369,12 @@
                     if (player.inCart && cartObsidianActive) {
                         damageTaken = Math.floor(damageTaken * 0.5);
                     }
+                    if (player.inCart && cartTitaniumActive) {
+                        damageTaken = Math.floor(damageTaken * 0.5);
+                    }
                     playerHp -= damageTaken;
                     invulnerableTimer = 40;
+                    sfx.playerHurt();
                     if (playerHp <= 0) {
                         playerHp = 0;
                         emergencySurfaceRecall();
@@ -2154,6 +2391,7 @@
             cash += g.isBoss ? (g.cashReward || 500) : 50;
             goblinsKilled++;
             unlockAchievement('goblin_slayer');
+            if (g.isBoss) sfx.bossDeath(); else sfx.goblinDeath();
 
             if (g.isBoss && g.bossId) {
                 if (g.bossId === 'sentinel') unlockAchievement('boss_sentinel');
@@ -2172,6 +2410,8 @@
             goblins.splice(i, 1);
             saveGame();
             updateHUD();
+        } else {
+            sfx.goblinHit();
         }
     }
 
@@ -2195,7 +2435,7 @@
     function isSolidTile(type) {
         return type === DIRT || type === STONE || type === GOLD || type === GEM || type === DIAMOND || 
                type === RUBY || type === EMERALD || type === MYTHIC || type === VOIDSTONE || type === CELESTITE ||
-               type === GRASS || type === OBSIDIAN_BRICK;
+               type === PRISMATIC || type === GRASS || type === OBSIDIAN_BRICK;
     }
 
     function isInLava(x, y, w, h) {
@@ -2262,8 +2502,9 @@
         if (currentDepth >= 500) unlockAchievement('deep_dive_500');
         if (currentDepth >= 1500) unlockAchievement('deep_dive_1500');
         if (currentDepth >= 2000) unlockAchievement('deep_dive_2000');
-        if (currentDepth >= 2180) unlockAchievement('bottom_world');
-        if (player.inCart && currentDepth >= 2178) unlockAchievement('lava_cart_dive');
+        if (currentDepth >= 2500) unlockAchievement('deep_dive_2500');
+        if (currentDepth >= 2980) unlockAchievement('bottom_world');
+        if (player.inCart && currentDepth >= 2978) unlockAchievement('lava_cart_dive');
 
         if (player.inCart) {
             let rowSpeed = 0.4 * cartSpeedMultiplier;
@@ -2278,6 +2519,11 @@
             updateCartPositionFromProgress();
             player.x = shaftCart.x + 5;
             player.y = shaftCart.y - player.height + 10;
+
+            if (cartRegenActive && playerHp < playerMaxHp) {
+                playerHp = Math.min(playerMaxHp, playerHp + 0.03);
+            }
+
             return;
         }
 
@@ -2287,6 +2533,11 @@
             player.vy = -10;
             player.y -= 6;
             playerHp -= 5;
+            const nowLava = Date.now();
+            if (nowLava - lastLavaSoundTime > 250) {
+                sfx.playerHurt();
+                lastLavaSoundTime = nowLava;
+            }
             if (playerHp <= 0) emergencySurfaceRecall();
             updateHUD();
         }
@@ -2322,6 +2573,7 @@
         if ((keys[' '] || keys['w'] || keys['arrowup']) && player.grounded && !touchingLava) {
             player.vy = player.jumpPower;
             player.grounded = false;
+            sfx.jump();
         }
 
         moveAxisWithCollision('x');
@@ -2343,6 +2595,35 @@
         if (player.x < 0) player.x = 0;
         if (player.x + player.width > WORLD_COLS * TILE_SIZE) player.x = WORLD_COLS * TILE_SIZE - player.width;
         if (player.y + player.height > WORLD_ROWS * TILE_SIZE) player.y = WORLD_ROWS * TILE_SIZE - player.height;
+    }
+
+    function updateCompanion() {
+        if (!hasCompanion || player.inCart) return;
+
+        if (companionZapFlashTimer > 0) companionZapFlashTimer--;
+
+        const now = Date.now();
+        if (now - lastCompanionZapTime < 1400) return;
+
+        let nearestIdx = -1;
+        let nearestDist = 220;
+        for (let i = 0; i < goblins.length; i++) {
+            const g = goblins[i];
+            if (g.isBoss) continue;
+            const dist = Math.hypot((g.x + g.width / 2) - (player.x + player.width / 2), (g.y + g.height / 2) - (player.y + player.height / 2));
+            if (dist < nearestDist) {
+                nearestDist = dist;
+                nearestIdx = i;
+            }
+        }
+
+        if (nearestIdx !== -1) {
+            companionTargetIndex = nearestIdx;
+            lastCompanionZapTime = now;
+            companionZapFlashTimer = 12;
+            sfx.goblinHit();
+            damageGoblin(goblins[nearestIdx], nearestIdx, 12);
+        }
     }
 
     function moveAxisWithCollision(axis) {
@@ -2393,6 +2674,9 @@
         return false;
     }
 
+    let lastDigSoundTime = 0;
+    let lastLavaSoundTime = 0;
+
     function digTile(r, c) {
         if (!world[r] || !world[r][c] || !isSolidTile(world[r][c])) return;
         if (backpackCount >= backpackMax) return;
@@ -2404,28 +2688,37 @@
 
         spawnTileParticles(r, c, tile, 3);
 
+        const nowMs = Date.now();
+        if (nowMs - lastDigSoundTime > 130) {
+            sfx.digHit();
+            lastDigSoundTime = nowMs;
+        }
+
         if (tileHp[r][c] <= 0) {
             spawnTileParticles(r, c, tile, 12);
+            sfx.tileBreak();
             unlockAchievement('first_dirt');
 
             if (tile === RUBY) unlockAchievement('rare_ruby');
             if (tile === MYTHIC) unlockAchievement('mythic_find');
             if (tile === VOIDSTONE) unlockAchievement('void_find');
             if (tile === CELESTITE) unlockAchievement('celestial_find');
+            if (tile === PRISMATIC) unlockAchievement('prismatic_find');
 
-            const depthValMultiplier = 1 + Math.floor(r / 40) * 0.5;
+            const depthValMultiplier = 1 + Math.floor(r / 35) * 0.6;
             let itemVal = 1;
 
-            if (tile === DIRT) itemVal = Math.floor(1 * depthValMultiplier);
-            if (tile === STONE) itemVal = Math.floor(2 * depthValMultiplier);
-            if (tile === GOLD) itemVal = Math.floor(12 * depthValMultiplier);
-            if (tile === GEM) itemVal = Math.floor(45 * depthValMultiplier);
-            if (tile === DIAMOND) itemVal = Math.floor(150 * depthValMultiplier);
-            if (tile === RUBY) itemVal = Math.floor(400 * depthValMultiplier);
-            if (tile === EMERALD) itemVal = Math.floor(900 * depthValMultiplier);
-            if (tile === MYTHIC) itemVal = Math.floor(2500 * depthValMultiplier);
-            if (tile === VOIDSTONE) itemVal = Math.floor(6000 * depthValMultiplier);
-            if (tile === CELESTITE) itemVal = Math.floor(15000 * depthValMultiplier);
+            if (tile === DIRT) itemVal = Math.floor(2 * depthValMultiplier);
+            if (tile === STONE) itemVal = Math.floor(4 * depthValMultiplier);
+            if (tile === GOLD) itemVal = Math.floor(25 * depthValMultiplier);
+            if (tile === GEM) itemVal = Math.floor(90 * depthValMultiplier);
+            if (tile === DIAMOND) itemVal = Math.floor(300 * depthValMultiplier);
+            if (tile === RUBY) itemVal = Math.floor(800 * depthValMultiplier);
+            if (tile === EMERALD) itemVal = Math.floor(1800 * depthValMultiplier);
+            if (tile === MYTHIC) itemVal = Math.floor(5000 * depthValMultiplier);
+            if (tile === VOIDSTONE) itemVal = Math.floor(12000 * depthValMultiplier);
+            if (tile === CELESTITE) itemVal = Math.floor(28000 * depthValMultiplier);
+            if (tile === PRISMATIC) itemVal = Math.floor(60000 * depthValMultiplier);
 
             backpackCargo.push(Math.floor(itemVal * getBuffMultiplier('valueMult')));
             backpackCount++;
@@ -2440,6 +2733,7 @@
             cash += totalEarnings;
             backpackCargo = [];
             backpackCount = 0;
+            sfx.cashSell();
 
             if (cash >= 1000) unlockAchievement('rich_miner');
             if (cash >= 10000) unlockAchievement('tycoon');
@@ -2997,6 +3291,36 @@
             ctx.fillStyle = "#ffffff";
             ctx.fillRect(x + 14, y + 14, 4, 4);
             ctx.shadowBlur = 0;
+        } else if (type === PRISMATIC) {
+            ctx.fillStyle = "#0a0a14";
+            ctx.fillRect(x, y, TILE_SIZE, TILE_SIZE);
+
+            const hue = (time * 60 + r * 10 + c * 10) % 360;
+            const prismColor = `hsl(${hue}, 90%, 65%)`;
+            ctx.fillStyle = prismColor;
+            ctx.shadowColor = prismColor;
+            ctx.shadowBlur = 10;
+            ctx.beginPath();
+            ctx.moveTo(x + 16, y + 3);
+            ctx.lineTo(x + 27, y + 12);
+            ctx.lineTo(x + 23, y + 27);
+            ctx.lineTo(x + 9, y + 27);
+            ctx.lineTo(x + 5, y + 12);
+            ctx.closePath();
+            ctx.fill();
+
+            ctx.strokeStyle = "#ffffff";
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.moveTo(x + 16, y + 3);
+            ctx.lineTo(x + 16, y + 27);
+            ctx.moveTo(x + 5, y + 12);
+            ctx.lineTo(x + 27, y + 12);
+            ctx.stroke();
+
+            ctx.fillStyle = "#ffffff";
+            ctx.fillRect(x + 14, y + 10, 4, 4);
+            ctx.shadowBlur = 0;
         } else if (type === LAVA) {
             const lavaY = Math.sin(time * 2 + c) * 3;
             ctx.fillStyle = "#d50000";
@@ -3311,59 +3635,84 @@
         ctx.fillText("LACHIE", shopX + 122, npcY - 14);
     }
 
-    function drawBenStand(standX, standY) {
-        const standW = 100;
+    function drawBenStand(shopX, shopY) {
+        const shopW = 190;
+        const shopH = 125;
         const time = Date.now() * 0.003;
 
-        // Table/counter
-        ctx.fillStyle = "#5d4037";
-        ctx.fillRect(standX, standY + 30, standW, 8);
+        // Foundation
+        ctx.fillStyle = "#4e342e";
+        ctx.fillRect(shopX, shopY + 90, shopW, 35);
         ctx.fillStyle = "#3e2723";
-        ctx.fillRect(standX + 4, standY + 38, 6, 20);
-        ctx.fillRect(standX + standW - 10, standY + 38, 6, 20);
-
-        // Striped awning canopy
-        for (let i = 0; i < 5; i++) {
-            ctx.fillStyle = i % 2 === 0 ? "#c62828" : "#fff3e0";
-            ctx.beginPath();
-            ctx.moveTo(standX + i * (standW / 5), standY - 4);
-            ctx.lineTo(standX + (i + 1) * (standW / 5), standY - 4);
-            ctx.lineTo(standX + (i + 1) * (standW / 5) - 4, standY + 10);
-            ctx.lineTo(standX + i * (standW / 5) + 4, standY + 10);
-            ctx.closePath();
-            ctx.fill();
+        for (let bx = 0; bx < shopW; bx += 20) {
+            ctx.fillRect(shopX + bx, shopY + 90, 2, 35);
         }
 
-        // Awning support poles
+        // Corrugated metal walls (industrial explosives depot look)
+        ctx.fillStyle = "#78573a";
+        ctx.fillRect(shopX, shopY + 20, shopW, 72);
+        ctx.fillStyle = "#5d4327";
+        for (let bx = 0; bx < shopW; bx += 12) {
+            ctx.fillRect(shopX + bx, shopY + 20, 2, 72);
+        }
+
+        // Roof with warning stripes
         ctx.fillStyle = "#4e342e";
-        ctx.fillRect(standX - 4, standY + 10, 4, 28);
-        ctx.fillRect(standX + standW, standY + 10, 4, 28);
+        ctx.beginPath();
+        ctx.moveTo(shopX - 10, shopY + 24);
+        ctx.lineTo(shopX + shopW / 2, shopY - 22);
+        ctx.lineTo(shopX + shopW + 10, shopY + 24);
+        ctx.closePath();
+        ctx.fill();
+
+        const stripeCount = 10;
+        for (let i = 0; i < stripeCount; i++) {
+            ctx.fillStyle = i % 2 === 0 ? "#ffab00" : "#212121";
+            ctx.fillRect(shopX + i * (shopW / stripeCount), shopY + 20, shopW / stripeCount, 6);
+        }
 
         // Sign
         ctx.fillStyle = "#ffab40";
-        ctx.font = "7px 'Press Start 2P', monospace";
-        ctx.fillText("BEN'S DYNAMITE", standX + 2, standY + 22);
+        ctx.font = "8px 'Press Start 2P', monospace";
+        ctx.fillText("BEN'S EXPLOSIVES", shopX + 6, shopY + 12);
 
-        // Dynamite crates on the counter
+        // Window with stacked TNT crates
+        ctx.fillStyle = "#2d1a0f";
+        ctx.fillRect(shopX + 12, shopY + 34, 40, 44);
+        ctx.strokeStyle = "#4e342e";
+        ctx.lineWidth = 2;
+        ctx.strokeRect(shopX + 12, shopY + 34, 40, 44);
+
         const wobble = Math.sin(time * 3) * 0.5;
         ctx.fillStyle = "#8d6e63";
-        ctx.fillRect(standX + 6, standY + 14, 16, 16);
-        ctx.fillRect(standX + 26, standY + 18, 14, 12);
+        ctx.fillRect(shopX + 16, shopY + 50, 16, 16);
+        ctx.fillRect(shopX + 34, shopY + 54, 14, 12);
         ctx.fillStyle = "#d32f2f";
-        ctx.fillRect(standX + 9, standY + 16, 3, 10);
-        ctx.fillRect(standX + 14, standY + 16, 3, 10);
-        ctx.fillRect(standX + 29, standY + 19 + wobble, 3, 8);
+        ctx.fillRect(shopX + 19, shopY + 52, 3, 10);
+        ctx.fillRect(shopX + 24, shopY + 52, 3, 10);
+        ctx.fillRect(shopX + 37, shopY + 55 + wobble, 3, 8);
+        ctx.fillStyle = "#8d6e63";
+        ctx.fillRect(shopX + 20, shopY + 38, 22, 12);
+        ctx.fillStyle = "#d32f2f";
+        ctx.fillRect(shopX + 24, shopY + 40, 3, 8);
+        ctx.fillRect(shopX + 32, shopY + 40, 3, 8);
 
-        // Fuse spark on one crate
+        // Fuse spark
         ctx.fillStyle = `rgba(255, 171, 64, ${0.6 + Math.sin(time * 6) * 0.4})`;
         ctx.shadowColor = "#ffab40";
         ctx.shadowBlur = 6;
-        ctx.fillRect(standX + 10, standY + 12, 2, 2);
+        ctx.fillRect(shopX + 22, shopY + 36, 2, 2);
         ctx.shadowBlur = 0;
 
+        // Door
+        ctx.fillStyle = "#3e2723";
+        ctx.fillRect(shopX + 105, shopY + 40, 34, 50);
+        ctx.fillStyle = "#5d4327";
+        ctx.fillRect(shopX + 108, shopY + 43, 28, 44);
+
         // Ben NPC - black skin, black afro
-        const npcY = standY + 2 + Math.sin(time * 2) * 1.5;
-        const npcX = standX + standW - 26;
+        const npcY = shopY + 44 + Math.sin(time * 2) * 1.5;
+        const npcX = shopX + 128;
 
         ctx.fillStyle = "#4a2c17";
         ctx.fillRect(npcX, npcY, 18, 18);
@@ -3388,7 +3737,7 @@
         // Nameplate
         ctx.fillStyle = "#ffab40";
         ctx.font = "7px 'Press Start 2P', monospace";
-        ctx.fillText("BEN", npcX - 2, npcY - 16);
+        ctx.fillText("BEN", npcX - 2, npcY - 14);
     }
 
     function drawMineEntrance(x, y) {
@@ -3534,6 +3883,49 @@
         ctx.restore();
     }
 
+    function drawCompanion() {
+        const time = Date.now() * 0.003;
+        const orbitX = player.x + player.width / 2 + Math.sin(time * 1.3) * 26;
+        const orbitY = player.y - 20 + Math.sin(time * 2.4) * 6;
+
+        // Small thruster glow trail
+        ctx.fillStyle = "rgba(0, 230, 118, 0.25)";
+        ctx.beginPath();
+        ctx.arc(orbitX, orbitY + 4, 7, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Drone body
+        ctx.fillStyle = "#37474f";
+        ctx.fillRect(orbitX - 7, orbitY - 5, 14, 10);
+        ctx.fillStyle = "#607d8b";
+        ctx.fillRect(orbitX - 9, orbitY - 2, 4, 4);
+        ctx.fillRect(orbitX + 5, orbitY - 2, 4, 4);
+
+        // Glowing eye/lens
+        const pulse = Math.sin(time * 4) * 0.3 + 0.7;
+        ctx.fillStyle = `rgba(0, 230, 118, ${pulse})`;
+        ctx.shadowColor = "#00e676";
+        ctx.shadowBlur = 8;
+        ctx.beginPath();
+        ctx.arc(orbitX, orbitY, 3, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.shadowBlur = 0;
+
+        // Zap beam to current target
+        if (companionZapFlashTimer > 0 && companionTargetIndex >= 0 && goblins[companionTargetIndex]) {
+            const target = goblins[companionTargetIndex];
+            ctx.strokeStyle = `rgba(0, 230, 118, ${companionZapFlashTimer / 12})`;
+            ctx.lineWidth = 2;
+            ctx.shadowColor = "#00e676";
+            ctx.shadowBlur = 6;
+            ctx.beginPath();
+            ctx.moveTo(orbitX, orbitY);
+            ctx.lineTo(target.x + target.width / 2, target.y + target.height / 2);
+            ctx.stroke();
+            ctx.shadowBlur = 0;
+        }
+    }
+
     function drawHumanPlayer(x, y, facing, frame, lavaSuitActive, currentAttackTimer = 0) {
         ctx.save();
         ctx.translate(x, y);
@@ -3562,6 +3954,24 @@
         ctx.fillStyle = helmetColor;
         ctx.fillRect(2, 0, 14, 6);
         ctx.fillRect(0, 5, 18, 3);
+
+        if (lightRadius > 230) {
+            const lampTime = Date.now() * 0.003;
+            let lampColor = "#ffe082";
+            if (lightRadius >= 230 + 90 + 140 + 220) {
+                const hue = (lampTime * 80) % 360;
+                lampColor = `hsl(${hue}, 90%, 70%)`;
+            }
+            ctx.fillStyle = "#37474f";
+            ctx.fillRect(15, 2, 4, 4);
+            ctx.fillStyle = lampColor;
+            ctx.shadowColor = lampColor;
+            ctx.shadowBlur = 6 + Math.sin(lampTime * 3) * 2;
+            ctx.beginPath();
+            ctx.arc(17, 4, 2, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.shadowBlur = 0;
+        }
 
         ctx.fillStyle = skinColor;
         ctx.fillRect(3, 8, 12, 7);
@@ -3629,7 +4039,7 @@
         ctx.save();
         ctx.translate(cart.x, cart.y);
 
-        ctx.fillStyle = cartObsidianActive ? "#4a148c" : (cartArmorActive ? "#ff9800" : "#78909c");
+        ctx.fillStyle = cartTitaniumActive ? "#cfd8dc" : (cartObsidianActive ? "#4a148c" : (cartArmorActive ? "#ff9800" : "#78909c"));
         ctx.fillRect(0, 0, cart.width, cart.height);
         ctx.fillStyle = "#37474f";
         ctx.fillRect(2, 2, cart.width - 4, cart.height - 4);
@@ -3640,6 +4050,73 @@
         ctx.arc(cart.width - 4, cart.height + 2, 4, 0, Math.PI * 2);
         ctx.fill();
 
+        ctx.restore();
+    }
+
+    function drawDarknessOverlay() {
+        const playerRow = (player.y + player.height / 2) / TILE_SIZE;
+        if (playerRow < SURFACE_ROW + 8) return;
+
+        const nightVisionActive = activeBuffs.nightVision && activeBuffs.nightVision.expiresAt > Date.now();
+        if (nightVisionActive) return;
+
+        const depthFade = Math.min(1, (playerRow - (SURFACE_ROW + 8)) / 40);
+        const darkness = 0.6 + depthFade * 0.36;
+
+        const screenX = player.x + player.width / 2 - camera.x;
+        const screenY = player.y + player.height / 2 - camera.y;
+
+        const flicker = 1 + Math.sin(Date.now() * 0.008) * 0.015;
+        const ambientRadius = lightRadius * 0.45 * flicker;
+        const beamRadius = lightRadius * flicker;
+        const facingDir = player.facing === 'left' ? -1 : 1;
+
+        ctx.save();
+
+        // Deep navy fog instead of flat black
+        ctx.fillStyle = `rgba(6, 7, 16, ${darkness})`;
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        ctx.globalCompositeOperation = 'destination-out';
+
+        // Dim close-range visibility around the player - capped well below full brightness
+        // so the player is never washed out, just able to make things out clearly nearby
+        const ambientGrad = ctx.createRadialGradient(screenX, screenY, 0, screenX, screenY, ambientRadius);
+        ambientGrad.addColorStop(0, 'rgba(255,255,255,0.38)');
+        ambientGrad.addColorStop(0.5, 'rgba(255,255,255,0.20)');
+        ambientGrad.addColorStop(1, 'rgba(255,255,255,0)');
+        ctx.fillStyle = ambientGrad;
+        ctx.beginPath();
+        ctx.arc(screenX, screenY, ambientRadius, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Directional headlamp beam - noticeably dimmer the further it reaches
+        const beamCenterX = screenX + facingDir * beamRadius * 0.2;
+        const beamGrad = ctx.createRadialGradient(beamCenterX, screenY, 0, beamCenterX, screenY, beamRadius);
+        beamGrad.addColorStop(0, 'rgba(255,255,255,0.5)');
+        beamGrad.addColorStop(0.35, 'rgba(255,255,255,0.32)');
+        beamGrad.addColorStop(0.7, 'rgba(255,255,255,0.12)');
+        beamGrad.addColorStop(1, 'rgba(255,255,255,0)');
+
+        const coneAngle = Math.PI / 2.3;
+        const baseAngle = facingDir === 1 ? 0 : Math.PI;
+        ctx.beginPath();
+        ctx.moveTo(screenX, screenY);
+        ctx.arc(screenX, screenY, beamRadius, baseAngle - coneAngle / 2, baseAngle + coneAngle / 2);
+        ctx.closePath();
+        ctx.fillStyle = beamGrad;
+        ctx.fill();
+
+        ctx.globalCompositeOperation = 'source-over';
+        ctx.restore();
+
+        // Subtle cool vignette at the very edge of the fog for depth
+        ctx.save();
+        const edgeGrad = ctx.createRadialGradient(screenX, screenY, beamRadius * 0.85, screenX, screenY, beamRadius * 1.5);
+        edgeGrad.addColorStop(0, 'rgba(10, 12, 30, 0)');
+        edgeGrad.addColorStop(1, 'rgba(10, 12, 30, 0.25)');
+        ctx.fillStyle = edgeGrad;
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
         ctx.restore();
     }
 
@@ -3706,7 +4183,7 @@
         drawPotionShopVisuals(lachieShopX, lachieShopY);
 
         const benStandX = 113 * TILE_SIZE;
-        const benStandY = 102;
+        const benStandY = 1 * TILE_SIZE + 5;
         drawBenStand(benStandX, benStandY);
 
         const entranceX = (railCols[6] - 3) * TILE_SIZE;
@@ -3719,10 +4196,15 @@
         }
 
         drawHumanPlayer(player.x, player.y, player.facing, player.animFrame, hasLavaSuit, attackTimer);
+        if (hasCompanion && !player.inCart) {
+            drawCompanion();
+        }
 
         updateAndDrawParticles();
 
         ctx.restore();
+
+        drawDarknessOverlay();
     }
 
     const shopPrompt = document.getElementById('shop-prompt');
@@ -3803,11 +4285,11 @@
             lachieShopPrompt.style.display = "none";
         }
 
-        const benStandX = 113 * TILE_SIZE + 30;
+        const benStandX = 113 * TILE_SIZE + 46;
         const benStandY = 5 * TILE_SIZE;
         const benDist = Math.hypot(player.x - benStandX, player.y - benStandY);
 
-        if (benDist < 45) {
+        if (benDist < 50) {
             inBenShopZone = true;
             benShopPrompt.style.display = "block";
         } else {
@@ -3890,8 +4372,13 @@
         if (player.inCart) {
             player.x += 24;
             player.inCart = false;
+            sfx.minecartExit();
         } else if (nearMinecart && hasMinecart) {
             player.inCart = true;
+            sfx.minecartBoard();
+            if (cartAutoSellActive) {
+                sellAllCargo();
+            }
         } else if (nearMinecart && !hasMinecart) {
             showNoMinecartBanner();
         }
@@ -3960,6 +4447,8 @@
             btn.disabled = cash < item.cost;
             btn.innerText = dynamiteCounts[key] > 0 ? `BUY (OWN ${dynamiteCounts[key]})` : "BUY";
         });
+
+        document.getElementById('dyn-hud-val').innerText = dynamiteCounts.stick + dynamiteCounts.bundle + dynamiteCounts.barrel;
     }
 
     function openBackpackModal() {
@@ -3979,7 +4468,8 @@
         else if (curRow < 1000) layerName = "ABYSSAL ORE MINES";
         else if (curRow < 1400) layerName = "MYTHIC CORE CAVERNS";
         else if (curRow < 1800) layerName = "VOID RIFT CAVERNS";
-        else if (curRow < 2185) layerName = "CELESTIAL ABYSS";
+        else if (curRow < 2400) layerName = "CELESTIAL ABYSS";
+        else if (curRow < WORLD_ROWS - 15) layerName = "PRISMATIC DEPTHS";
         else layerName = "LAVA CORE FLOOR";
 
         document.getElementById('bp-layer-val').innerText = layerName;
@@ -4004,8 +4494,8 @@
         document.getElementById('bp-dyn-stick').innerText = dynamiteCounts.stick;
         document.getElementById('bp-dyn-bundle').innerText = dynamiteCounts.bundle;
         document.getElementById('bp-dyn-barrel').innerText = dynamiteCounts.barrel;
-        document.getElementById('dyn-hud-val').innerText = dynamiteCounts.stick + dynamiteCounts.bundle + dynamiteCounts.barrel;
         document.getElementById('bp-cart-speed-val').innerText = cartSpeedMultiplier.toFixed(1) + "x";
+        document.getElementById('bp-light-val').innerText = Math.round(lightRadius);
 
         backpackModal.style.display = 'flex';
     }
@@ -4041,6 +4531,10 @@
             backpackMax += up.capacity;
         } else if (key === 'boots') {
             player.speed = Math.min(67, player.speed + up.speedInc);
+        } else if (key === 'companion') {
+            hasCompanion = true;
+        } else if (key === 'headlampBasic' || key === 'headlampHalogen' || key === 'headlampPrismatic') {
+            lightRadius += up.lightInc;
         } else {
             digPower += up.power;
         }
@@ -4053,6 +4547,16 @@
             cartArmorActive = true;
         } else if (key === 'cartObsidian') {
             cartObsidianActive = true;
+        } else if (key === 'cartTitanium') {
+            cartTitaniumActive = true;
+        } else if (key === 'cartCargo') {
+            backpackMax += up.capacity;
+        } else if (key === 'cartAutoSell') {
+            cartAutoSellActive = true;
+        } else if (key === 'cartBeacon') {
+            cartBeaconActive = true;
+        } else if (key === 'cartRegen') {
+            cartRegenActive = true;
         } else {
             cartSpeedMultiplier = Math.max(cartSpeedMultiplier, up.speedMult);
         }
@@ -4072,6 +4576,7 @@
                 }
 
                 if (bought > 0) {
+                    sfx.purchase();
                     saveGame();
                     updateHUD();
                 }
@@ -4092,6 +4597,7 @@
                 }
 
                 if (bought > 0) {
+                    sfx.purchase();
                     saveGame();
                     updateHUD();
                 }
@@ -4159,6 +4665,7 @@
                     bought++;
                 }
                 if (bought > 0) {
+                    sfx.purchase();
                     saveGame();
                     updateHUD();
                 }
@@ -4167,6 +4674,13 @@
 
         document.getElementById('achievements-hud-btn').addEventListener('click', () => {
             achievementsModal.style.display = 'flex';
+        });
+
+        document.getElementById('sound-toggle-btn').addEventListener('click', () => {
+            soundEnabled = !soundEnabled;
+            localStorage.setItem('minerSoundEnabled', soundEnabled ? '1' : '0');
+            document.getElementById('sound-toggle-btn').innerText = soundEnabled ? '🔊 SOUND' : '🔇 MUTED';
+            if (soundEnabled) sfx.uiClick();
         });
 
         document.getElementById('close-achievements').addEventListener('click', () => {
@@ -4234,7 +4748,7 @@
         }
 
         if (k === 'c') {
-            if (nearSwervingTrack && !player.inCart) {
+            if ((nearSwervingTrack || cartBeaconActive) && !player.inCart) {
                 callMinecartToPlayer();
             }
         }
@@ -4270,6 +4784,7 @@
             updatePlayer();
             updateGoblins();
             updateMinecartLogic();
+            updateCompanion();
         }
 
         // Check tutorial progress every frame so opening modal triggers Step 3 -> 4 advance properly
@@ -4292,6 +4807,7 @@
     initWorld();
     setupShop();
     renderAchievementsList();
+    document.getElementById('sound-toggle-btn').innerText = soundEnabled ? '🔊 SOUND' : '🔇 MUTED';
     updateHUD();
     gameLoop();
 </script>

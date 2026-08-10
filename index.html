@@ -2142,13 +2142,23 @@
         railCols = [];
         let centerCol = 50;
 
-        for (let r = 0; r < WORLD_ROWS - 5; r++) {
+        const targetCenterCol = WORLD_COLS / 2;
+        const maxAmplitude = (WORLD_COLS - 40) / 2;
+
+        for (let r = 0; r < WORLD_ROWS - 2; r++) {
             if (r < 8) {
                 railCols[r] = centerCol;
             } else {
-                const wave1 = Math.sin(r * 0.04) * 22;
-                const wave2 = Math.cos(r * 0.015) * 15;
-                let col = Math.floor(centerCol + wave1 + wave2);
+                const depthProgress = Math.min(1, r / (WORLD_ROWS * 0.55));
+                const baseCenter = centerCol + (targetCenterCol - centerCol) * depthProgress;
+                const sweepAmplitude = 25 + depthProgress * (maxAmplitude - 25);
+                const wiggleScale = 0.4 + depthProgress * 0.6;
+
+                const globalSweep = Math.sin(r * 0.0025) * sweepAmplitude;
+                const wave1 = Math.sin(r * 0.04) * 22 * wiggleScale;
+                const wave2 = Math.cos(r * 0.015) * 15 * wiggleScale;
+
+                let col = Math.floor(baseCenter + globalSweep + wave1 + wave2);
                 col = Math.max(8, Math.min(col, WORLD_COLS - 10));
                 railCols[r] = col;
             }
@@ -2320,9 +2330,9 @@
     }
 
     function generateVoidSanctuary() {
-        const roomRow = 1650;
-        const colStart = 8;
-        const colEnd = 28;
+        const roomRow = 1475;
+        const colStart = 195;
+        const colEnd = 215;
         for (let col = colStart; col <= colEnd; col++) {
             for (let h = 0; h < 8; h++) {
                 const r = roomRow + h;
@@ -2339,9 +2349,9 @@
     }
 
     function generateCelestialShrine() {
-        const roomRow = 2050;
-        const colStart = 96;
-        const colEnd = 116;
+        const roomRow = 2110;
+        const colStart = 250;
+        const colEnd = 270;
         for (let col = colStart; col <= colEnd; col++) {
             for (let h = 0; h < 8; h++) {
                 const r = roomRow + h;
@@ -2492,37 +2502,37 @@
     }
 
     function generateAllBosses() {
-        createBossChamber(300, 60, 90, {
+        createBossChamber(150, 20, 50, {
             bossId: 'sentinel', name: 'SENTINEL GOBLIN',
             color: '#33691e', darkColor: '#1b3409', glowColor: '#ffeb3b',
             width: 36, height: 46, speed: 2.0, hp: 1200, contactDamage: 35, cashReward: 600
         });
 
-        createBossChamber(850, 15, 45, {
+        createBossChamber(790, 130, 160, {
             bossId: 'ancient_king', name: 'ANCIENT GREENSKIN KING',
             color: '#1b5e20', darkColor: '#0d3311', glowColor: '#ff0000',
             width: 42, height: 54, speed: 2.2, hp: 2200, contactDamage: 55, cashReward: 1500
         });
 
-        createBossChamber(1600, 70, 95, {
+        createBossChamber(1425, 245, 275, {
             bossId: 'void_warlord', name: 'VOID WARLORD',
             color: '#4a148c', darkColor: '#1a0033', glowColor: '#e040fb',
             width: 46, height: 58, speed: 2.6, hp: 4500, contactDamage: 75, cashReward: 4000
         });
 
-        createBossChamber(2000, 30, 60, {
+        createBossChamber(2060, 60, 95, {
             bossId: 'celestial_overlord', name: 'CELESTIAL OVERLORD',
             color: '#0d47a1', darkColor: '#0d1b2a', glowColor: '#80d8ff',
             width: 50, height: 62, speed: 3.0, hp: 8000, contactDamage: 100, cashReward: 9000
         });
 
-        createBossChamber(2600, 60, 95, {
+        createBossChamber(2700, 175, 210, {
             bossId: 'magma_guardian', name: 'MAGMA CORE GUARDIAN',
             color: '#bf360c', darkColor: '#3e0d02', glowColor: '#ff6d00',
             width: 56, height: 68, speed: 3.4, hp: 15000, contactDamage: 140, cashReward: 20000
         });
 
-        createBossChamber(WORLD_ROWS - 11, 40, 80, {
+        createBossChamber(WORLD_ROWS - 11, 130, 170, {
             bossId: 'obsidian_warden', name: 'THE OBSIDIAN WARDEN',
             color: '#000000', darkColor: '#1a0000', glowColor: '#ff3d00',
             width: 68, height: 82, speed: 2.8, hp: 60000, contactDamage: 220, cashReward: 50000
@@ -2531,7 +2541,7 @@
 
     function updateCartPositionFromProgress() {
         const row = Math.floor(shaftCart.rowProgress);
-        const nextRow = Math.min(WORLD_ROWS - 6, row + 1);
+        const nextRow = Math.min(WORLD_ROWS - 2, row + 1);
         const frac = shaftCart.rowProgress - row;
 
         const colCurrent = railCols[row] || 50;
@@ -2783,7 +2793,7 @@
             else if (keys['s'] || keys['arrowdown']) currentMove = rowSpeed;
 
             shaftCart.rowProgress += currentMove;
-            shaftCart.rowProgress = Math.max(3, Math.min(shaftCart.rowProgress, WORLD_ROWS - 7));
+            shaftCart.rowProgress = Math.max(3, Math.min(shaftCart.rowProgress, WORLD_ROWS - 3));
 
             updateCartPositionFromProgress();
             player.x = shaftCart.x + 5;
@@ -3020,7 +3030,7 @@
             showNoMinecartBanner();
             return;
         }
-        const targetRow = Math.max(3, Math.min(WORLD_ROWS - 7, (player.y + player.height / 2) / TILE_SIZE));
+        const targetRow = Math.max(3, Math.min(WORLD_ROWS - 3, (player.y + player.height / 2) / TILE_SIZE));
         shaftCart.targetRow = targetRow;
         shaftCart.isMovingToTarget = true;
     }
@@ -3641,7 +3651,7 @@
 
     function drawSwervingTracks(startRow, endRow) {
         ctx.save();
-        for (let r = startRow; r <= Math.min(endRow, WORLD_ROWS - 6); r++) {
+        for (let r = startRow; r <= Math.min(endRow, WORLD_ROWS - 2); r++) {
             if (r < 3) continue;
 
             const x1 = railCols[r] * TILE_SIZE + 16;
@@ -4350,12 +4360,12 @@
         });
 
         const bosses = [
-            { row: 300, col: 75, id: 'sentinel' },
-            { row: 850, col: 30, id: 'ancient_king' },
-            { row: 1600, col: 82, id: 'void_warlord' },
-            { row: 2000, col: 45, id: 'celestial_overlord' },
-            { row: 2600, col: 77, id: 'magma_guardian' },
-            { row: WORLD_ROWS - 11, col: 60, id: 'obsidian_warden' }
+            { row: 150, col: 35, id: 'sentinel' },
+            { row: 790, col: 145, id: 'ancient_king' },
+            { row: 1425, col: 260, id: 'void_warlord' },
+            { row: 2060, col: 77, id: 'celestial_overlord' },
+            { row: 2700, col: 192, id: 'magma_guardian' },
+            { row: WORLD_ROWS - 11, col: 150, id: 'obsidian_warden' }
         ];
         bosses.forEach(b => {
             const defeated = bossesDefeated.includes(b.id);
@@ -4424,12 +4434,12 @@
         const beliveSignY = 850 * TILE_SIZE + 10;
         drawBeliveSign(beliveSignX, beliveSignY);
 
-        const voidGolemX = 14 * TILE_SIZE;
-        const voidGolemY = 1650 * TILE_SIZE + 46;
+        const voidGolemX = 199 * TILE_SIZE;
+        const voidGolemY = 1475 * TILE_SIZE + 46;
         drawVoidGolem(voidGolemX, voidGolemY);
 
-        const celestialGuardX = 102 * TILE_SIZE;
-        const celestialGuardY = 2050 * TILE_SIZE + 46;
+        const celestialGuardX = 254 * TILE_SIZE;
+        const celestialGuardY = 2110 * TILE_SIZE + 46;
         drawCelestialGuardian(celestialGuardX, celestialGuardY);
 
         const shopX = 80 * TILE_SIZE;
@@ -4565,7 +4575,7 @@
         const pCol = Math.max(0, Math.min(WORLD_COLS - 1, Math.floor((player.x + player.width / 2) / TILE_SIZE)));
         const trackColAtRow = railCols[pRow] || 50;
 
-        nearSwervingTrack = Math.abs(pCol - trackColAtRow) <= 3 && pRow < WORLD_ROWS - 6;
+        nearSwervingTrack = Math.abs(pCol - trackColAtRow) <= 3 && pRow < WORLD_ROWS - 2;
 
         const cartDist = Math.hypot(player.x - shaftCart.x, player.y - shaftCart.y);
         nearMinecart = cartDist < 48;
@@ -4591,8 +4601,8 @@
             easterPrompt.style.display = "none";
         }
 
-        const voidGolemPX = 14 * TILE_SIZE + 35;
-        const voidGolemPY = 1650 * TILE_SIZE + 46 + 30;
+        const voidGolemPX = 199 * TILE_SIZE + 35;
+        const voidGolemPY = 1475 * TILE_SIZE + 46 + 30;
         const voidGolemDist = Math.hypot(player.x - voidGolemPX, player.y - voidGolemPY);
         if (voidGolemDist < 100) {
             voidEggPrompt.style.display = "block";
@@ -4601,8 +4611,8 @@
             voidEggPrompt.style.display = "none";
         }
 
-        const celestialGuardPX = 102 * TILE_SIZE + 35;
-        const celestialGuardPY = 2050 * TILE_SIZE + 46 + 30;
+        const celestialGuardPX = 254 * TILE_SIZE + 35;
+        const celestialGuardPY = 2110 * TILE_SIZE + 46 + 30;
         const celestialGuardDist = Math.hypot(player.x - celestialGuardPX, player.y - celestialGuardPY);
         if (celestialGuardDist < 100) {
             celestialEggPrompt.style.display = "block";

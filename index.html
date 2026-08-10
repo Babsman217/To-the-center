@@ -140,6 +140,19 @@
         }
 
         /* --- HUD Overlay --- */
+        #minimapCanvas {
+            position: absolute;
+            bottom: 16px;
+            left: 16px;
+            width: 110px;
+            height: 160px;
+            border: 3px solid #5d4037;
+            border-radius: 4px;
+            background: #0a0a10;
+            z-index: 6;
+            box-shadow: 0 0 12px rgba(0,0,0,0.6);
+        }
+
         #hud {
             position: absolute;
             top: 16px;
@@ -289,6 +302,98 @@
 
         #achievement-popup.show {
             transform: translateX(-50%) translateY(0);
+        }
+
+        /* --- Completion / "Thank You For Playing" Screen --- */
+        #completion-screen {
+            display: none;
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at 50% 40%, #1a1030 0%, #05030a 80%);
+            z-index: 50;
+            overflow: hidden;
+            align-items: center;
+            justify-content: center;
+        }
+
+        #completion-screen.show {
+            display: flex;
+        }
+
+        #confetti-layer {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            pointer-events: none;
+        }
+
+        .confetti-piece {
+            position: absolute;
+            top: -20px;
+            width: 8px;
+            height: 14px;
+            opacity: 0.9;
+            animation: confetti-fall linear infinite;
+        }
+
+        @keyframes confetti-fall {
+            0% { transform: translateY(0) rotate(0deg); opacity: 1; }
+            100% { transform: translateY(110vh) rotate(720deg); opacity: 0.6; }
+        }
+
+        #completion-content {
+            position: relative;
+            z-index: 2;
+            text-align: center;
+            max-width: 560px;
+            padding: 20px;
+        }
+
+        #completion-title {
+            font-size: 22px;
+            color: #ffd700;
+            text-shadow: 0 0 10px #ffd700, 0 0 30px #ff9800, 3px 3px #000;
+            animation: completion-pulse 1.6s ease-in-out infinite;
+            margin-bottom: 16px;
+        }
+
+        @keyframes completion-pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        #completion-subtitle {
+            font-size: 10px;
+            color: #e0f7fa;
+            line-height: 1.8;
+            margin-bottom: 20px;
+        }
+
+        #completion-stats {
+            background: rgba(0,0,0,0.4);
+            border: 2px solid #ffd700;
+            border-radius: 6px;
+            padding: 14px;
+            margin-bottom: 18px;
+            text-align: left;
+            display: inline-block;
+        }
+
+        .completion-stat {
+            font-size: 9px;
+            color: #ffe082;
+            margin-bottom: 8px;
+        }
+
+        .completion-stat:last-child { margin-bottom: 0; }
+
+        #completion-credits {
+            font-size: 8px;
+            color: #b39ddb;
+            line-height: 1.7;
+            font-style: italic;
         }
 
         @keyframes pulse {
@@ -485,6 +590,26 @@
         <div id="achievement-popup-title" style="font-weight: bold; font-size: 10px;">TITLE</div>
     </div>
 
+    <div id="completion-screen">
+        <div id="confetti-layer"></div>
+        <div id="completion-content">
+            <div id="completion-title">🏆 THANK YOU FOR PLAYING 🏆</div>
+            <div id="completion-subtitle">You've unlocked every single achievement in<br>Miners I Love 'Em!</div>
+            <div id="completion-stats">
+                <div class="completion-stat">💰 TOTAL CASH: $<span id="completion-cash">0</span></div>
+                <div class="completion-stat">⛏️ GOBLINS SLAIN: <span id="completion-goblins">0</span></div>
+                <div class="completion-stat">👑 BOSSES DEFEATED: <span id="completion-bosses">0</span>/6</div>
+                <div class="completion-stat">🕳️ DEEPEST DEPTH: <span id="completion-depth">0</span>M</div>
+                <div class="completion-stat">🏆 ACHIEVEMENTS: <span id="completion-achievements">0</span>/<span id="completion-achievements-total">0</span></div>
+            </div>
+            <div id="completion-credits">
+                A huge thanks to Hanru, Baxter, Lucas, Lachie, Ben... and Archie, waiting for you at the bottom of it all.<br>
+                Every ore, every boss, every secret - you found them all. 💎
+            </div>
+            <button class="close-btn" id="close-completion" style="margin-top: 16px;">KEEP MINING</button>
+        </div>
+    </div>
+
     <div id="main-menu">
         <div id="archie-banner"><span>★ ARCHIE WAS HERE ★ ARCHIE WAS HERE ★ ARCHIE WAS HERE ★</span></div>
         <h1>MINERS I LOVE EM</h1>
@@ -501,7 +626,9 @@
     </div>
 
     <canvas id="gameCanvas" tabindex="1"></canvas>
-    
+
+    <canvas id="minimapCanvas" width="110" height="160"></canvas>
+
     <div id="hud">
         <div class="hud-box health-box">HP: <span id="hp-val">100</span>/<span id="hp-max">100</span></div>
         <div class="hud-box">CASH: $<span id="cash-val">0</span></div>
@@ -530,7 +657,7 @@
     <div id="celestial-egg-prompt" class="prompt">✦ YOU FOUND THE CELESTIAL SHRINE! ✦</div>
     <div id="recall-banner" class="prompt">⚠️ EMERGENCY RECALL! LOST 50% CASH ⚠️</div>
     <div id="no-cart-banner" class="prompt" style="background:#e65100; color:#fff;">🛒 YOU NEED TO BUY A MINECART FROM BAXTER FIRST! ($100)</div>
-    <div id="cave-in-banner" class="prompt" style="background:#3e2723; color:#ffab40; border-color:#5d4037;">⛰️ CAVE-IN! A TUNNEL BEHIND YOU HAS COLLAPSED!</div>
+    <div id="cave-in-banner" class="prompt" style="background:#3e2723; color:#ffab40; border-color:#5d4037;">⛰️ CAVE-IN! ROCKS ARE FALLING - GET CLEAR!</div>
     <div id="treasure-banner" class="prompt" style="background:#1b5e20; color:#ffd700; border-color:#00e676;">💎 YOU STRUCK A TREASURE POCKET! +$200</div>
 
     <div id="shop-modal" class="modal">
@@ -900,7 +1027,7 @@
             <div class="upgrade-row" style="border-color: #ff3d00;">
                 <div class="upgrade-details">
                     <div class="upgrade-title" style="color:#ff8a65;">SEISMIC CHARGE</div>
-                    <div class="upgrade-cost">Ben's pride and joy. Reshapes the cave itself. | COST: $<span id="cost-dyn-seismic">13000</span></div>
+                    <div class="upgrade-cost">Ben's pride and joy. Reshapes the cave itself. | COST: $<span id="cost-dyn-seismic">1000000</span></div>
                 </div>
                 <button class="buy-btn" id="buy-dyn-seismic">BUY</button>
             </div>
@@ -998,6 +1125,9 @@
     const canvas = document.getElementById('gameCanvas');
     const ctx = canvas.getContext('2d');
 
+    const minimapCanvas = document.getElementById('minimapCanvas');
+    const mctx = minimapCanvas.getContext('2d');
+
     /* --- LIGHTWEIGHT PROCEDURAL SOUND ENGINE (no external audio files) --- */
     let audioCtx = null;
     let soundEnabled = localStorage.getItem('minerSoundEnabled') !== '0';
@@ -1088,7 +1218,7 @@
 
     // World Config - DEEPER MAP (2200 Rows)
     const TILE_SIZE = 32;
-    const WORLD_COLS = 120;
+    const WORLD_COLS = 300;
     const WORLD_ROWS = 3000;
     const SURFACE_ROW = 4; // Precise surface ground baseline where depth = 0m
     
@@ -1120,6 +1250,8 @@
     let backpackCargo = [];
     let hasLavaSuit = false;
     let goblinsKilled = 0;
+    let deepestDepthReached = 0;
+    let allAchievementsCelebrated = false;
     let bossesDefeated = [];
     let boyChamberUnlocked = false;
     let ownedCosmetics = ['none'];
@@ -1312,7 +1444,48 @@
             showAchievementPopup(achievements[id].title);
             saveGame();
             renderAchievementsList();
+            checkAllAchievementsComplete();
         }
+    }
+
+    function checkAllAchievementsComplete() {
+        if (allAchievementsCelebrated) return;
+        const allDone = Object.keys(achievements).every(id => achievements[id].unlocked);
+        if (allDone) {
+            allAchievementsCelebrated = true;
+            saveGame();
+            setTimeout(() => showCompletionScreen(), 1200);
+        }
+    }
+
+    function spawnConfetti() {
+        const layer = document.getElementById('confetti-layer');
+        if (!layer) return;
+        layer.innerHTML = '';
+        const colors = ['#ffd700', '#ff6d00', '#00e676', '#40c4ff', '#e040fb', '#ff1744', '#ffffff'];
+        for (let i = 0; i < 70; i++) {
+            const piece = document.createElement('div');
+            piece.className = 'confetti-piece';
+            piece.style.left = Math.random() * 100 + '%';
+            piece.style.background = colors[Math.floor(Math.random() * colors.length)];
+            piece.style.animationDuration = (2.5 + Math.random() * 3) + 's';
+            piece.style.animationDelay = (Math.random() * 3) + 's';
+            piece.style.transform = `rotate(${Math.floor(Math.random() * 360)}deg)`;
+            layer.appendChild(piece);
+        }
+    }
+
+    function showCompletionScreen() {
+        document.getElementById('completion-cash').innerText = Math.floor(cash);
+        document.getElementById('completion-goblins').innerText = goblinsKilled;
+        document.getElementById('completion-bosses').innerText = bossesDefeated.length;
+        document.getElementById('completion-depth').innerText = Math.floor(deepestDepthReached);
+        document.getElementById('completion-achievements').innerText = Object.keys(achievements).filter(id => achievements[id].unlocked).length;
+        document.getElementById('completion-achievements-total').innerText = Object.keys(achievements).length;
+
+        spawnConfetti();
+        document.getElementById('completion-screen').classList.add('show');
+        sfx.treasureFound();
     }
 
     function showAchievementPopup(title) {
@@ -1614,7 +1787,7 @@
         bundle: { name: "BUNDLE OF DYNAMITE", desc: "Tied-together sticks for a bigger bang.", cost: 350, radius: 2, btnId: 'buy-dyn-bundle' },
         barrel: { name: "BARREL OF DYNAMITE", desc: "Ben's biggest boom. Clears a solid cavity.", cost: 1300, radius: 3, btnId: 'buy-dyn-barrel' },
         crate: { name: "CRATE OF TNT", desc: "A full crate wired together. Serious excavation.", cost: 4000, radius: 5, btnId: 'buy-dyn-crate' },
-        seismic: { name: "SEISMIC CHARGE", desc: "Ben's pride and joy. Reshapes the cave itself.", cost: 13000, radius: 8, btnId: 'buy-dyn-seismic' }
+        seismic: { name: "SEISMIC CHARGE", desc: "Ben's pride and joy. Reshapes the cave itself.", cost: 1000000, radius: 8, btnId: 'buy-dyn-seismic' }
     };
 
     function useDynamite() {
@@ -1836,6 +2009,8 @@
         cartTitaniumActive = false;
         hasCompanion = false;
         goblinsKilled = 0;
+        deepestDepthReached = 0;
+        allAchievementsCelebrated = false;
         bossesDefeated = [];
         boyChamberUnlocked = false;
         ownedCosmetics = ['none'];
@@ -1882,6 +2057,8 @@
             cartTitaniumActive: cartTitaniumActive,
             hasCompanion: hasCompanion,
             goblinsKilled: goblinsKilled,
+            deepestDepthReached: deepestDepthReached,
+            allAchievementsCelebrated: allAchievementsCelebrated,
             bossesDefeated: bossesDefeated,
             boyChamberUnlocked: boyChamberUnlocked,
             ownedCosmetics: ownedCosmetics,
@@ -1920,6 +2097,8 @@
             cartTitaniumActive = data.cartTitaniumActive ?? false;
             hasCompanion = data.hasCompanion ?? false;
             goblinsKilled = data.goblinsKilled ?? 0;
+            deepestDepthReached = data.deepestDepthReached ?? 0;
+            allAchievementsCelebrated = data.allAchievementsCelebrated ?? false;
             bossesDefeated = data.bossesDefeated ?? [];
             boyChamberUnlocked = data.boyChamberUnlocked ?? false;
             ownedCosmetics = data.ownedCosmetics ?? ['none'];
@@ -2104,7 +2283,7 @@
 
     function generateTreasurePockets() {
         treasurePockets = [];
-        const pocketCount = 26;
+        const pocketCount = 55;
 
         for (let p = 0; p < pocketCount; p++) {
             const row = 20 + Math.floor(Math.random() * (WORLD_ROWS - 60));
@@ -2204,7 +2383,7 @@
     }
 
     let lastCaveInCheckTime = 0;
-    const CAVE_IN_CHECK_INTERVAL = 45000;
+    const CAVE_IN_CHECK_INTERVAL = 14000;
 
     function checkCaveInEvent() {
         if (player.inCart) return;
@@ -2214,17 +2393,18 @@
         lastCaveInCheckTime = now;
 
         const playerRow = (player.y + player.height / 2) / TILE_SIZE;
-        if (playerRow < 60) return;
-        if (Math.random() > 0.25) return;
+        if (playerRow < 30) return;
+        if (Math.random() > 0.5) return;
 
         const pRow = Math.floor(playerRow);
         const pCol = Math.floor((player.x + player.width / 2) / TILE_SIZE);
         const behindDir = player.facing === 'right' ? -1 : 1;
 
         let collapsed = 0;
-        for (let attempt = 0; attempt < 40 && collapsed < 4; attempt++) {
+        let hitPlayer = false;
+        for (let attempt = 0; attempt < 60 && collapsed < 8; attempt++) {
             const dr = Math.floor(Math.random() * 7) - 3;
-            const dc = behindDir * (2 + Math.floor(Math.random() * 4));
+            const dc = behindDir * (1 + Math.floor(Math.random() * 4));
             const r = pRow + dr;
             const c = pCol + dc;
             if (!world[r] || world[r][c] === undefined) continue;
@@ -2233,11 +2413,27 @@
             world[r][c] = STONE;
             tileHp[r][c] = getMaxTileHp(STONE, r);
             collapsed++;
+
+            if (Math.hypot(dr, dc) <= 2.2) {
+                hitPlayer = true;
+            }
         }
 
         if (collapsed > 0) {
             sfx.caveIn();
             showEventBanner('cave-in-banner');
+
+            if (hitPlayer) {
+                const damage = 15 + Math.floor(Math.random() * 21);
+                playerHp -= damage;
+                sfx.playerHurt();
+                if (playerHp <= 0) {
+                    playerHp = 0;
+                    emergencySurfaceRecall();
+                }
+                updateHUD();
+            }
+
             saveGame();
         }
     }
@@ -2347,7 +2543,7 @@
     }
 
     function generateAbandonedMines() {
-        const numMines = 80;
+        const numMines = 160;
         for (let i = 0; i < numMines; i++) {
             const startRow = Math.floor(15 + Math.random() * (WORLD_ROWS - 50));
             const startCol = Math.floor(Math.random() * (WORLD_COLS - 30));
@@ -2570,6 +2766,7 @@
         if (attackTimer > 0) attackTimer--;
 
         const currentDepth = parseFloat(getExactDepth());
+        if (currentDepth > deepestDepthReached) deepestDepthReached = currentDepth;
         if (currentDepth >= 100) unlockAchievement('deep_dive_100');
         if (currentDepth >= 500) unlockAchievement('deep_dive_500');
         if (currentDepth >= 1500) unlockAchievement('deep_dive_1500');
@@ -4113,6 +4310,82 @@
         ctx.restore();
     }
 
+    function drawMinimap() {
+        const w = minimapCanvas.width, h = minimapCanvas.height;
+        mctx.clearRect(0, 0, w, h);
+        mctx.fillStyle = '#0a0a10';
+        mctx.fillRect(0, 0, w, h);
+
+        const padX = 6, padY = 6;
+        const mapW = w - padX * 2, mapH = h - padY * 2;
+        const scaleX = mapW / WORLD_COLS;
+        const scaleY = mapH / WORLD_ROWS;
+
+        const rowToY = (r) => padY + r * scaleY;
+        const colToX = (c) => padX + c * scaleX;
+
+        const zones = [
+            { from: 0, to: 12, color: '#3a5a8c' },
+            { from: 12, to: 250, color: '#5d4327' },
+            { from: 250, to: 1400, color: '#1a2233' },
+            { from: 1400, to: 2400, color: '#160c26' },
+            { from: 2400, to: WORLD_ROWS - 15, color: '#2a0d0d' },
+            { from: WORLD_ROWS - 15, to: WORLD_ROWS, color: '#5c0000' }
+        ];
+        zones.forEach(z => {
+            mctx.fillStyle = z.color;
+            mctx.fillRect(padX, rowToY(z.from), mapW, (z.to - z.from) * scaleY);
+        });
+
+        const shops = [
+            { col: 80, color: '#ffd700' },
+            { col: 87, color: '#ff9800' },
+            { col: 96, color: '#ce93d8' },
+            { col: 105, color: '#a5d6a7' },
+            { col: 113, color: '#bcaaa4' }
+        ];
+        shops.forEach(s => {
+            mctx.fillStyle = s.color;
+            mctx.fillRect(colToX(s.col) - 1.5, rowToY(3) - 1.5, 3, 3);
+        });
+
+        const bosses = [
+            { row: 300, col: 75, id: 'sentinel' },
+            { row: 850, col: 30, id: 'ancient_king' },
+            { row: 1600, col: 82, id: 'void_warlord' },
+            { row: 2000, col: 45, id: 'celestial_overlord' },
+            { row: 2600, col: 77, id: 'magma_guardian' },
+            { row: WORLD_ROWS - 11, col: 60, id: 'obsidian_warden' }
+        ];
+        bosses.forEach(b => {
+            const defeated = bossesDefeated.includes(b.id);
+            mctx.fillStyle = defeated ? '#555555' : '#ff1744';
+            mctx.beginPath();
+            mctx.arc(colToX(b.col), rowToY(b.row), 2.5, 0, Math.PI * 2);
+            mctx.fill();
+        });
+
+        const pRow = (player.y + player.height / 2) / TILE_SIZE;
+        const pCol = (player.x + player.width / 2) / TILE_SIZE;
+        const px = colToX(pCol), py = rowToY(pRow);
+        const pulse = Math.sin(Date.now() * 0.006) * 0.5 + 0.5;
+        mctx.fillStyle = '#ffffff';
+        mctx.shadowColor = '#00e5ff';
+        mctx.shadowBlur = 4 + pulse * 3;
+        mctx.beginPath();
+        mctx.arc(px, py, 3, 0, Math.PI * 2);
+        mctx.fill();
+        mctx.shadowBlur = 0;
+
+        mctx.strokeStyle = '#5d4037';
+        mctx.lineWidth = 1;
+        mctx.strokeRect(padX, padY, mapW, mapH);
+
+        mctx.fillStyle = '#ffd700';
+        mctx.font = 'bold 7px monospace';
+        mctx.fillText('MINIMAP', padX, h - 4);
+    }
+
     function draw() {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
 
@@ -4675,6 +4948,11 @@
             achievementsModal.style.display = 'none';
         });
 
+        document.getElementById('close-completion').addEventListener('click', () => {
+            document.getElementById('completion-screen').classList.remove('show');
+            sfx.uiClick();
+        });
+
         document.getElementById('tutorial-btn').addEventListener('click', () => {
             startTutorialMode();
         });
@@ -4695,6 +4973,7 @@
         document.getElementById('tutorial-overlay').style.display = 'none';
         document.getElementById('main-menu').style.display = 'none';
         canvas.focus();
+        checkAllAchievementsComplete();
     });
 
     window.addEventListener('keydown', (e) => {
@@ -4789,6 +5068,7 @@
         updateActiveBuffsHUD();
 
         draw();
+        drawMinimap();
         requestAnimationFrame(gameLoop);
     }
 

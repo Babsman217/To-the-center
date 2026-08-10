@@ -530,6 +530,8 @@
     <div id="celestial-egg-prompt" class="prompt">✦ YOU FOUND THE CELESTIAL SHRINE! ✦</div>
     <div id="recall-banner" class="prompt">⚠️ EMERGENCY RECALL! LOST 50% CASH ⚠️</div>
     <div id="no-cart-banner" class="prompt" style="background:#e65100; color:#fff;">🛒 YOU NEED TO BUY A MINECART FROM BAXTER FIRST! ($100)</div>
+    <div id="cave-in-banner" class="prompt" style="background:#3e2723; color:#ffab40; border-color:#5d4037;">⛰️ CAVE-IN! A TUNNEL BEHIND YOU HAS COLLAPSED!</div>
+    <div id="treasure-banner" class="prompt" style="background:#1b5e20; color:#ffd700; border-color:#00e676;">💎 YOU STRUCK A TREASURE POCKET! +$200</div>
 
     <div id="shop-modal" class="modal">
         <div id="shop-window" class="modal-window">
@@ -690,30 +692,6 @@
                     <div class="upgrade-cost">A LOYAL DRONE THAT ZAPS NEARBY GOBLINS FOR YOU | COST: $<span id="cost-companion">5000</span></div>
                 </div>
                 <button class="buy-btn" id="buy-companion">BUY</button>
-            </div>
-
-            <div class="upgrade-row" style="border-color: #ffd54f;">
-                <div class="upgrade-details">
-                    <div class="upgrade-title" style="color:#ffe082;">BASIC HEADLAMP</div>
-                    <div class="upgrade-cost">LIGHT RADIUS +90 | COST: $<span id="cost-headlamp-basic">150</span></div>
-                </div>
-                <button class="buy-btn" id="buy-headlamp-basic">BUY</button>
-            </div>
-
-            <div class="upgrade-row" style="border-color: #ffca28;">
-                <div class="upgrade-details">
-                    <div class="upgrade-title" style="color:#ffd54f;">HALOGEN HEADLAMP</div>
-                    <div class="upgrade-cost">LIGHT RADIUS +140 | COST: $<span id="cost-headlamp-halogen">700</span></div>
-                </div>
-                <button class="buy-btn" id="buy-headlamp-halogen">BUY</button>
-            </div>
-
-            <div class="upgrade-row" style="border-color: #ff4081;">
-                <div class="upgrade-details">
-                    <div class="upgrade-title" style="color:#ff80ab;">PRISMATIC HEADLAMP</div>
-                    <div class="upgrade-cost">LIGHT RADIUS +220, SHIFTING RAINBOW BEAM | COST: $<span id="cost-headlamp-prismatic">3000</span></div>
-                </div>
-                <button class="buy-btn" id="buy-headlamp-prismatic">BUY</button>
             </div>
 
             <button class="close-btn" id="close-shop">EXIT SHOP [ESC]</button>
@@ -1008,9 +986,6 @@
                     <div class="upgrade-cost" style="color:#aaa; margin-top:2px;">
                         DYNAMITE: STICK x<span id="bp-dyn-stick" style="color:#ffab40;">0</span> | BUNDLE x<span id="bp-dyn-bundle" style="color:#ffab40;">0</span> | BARREL x<span id="bp-dyn-barrel" style="color:#ffab40;">0</span>
                     </div>
-                    <div class="upgrade-cost" style="color:#aaa; margin-top:2px;">
-                        LIGHT RADIUS: <span id="bp-light-val" style="color:#ffe082;">230</span>px
-                    </div>
                 </div>
             </div>
 
@@ -1099,7 +1074,9 @@
         minecartExit: () => playTone(500, 0.1, 'square', 0.05, { slideTo: 250 }),
         uiClick: () => playTone(440, 0.05, 'square', 0.04),
         potionDrink: () => { playTone(400, 0.1, 'sine', 0.06, { slideTo: 700 }); },
-        lavaHiss: () => playNoise(0.15, 0.05)
+        lavaHiss: () => playNoise(0.15, 0.05),
+        caveIn: () => { playNoise(0.55, 0.16); playTone(60, 0.5, 'sawtooth', 0.09, { slideTo: 28 }); setTimeout(() => playNoise(0.3, 0.1), 150); },
+        treasureFound: () => { [523, 659, 784, 1046, 1318].forEach((f, i) => setTimeout(() => playTone(f, 0.16, 'triangle', 0.07), i * 80)); }
     };
 
     function resizeCanvas() {
@@ -1165,9 +1142,6 @@
     let companionTargetIndex = -1;
     let lastCompanionZapTime = 0;
     let companionZapFlashTimer = 0;
-
-    // Headlamp / Light Radius
-    let lightRadius = 230;
 
     // Health & Combat System
     let playerHp = 100;
@@ -1567,10 +1541,7 @@
         voidpick: { cost: 8000, power: 250, btnId: 'buy-voidpick', count: 0, singleUse: false },
         celestialdrill: { cost: 25000, power: 600, btnId: 'buy-celestialdrill', count: 0, singleUse: false },
         omegaexcavator: { cost: 75000, power: 1500, btnId: 'buy-omega', count: 0, singleUse: false },
-        companion: { cost: 5000, btnId: 'buy-companion', count: 0, singleUse: true },
-        headlampBasic: { cost: 150, lightInc: 90, btnId: 'buy-headlamp-basic', count: 0, singleUse: true },
-        headlampHalogen: { cost: 700, lightInc: 140, btnId: 'buy-headlamp-halogen', count: 0, singleUse: true },
-        headlampPrismatic: { cost: 3000, lightInc: 220, btnId: 'buy-headlamp-prismatic', count: 0, singleUse: true }
+        companion: { cost: 5000, btnId: 'buy-companion', count: 0, singleUse: true }
     };
 
     const baxterUpgrades = {
@@ -1623,7 +1594,6 @@
         focusTonic: { name: "MINER'S FOCUS", desc: "Dig Power x2 for 60 seconds.", cost: 200, duration: 60000, type: 'digMult', amount: 2 },
         berserkerTonic: { name: "BERSERKER TONIC", desc: "Sword Damage +50 for 60 seconds.", cost: 250, duration: 60000, type: 'damage', amount: 50 },
         fortuneElixir: { name: "FORTUNE ELIXIR", desc: "Ore Value x1.5 for 90 seconds.", cost: 400, duration: 90000, type: 'valueMult', amount: 1.5 },
-        nightVisionDraught: { name: "NIGHT VISION DRAUGHT", desc: "See clearly in total darkness for 90 seconds.", cost: 350, duration: 90000, type: 'nightVision', amount: 1 },
         obsidianHeart: { name: "OBSIDIAN HEART DRAUGHT", desc: "Permanent immunity to lava. One sip, forever.", cost: 5000, permanent: true }
     };
 
@@ -1865,7 +1835,6 @@
         cartRegenActive = false;
         cartTitaniumActive = false;
         hasCompanion = false;
-        lightRadius = 230;
         goblinsKilled = 0;
         bossesDefeated = [];
         boyChamberUnlocked = false;
@@ -1912,7 +1881,6 @@
             cartRegenActive: cartRegenActive,
             cartTitaniumActive: cartTitaniumActive,
             hasCompanion: hasCompanion,
-            lightRadius: lightRadius,
             goblinsKilled: goblinsKilled,
             bossesDefeated: bossesDefeated,
             boyChamberUnlocked: boyChamberUnlocked,
@@ -1951,7 +1919,6 @@
             cartRegenActive = data.cartRegenActive ?? false;
             cartTitaniumActive = data.cartTitaniumActive ?? false;
             hasCompanion = data.hasCompanion ?? false;
-            lightRadius = data.lightRadius ?? 230;
             goblinsKilled = data.goblinsKilled ?? 0;
             bossesDefeated = data.bossesDefeated ?? [];
             boyChamberUnlocked = data.boyChamberUnlocked ?? false;
@@ -2126,10 +2093,51 @@
         generateAllBosses();
         generateVoidSanctuary();
         generateCelestialShrine();
+        generateTreasurePockets();
         if (bossesDefeated.length >= 6) {
             unlockBoyChamberGate();
         }
         updateCartPositionFromProgress();
+    }
+
+    let treasurePockets = [];
+
+    function generateTreasurePockets() {
+        treasurePockets = [];
+        const pocketCount = 26;
+
+        for (let p = 0; p < pocketCount; p++) {
+            const row = 20 + Math.floor(Math.random() * (WORLD_ROWS - 60));
+            const col = 5 + Math.floor(Math.random() * (WORLD_COLS - 10));
+            const size = 2 + Math.floor(Math.random() * 2);
+
+            let richOre = GEM;
+            if (row > 1800) richOre = Math.random() < 0.35 ? PRISMATIC : CELESTITE;
+            else if (row > 1400) richOre = Math.random() < 0.45 ? VOIDSTONE : MYTHIC;
+            else if (row > 600) richOre = Math.random() < 0.45 ? RUBY : EMERALD;
+            else if (row > 250) richOre = Math.random() < 0.5 ? DIAMOND : RUBY;
+            else richOre = Math.random() < 0.5 ? GEM : DIAMOND;
+
+            let carved = false;
+            for (let dr = -size; dr <= size; dr++) {
+                const r = row + dr;
+                if (!world[r]) continue;
+                for (let dc = -size; dc <= size; dc++) {
+                    if (dr * dr + dc * dc > size * size + 1) continue;
+                    const c = col + dc;
+                    if (world[r][c] === undefined) continue;
+                    if (world[r][c] === DIRT || world[r][c] === STONE) {
+                        world[r][c] = richOre;
+                        tileHp[r][c] = getMaxTileHp(richOre, r);
+                        carved = true;
+                    }
+                }
+            }
+
+            if (carved) {
+                treasurePockets.push({ row, col, size, found: false });
+            }
+        }
     }
 
     function generateVoidSanctuary() {
@@ -2177,6 +2185,70 @@
             tileHp[WORLD_ROWS - 5][c] = 0;
         }
         unlockAchievement('obsidian_broken');
+    }
+
+    function checkTreasurePocketFound(r, c) {
+        for (let i = 0; i < treasurePockets.length; i++) {
+            const tp = treasurePockets[i];
+            if (tp.found) continue;
+            if (Math.hypot(r - tp.row, c - tp.col) <= tp.size + 0.5) {
+                tp.found = true;
+                cash += 200;
+                sfx.treasureFound();
+                showEventBanner('treasure-banner');
+                saveGame();
+                updateHUD();
+                break;
+            }
+        }
+    }
+
+    let lastCaveInCheckTime = 0;
+    const CAVE_IN_CHECK_INTERVAL = 45000;
+
+    function checkCaveInEvent() {
+        if (player.inCart) return;
+
+        const now = Date.now();
+        if (now - lastCaveInCheckTime < CAVE_IN_CHECK_INTERVAL) return;
+        lastCaveInCheckTime = now;
+
+        const playerRow = (player.y + player.height / 2) / TILE_SIZE;
+        if (playerRow < 60) return;
+        if (Math.random() > 0.25) return;
+
+        const pRow = Math.floor(playerRow);
+        const pCol = Math.floor((player.x + player.width / 2) / TILE_SIZE);
+        const behindDir = player.facing === 'right' ? -1 : 1;
+
+        let collapsed = 0;
+        for (let attempt = 0; attempt < 40 && collapsed < 4; attempt++) {
+            const dr = Math.floor(Math.random() * 7) - 3;
+            const dc = behindDir * (2 + Math.floor(Math.random() * 4));
+            const r = pRow + dr;
+            const c = pCol + dc;
+            if (!world[r] || world[r][c] === undefined) continue;
+            if (world[r][c] !== AIR) continue;
+
+            world[r][c] = STONE;
+            tileHp[r][c] = getMaxTileHp(STONE, r);
+            collapsed++;
+        }
+
+        if (collapsed > 0) {
+            sfx.caveIn();
+            showEventBanner('cave-in-banner');
+            saveGame();
+        }
+    }
+
+    function showEventBanner(id) {
+        const banner = document.getElementById(id);
+        if (!banner) return;
+        banner.style.display = 'block';
+        setTimeout(() => {
+            banner.style.display = 'none';
+        }, 3000);
     }
 
     function checkBossHunterProgress() {
@@ -2704,6 +2776,8 @@
             if (tile === VOIDSTONE) unlockAchievement('void_find');
             if (tile === CELESTITE) unlockAchievement('celestial_find');
             if (tile === PRISMATIC) unlockAchievement('prismatic_find');
+
+            checkTreasurePocketFound(r, c);
 
             const depthValMultiplier = 1 + Math.floor(r / 35) * 0.6;
             let itemVal = 1;
@@ -3323,10 +3397,14 @@
             ctx.shadowBlur = 0;
         } else if (type === LAVA) {
             const lavaY = Math.sin(time * 2 + c) * 3;
+            const lavaPulse = Math.sin(time * 1.5 + r + c) * 0.3 + 0.7;
+            ctx.shadowColor = "#ff6d00";
+            ctx.shadowBlur = 9 + lavaPulse * 7;
             ctx.fillStyle = "#d50000";
             ctx.fillRect(x, y, TILE_SIZE, TILE_SIZE);
             ctx.fillStyle = "#ff6d00";
             ctx.fillRect(x, y + lavaY, TILE_SIZE, TILE_SIZE - lavaY);
+            ctx.shadowBlur = 0;
             ctx.fillStyle = "#ffab00";
             ctx.fillRect(x + 4, y + 6 + lavaY, 10, 4);
             ctx.fillRect(x + 18, y + 18 + lavaY, 8, 4);
@@ -3955,24 +4033,6 @@
         ctx.fillRect(2, 0, 14, 6);
         ctx.fillRect(0, 5, 18, 3);
 
-        if (lightRadius > 230) {
-            const lampTime = Date.now() * 0.003;
-            let lampColor = "#ffe082";
-            if (lightRadius >= 230 + 90 + 140 + 220) {
-                const hue = (lampTime * 80) % 360;
-                lampColor = `hsl(${hue}, 90%, 70%)`;
-            }
-            ctx.fillStyle = "#37474f";
-            ctx.fillRect(15, 2, 4, 4);
-            ctx.fillStyle = lampColor;
-            ctx.shadowColor = lampColor;
-            ctx.shadowBlur = 6 + Math.sin(lampTime * 3) * 2;
-            ctx.beginPath();
-            ctx.arc(17, 4, 2, 0, Math.PI * 2);
-            ctx.fill();
-            ctx.shadowBlur = 0;
-        }
-
         ctx.fillStyle = skinColor;
         ctx.fillRect(3, 8, 12, 7);
         ctx.fillStyle = "#000";
@@ -4050,73 +4110,6 @@
         ctx.arc(cart.width - 4, cart.height + 2, 4, 0, Math.PI * 2);
         ctx.fill();
 
-        ctx.restore();
-    }
-
-    function drawDarknessOverlay() {
-        const playerRow = (player.y + player.height / 2) / TILE_SIZE;
-        if (playerRow < SURFACE_ROW + 8) return;
-
-        const nightVisionActive = activeBuffs.nightVision && activeBuffs.nightVision.expiresAt > Date.now();
-        if (nightVisionActive) return;
-
-        const depthFade = Math.min(1, (playerRow - (SURFACE_ROW + 8)) / 40);
-        const darkness = 0.6 + depthFade * 0.36;
-
-        const screenX = player.x + player.width / 2 - camera.x;
-        const screenY = player.y + player.height / 2 - camera.y;
-
-        const flicker = 1 + Math.sin(Date.now() * 0.008) * 0.015;
-        const ambientRadius = lightRadius * 0.45 * flicker;
-        const beamRadius = lightRadius * flicker;
-        const facingDir = player.facing === 'left' ? -1 : 1;
-
-        ctx.save();
-
-        // Deep navy fog instead of flat black
-        ctx.fillStyle = `rgba(6, 7, 16, ${darkness})`;
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-        ctx.globalCompositeOperation = 'destination-out';
-
-        // Dim close-range visibility around the player - capped well below full brightness
-        // so the player is never washed out, just able to make things out clearly nearby
-        const ambientGrad = ctx.createRadialGradient(screenX, screenY, 0, screenX, screenY, ambientRadius);
-        ambientGrad.addColorStop(0, 'rgba(255,255,255,0.38)');
-        ambientGrad.addColorStop(0.5, 'rgba(255,255,255,0.20)');
-        ambientGrad.addColorStop(1, 'rgba(255,255,255,0)');
-        ctx.fillStyle = ambientGrad;
-        ctx.beginPath();
-        ctx.arc(screenX, screenY, ambientRadius, 0, Math.PI * 2);
-        ctx.fill();
-
-        // Directional headlamp beam - noticeably dimmer the further it reaches
-        const beamCenterX = screenX + facingDir * beamRadius * 0.2;
-        const beamGrad = ctx.createRadialGradient(beamCenterX, screenY, 0, beamCenterX, screenY, beamRadius);
-        beamGrad.addColorStop(0, 'rgba(255,255,255,0.5)');
-        beamGrad.addColorStop(0.35, 'rgba(255,255,255,0.32)');
-        beamGrad.addColorStop(0.7, 'rgba(255,255,255,0.12)');
-        beamGrad.addColorStop(1, 'rgba(255,255,255,0)');
-
-        const coneAngle = Math.PI / 2.3;
-        const baseAngle = facingDir === 1 ? 0 : Math.PI;
-        ctx.beginPath();
-        ctx.moveTo(screenX, screenY);
-        ctx.arc(screenX, screenY, beamRadius, baseAngle - coneAngle / 2, baseAngle + coneAngle / 2);
-        ctx.closePath();
-        ctx.fillStyle = beamGrad;
-        ctx.fill();
-
-        ctx.globalCompositeOperation = 'source-over';
-        ctx.restore();
-
-        // Subtle cool vignette at the very edge of the fog for depth
-        ctx.save();
-        const edgeGrad = ctx.createRadialGradient(screenX, screenY, beamRadius * 0.85, screenX, screenY, beamRadius * 1.5);
-        edgeGrad.addColorStop(0, 'rgba(10, 12, 30, 0)');
-        edgeGrad.addColorStop(1, 'rgba(10, 12, 30, 0.25)');
-        ctx.fillStyle = edgeGrad;
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
         ctx.restore();
     }
 
@@ -4203,8 +4196,6 @@
         updateAndDrawParticles();
 
         ctx.restore();
-
-        drawDarknessOverlay();
     }
 
     const shopPrompt = document.getElementById('shop-prompt');
@@ -4495,7 +4486,6 @@
         document.getElementById('bp-dyn-bundle').innerText = dynamiteCounts.bundle;
         document.getElementById('bp-dyn-barrel').innerText = dynamiteCounts.barrel;
         document.getElementById('bp-cart-speed-val').innerText = cartSpeedMultiplier.toFixed(1) + "x";
-        document.getElementById('bp-light-val').innerText = Math.round(lightRadius);
 
         backpackModal.style.display = 'flex';
     }
@@ -4533,8 +4523,6 @@
             player.speed = Math.min(67, player.speed + up.speedInc);
         } else if (key === 'companion') {
             hasCompanion = true;
-        } else if (key === 'headlampBasic' || key === 'headlampHalogen' || key === 'headlampPrismatic') {
-            lightRadius += up.lightInc;
         } else {
             digPower += up.power;
         }
@@ -4785,6 +4773,7 @@
             updateGoblins();
             updateMinecartLogic();
             updateCompanion();
+            checkCaveInEvent();
         }
 
         // Check tutorial progress every frame so opening modal triggers Step 3 -> 4 advance properly

@@ -657,7 +657,6 @@
     <div id="celestial-egg-prompt" class="prompt">✦ YOU FOUND THE CELESTIAL SHRINE! ✦</div>
     <div id="recall-banner" class="prompt">⚠️ EMERGENCY RECALL! LOST 50% CASH ⚠️</div>
     <div id="no-cart-banner" class="prompt" style="background:#e65100; color:#fff;">🛒 YOU NEED TO BUY A MINECART FROM BAXTER FIRST! ($100)</div>
-    <div id="cave-in-banner" class="prompt" style="background:#3e2723; color:#ffab40; border-color:#5d4037;">⛰️ CAVE-IN! ROCKS ARE FALLING - GET CLEAR!</div>
     <div id="treasure-banner" class="prompt" style="background:#1b5e20; color:#ffd700; border-color:#00e676;">💎 YOU STRUCK A TREASURE POCKET! +$200</div>
 
     <div id="shop-modal" class="modal">
@@ -1205,7 +1204,6 @@
         uiClick: () => playTone(440, 0.05, 'square', 0.04),
         potionDrink: () => { playTone(400, 0.1, 'sine', 0.06, { slideTo: 700 }); },
         lavaHiss: () => playNoise(0.15, 0.05),
-        caveIn: () => { playNoise(0.55, 0.16); playTone(60, 0.5, 'sawtooth', 0.09, { slideTo: 28 }); setTimeout(() => playNoise(0.3, 0.1), 150); },
         treasureFound: () => { [523, 659, 784, 1046, 1318].forEach((f, i) => setTimeout(() => playTone(f, 0.16, 'triangle', 0.07), i * 80)); }
     };
 
@@ -1434,7 +1432,24 @@
         'easter_egg': { title: "Boy in Glasses", desc: "Find Archie, the secret red-haired boy at the bottom.", unlocked: false },
         'belive_sign': { title: "True Beliver", desc: "Find the giant Believe Sign guarded by the Boss Goblin.", unlocked: false },
         'void_sanctuary': { title: "Rift Wanderer", desc: "Discover the hidden Void Sanctuary and its Crystal Golem.", unlocked: false },
-        'celestial_shrine': { title: "Stargazer", desc: "Discover the hidden Celestial Shrine near the world's core.", unlocked: false }
+        'celestial_shrine': { title: "Stargazer", desc: "Discover the hidden Celestial Shrine near the world's core.", unlocked: false },
+        'goblin_veteran': { title: "Goblin Veteran", desc: "Defeat 25 goblins.", unlocked: false },
+        'goblin_legend': { title: "Goblin Legend", desc: "Defeat 100 goblins.", unlocked: false },
+        'fortune_hunter': { title: "Fortune Hunter", desc: "Accumulate $100,000 cash.", unlocked: false },
+        'fortune_baron': { title: "Fortune Baron", desc: "Accumulate $1,000,000 cash.", unlocked: false },
+        'first_boom': { title: "First Boom", desc: "Detonate your first piece of dynamite.", unlocked: false },
+        'seismic_unleashed': { title: "Seismic Unleashed", desc: "Detonate a Seismic Charge.", unlocked: false },
+        'treasure_hunter': { title: "Treasure Hunter", desc: "Discover your first treasure pocket.", unlocked: false },
+        'treasure_master': { title: "Treasure Master", desc: "Discover 10 treasure pockets.", unlocked: false },
+        'companion_bonded': { title: "Never Alone", desc: "Recruit the Mining Drone Companion.", unlocked: false },
+        'cart_owner': { title: "Wheels Up", desc: "Purchase your very first minecart.", unlocked: false },
+        'fashionista': { title: "Fashionista", desc: "Equip your first cosmetic outfit.", unlocked: false },
+        'archie_cosplay': { title: "Being Archie", desc: "Become Archie by equipping his outfit.", unlocked: false },
+        'potion_enjoyer': { title: "Bottoms Up", desc: "Drink your first potion from Lachie.", unlocked: false },
+        'need_for_speed': { title: "Need For Speed", desc: "Max out your speed at 67.", unlocked: false },
+        'power_overwhelming': { title: "Power Overwhelming", desc: "Reach 1,000 total dig power.", unlocked: false },
+        'wanderer_west': { title: "Westward Wanderer", desc: "Reach the far western edge of the mine.", unlocked: false },
+        'wanderer_east': { title: "Eastward Explorer", desc: "Reach the far eastern edge of the mine.", unlocked: false }
     };
 
     function unlockAchievement(id) {
@@ -1498,6 +1513,11 @@
         }, 3500);
     }
 
+    function checkCosmeticAchievements(key) {
+        if (key !== 'none') unlockAchievement('fashionista');
+        if (key === 'archie') unlockAchievement('archie_cosplay');
+    }
+
     function renderCosmeticShop() {
         const container = document.getElementById('cosmetic-list');
         if (!container) return;
@@ -1549,6 +1569,7 @@
                 btn.onclick = () => {
                     equippedCosmetic = key;
                     sfx.uiClick();
+                    checkCosmeticAchievements(key);
                     saveGame();
                     renderCosmeticShop();
                 };
@@ -1561,6 +1582,7 @@
                         sfx.purchase();
                         ownedCosmetics.push(key);
                         equippedCosmetic = key;
+                        checkCosmeticAchievements(key);
                         saveGame();
                         updateHUD();
                         renderCosmeticShop();
@@ -1617,6 +1639,7 @@
                             sfx.potionDrink();
                             hasLavaSuit = true;
                             unlockAchievement('lava_survivor');
+                            unlockAchievement('potion_enjoyer');
                             saveGame();
                             updateHUD();
                             renderPotionShop();
@@ -1666,6 +1689,7 @@
                     cash -= p.cost;
                     sfx.potionDrink();
                     activeBuffs[p.type] = { amount: p.amount, expiresAt: Date.now() + p.duration };
+                    unlockAchievement('potion_enjoyer');
                     saveGame();
                     updateHUD();
                     renderPotionShop();
@@ -1801,6 +1825,8 @@
 
         dynamiteCounts[type]--;
         sfx.explosion();
+        unlockAchievement('first_boom');
+        if (type === 'seismic') unlockAchievement('seismic_unleashed');
         const radius = dynamiteItems[type].radius;
 
         const pRow = Math.floor((player.y + player.height / 2) / TILE_SIZE);
@@ -2385,66 +2411,13 @@
                 cash += 200;
                 sfx.treasureFound();
                 showEventBanner('treasure-banner');
+                unlockAchievement('treasure_hunter');
+                const foundCount = treasurePockets.filter(p => p.found).length;
+                if (foundCount >= 10) unlockAchievement('treasure_master');
                 saveGame();
                 updateHUD();
                 break;
             }
-        }
-    }
-
-    let lastCaveInCheckTime = 0;
-    const CAVE_IN_CHECK_INTERVAL = 14000;
-
-    function checkCaveInEvent() {
-        if (player.inCart) return;
-
-        const now = Date.now();
-        if (now - lastCaveInCheckTime < CAVE_IN_CHECK_INTERVAL) return;
-        lastCaveInCheckTime = now;
-
-        const playerRow = (player.y + player.height / 2) / TILE_SIZE;
-        if (playerRow < 30) return;
-        if (Math.random() > 0.5) return;
-
-        const pRow = Math.floor(playerRow);
-        const pCol = Math.floor((player.x + player.width / 2) / TILE_SIZE);
-        const behindDir = player.facing === 'right' ? -1 : 1;
-
-        let collapsed = 0;
-        let hitPlayer = false;
-        for (let attempt = 0; attempt < 60 && collapsed < 8; attempt++) {
-            const dr = Math.floor(Math.random() * 7) - 3;
-            const dc = behindDir * (1 + Math.floor(Math.random() * 4));
-            const r = pRow + dr;
-            const c = pCol + dc;
-            if (!world[r] || world[r][c] === undefined) continue;
-            if (world[r][c] !== AIR) continue;
-
-            world[r][c] = STONE;
-            tileHp[r][c] = getMaxTileHp(STONE, r);
-            collapsed++;
-
-            if (Math.hypot(dr, dc) <= 2.2) {
-                hitPlayer = true;
-            }
-        }
-
-        if (collapsed > 0) {
-            sfx.caveIn();
-            showEventBanner('cave-in-banner');
-
-            if (hitPlayer) {
-                const damage = 15 + Math.floor(Math.random() * 21);
-                playerHp -= damage;
-                sfx.playerHurt();
-                if (playerHp <= 0) {
-                    playerHp = 0;
-                    emergencySurfaceRecall();
-                }
-                updateHUD();
-            }
-
-            saveGame();
         }
     }
 
@@ -2669,6 +2642,8 @@
             cash += g.isBoss ? (g.cashReward || 500) : 50;
             goblinsKilled++;
             unlockAchievement('goblin_slayer');
+            if (goblinsKilled >= 25) unlockAchievement('goblin_veteran');
+            if (goblinsKilled >= 100) unlockAchievement('goblin_legend');
             if (g.isBoss) sfx.bossDeath(); else sfx.goblinDeath();
 
             if (g.isBoss && g.bossId) {
@@ -2784,6 +2759,10 @@
         if (currentDepth >= 2500) unlockAchievement('deep_dive_2500');
         if (currentDepth >= 2980) unlockAchievement('bottom_world');
         if (player.inCart && currentDepth >= 2978) unlockAchievement('lava_cart_dive');
+
+        const currentCol = (player.x + player.width / 2) / TILE_SIZE;
+        if (currentCol <= 15) unlockAchievement('wanderer_west');
+        if (currentCol >= WORLD_COLS - 15) unlockAchievement('wanderer_east');
 
         if (player.inCart) {
             let rowSpeed = 0.4 * cartSpeedMultiplier;
@@ -3018,6 +2997,8 @@
 
             if (cash >= 1000) unlockAchievement('rich_miner');
             if (cash >= 10000) unlockAchievement('tycoon');
+            if (cash >= 100000) unlockAchievement('fortune_hunter');
+            if (cash >= 1000000) unlockAchievement('fortune_baron');
 
             saveGame();
             updateHUD();
@@ -4804,16 +4785,20 @@
             backpackMax += up.capacity;
         } else if (key === 'boots') {
             player.speed = Math.min(67, player.speed + up.speedInc);
+            if (player.speed >= 67) unlockAchievement('need_for_speed');
         } else if (key === 'companion') {
             hasCompanion = true;
+            unlockAchievement('companion_bonded');
         } else {
             digPower += up.power;
+            if (digPower >= 1000) unlockAchievement('power_overwhelming');
         }
     }
 
     function applyBaxterUpgradeEffect(key, up) {
         if (key === 'cartPurchase') {
             hasMinecart = true;
+            unlockAchievement('cart_owner');
         } else if (key === 'cartArmor') {
             cartArmorActive = true;
         } else if (key === 'cartObsidian') {
@@ -5062,7 +5047,6 @@
             updateGoblins();
             updateMinecartLogic();
             updateCompanion();
-            checkCaveInEvent();
         }
 
         // Check tutorial progress every frame so opening modal triggers Step 3 -> 4 advance properly

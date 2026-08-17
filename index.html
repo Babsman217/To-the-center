@@ -2002,6 +2002,40 @@
         return Math.floor(baseHp * depthMultiplier);
     }
 
+    function checkRetroactiveAchievements() {
+        if (hasMinecart) unlockAchievement('cart_owner');
+        if (hasCompanion) unlockAchievement('companion_bonded');
+        if (ownedCosmetics.length > 1) unlockAchievement('fashionista');
+        if (equippedCosmetic === 'archie' || ownedCosmetics.includes('archie')) unlockAchievement('archie_cosplay');
+        if (player.speed >= 67) unlockAchievement('need_for_speed');
+        if (digPower >= 1000) unlockAchievement('power_overwhelming');
+        if (hasLavaSuit) {
+            unlockAchievement('lava_survivor');
+            unlockAchievement('potion_enjoyer');
+        }
+        if (cash >= 1000) unlockAchievement('rich_miner');
+        if (cash >= 10000) unlockAchievement('tycoon');
+        if (cash >= 100000) unlockAchievement('fortune_hunter');
+        if (cash >= 1000000) unlockAchievement('fortune_baron');
+        if (goblinsKilled >= 1) unlockAchievement('goblin_slayer');
+        if (goblinsKilled >= 25) unlockAchievement('goblin_veteran');
+        if (goblinsKilled >= 100) unlockAchievement('goblin_legend');
+        if (bossesDefeated.includes('sentinel')) unlockAchievement('boss_sentinel');
+        if (bossesDefeated.includes('ancient_king')) unlockAchievement('boss_ancient_king');
+        if (bossesDefeated.includes('void_warlord')) unlockAchievement('boss_void_warlord');
+        if (bossesDefeated.includes('celestial_overlord')) unlockAchievement('boss_celestial_overlord');
+        if (bossesDefeated.includes('magma_guardian')) unlockAchievement('boss_magma_guardian');
+        if (bossesDefeated.includes('obsidian_warden')) unlockAchievement('boss_final');
+        checkBossHunterProgress();
+        if (deepestDepthReached >= 100) unlockAchievement('deep_dive_100');
+        if (deepestDepthReached >= 500) unlockAchievement('deep_dive_500');
+        if (deepestDepthReached >= 1500) unlockAchievement('deep_dive_1500');
+        if (deepestDepthReached >= 2000) unlockAchievement('deep_dive_2000');
+        if (deepestDepthReached >= 2500) unlockAchievement('deep_dive_2500');
+        if (deepestDepthReached >= 2980) unlockAchievement('bottom_world');
+        if (boyChamberUnlocked) unlockAchievement('obsidian_broken');
+    }
+
     function selectSaveSlot(slotNum) {
         currentSaveSlot = slotNum;
         document.querySelectorAll('.slot-btn').forEach((b, idx) => {
@@ -2013,6 +2047,7 @@
         loadGame();
         renderAchievementsList();
         updateHUD();
+        checkRetroactiveAchievements();
     }
 
     function resetStatsToDefaults() {
@@ -5072,6 +5107,7 @@
     renderAchievementsList();
     document.getElementById('sound-toggle-btn').innerText = soundEnabled ? '🔊 SOUND' : '🔇 MUTED';
     updateHUD();
+    checkRetroactiveAchievements();
     gameLoop();
 </script>
 

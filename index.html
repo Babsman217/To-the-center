@@ -658,6 +658,8 @@
     <div id="recall-banner" class="prompt">⚠️ EMERGENCY RECALL! LOST 50% CASH ⚠️</div>
     <div id="no-cart-banner" class="prompt" style="background:#e65100; color:#fff;">🛒 YOU NEED TO BUY A MINECART FROM BAXTER FIRST! ($100)</div>
     <div id="treasure-banner" class="prompt" style="background:#1b5e20; color:#ffd700; border-color:#00e676;">💎 YOU STRUCK A TREASURE POCKET! +$200</div>
+    <div id="rift-banner" class="prompt" style="background:#050007; color:#ff1744; border-color:#ff3d00; box-shadow: 0 0 20px rgba(255,23,68,0.8);">⚡ THE SEAL SHATTERS! A NEW WORLD OPENS BEFORE YOU ⚡</div>
+    <div id="heart-banner" class="prompt" style="background:#12002b; color:#e040fb; border-color:#ff4081; box-shadow: 0 0 20px rgba(224,64,251,0.8);">💜 YOU HAVE FOUND THE HEART OF THE RIFT! +$500,000</div>
 
     <div id="shop-modal" class="modal">
         <div id="shop-window" class="modal-window">
@@ -1217,7 +1219,8 @@
     // World Config - DEEPER MAP (2200 Rows)
     const TILE_SIZE = 32;
     const WORLD_COLS = 300;
-    const WORLD_ROWS = 3000;
+    const OLD_FLOOR_ROWS = 3000;
+    const WORLD_ROWS = 3700;
     const SURFACE_ROW = 4; // Precise surface ground baseline where depth = 0m
     
     // Save Slot System
@@ -1233,6 +1236,8 @@
     const RUBY = 12; const EMERALD = 13; const MYTHIC = 14;
     const VOIDSTONE = 15; const CELESTITE = 16;
     const PRISMATIC = 17;
+    const RIFT_SEAL = 18; const RIFTSTONE = 19; const ECHO_CRYSTAL = 20;
+    const RIFT_DIG_THRESHOLD = 5000;
 
     let world = [];
     let tileHp = [];
@@ -1249,6 +1254,7 @@
     let hasLavaSuit = false;
     let goblinsKilled = 0;
     let deepestDepthReached = 0;
+    let heartOfRiftFound = false;
     let allAchievementsCelebrated = false;
     let bossesDefeated = [];
     let boyChamberUnlocked = false;
@@ -1290,7 +1296,8 @@
         `"If you get stuck deep in the mines, press [C] near the track to call my minecart right to your level!"`,
         `"Legend says there is a giant Boss Goblin around 850M depth guarding a golden secret... prepare well!"`,
         `"Looking for something to protect you from the lava? Lachie brews a permanent draught for that - ask him!"`,
-        `"My Mining Drone Companion will zap nearby goblins for you automatically. Never fight alone again!"`
+        `"My Mining Drone Companion will zap nearby goblins for you automatically. Never fight alone again!"`,
+        `"They say the very floor at the bottom of the mine hides a sealed rift... but you'd need an absurd amount of dig power to ever crack it open."`
     ];
     let hanruDialogueIndex = 0;
 
@@ -1449,7 +1456,11 @@
         'need_for_speed': { title: "Need For Speed", desc: "Max out your speed at 67.", unlocked: false },
         'power_overwhelming': { title: "Power Overwhelming", desc: "Reach 1,000 total dig power.", unlocked: false },
         'wanderer_west': { title: "Westward Wanderer", desc: "Reach the far western edge of the mine.", unlocked: false },
-        'wanderer_east': { title: "Eastward Explorer", desc: "Reach the far eastern edge of the mine.", unlocked: false }
+        'wanderer_east': { title: "Eastward Explorer", desc: "Reach the far eastern edge of the mine.", unlocked: false },
+        'rift_discovered': { title: "The Seal Breaks", desc: "Shatter the Rift Seal and enter a whole new world.", unlocked: false },
+        'riftstone_find': { title: "Rift Miner", desc: "Mine a chunk of Riftstone in the new world.", unlocked: false },
+        'echo_crystal_find': { title: "Echoes of the Deep", desc: "Mine a rare, glowing Echo Crystal.", unlocked: false },
+        'heart_of_the_rift': { title: "Heart of the Rift", desc: "Reach the very bottom of the Rift and claim its heart.", unlocked: false }
     };
 
     function unlockAchievement(id) {
@@ -1839,7 +1850,7 @@
                 if (!world[r] || world[r][c] === undefined) continue;
 
                 const t = world[r][c];
-                if (!isSolidTile(t) || t === GRASS || t === OBSIDIAN_BRICK) continue;
+                if (!isSolidTile(t) || t === GRASS || t === OBSIDIAN_BRICK || t === RIFT_SEAL) continue;
                 if (backpackCount >= backpackMax) continue;
 
                 const depthValMultiplier = 1 + Math.floor(r / 35) * 0.6;
@@ -1855,6 +1866,8 @@
                 if (t === VOIDSTONE) itemVal = Math.floor(12000 * depthValMultiplier);
                 if (t === CELESTITE) itemVal = Math.floor(28000 * depthValMultiplier);
                 if (t === PRISMATIC) itemVal = Math.floor(60000 * depthValMultiplier);
+                if (t === RIFTSTONE) itemVal = Math.floor(3000 * depthValMultiplier);
+                if (t === ECHO_CRYSTAL) itemVal = Math.floor(80000 * depthValMultiplier);
 
                 backpackCargo.push(Math.floor(itemVal * 0.6 * getBuffMultiplier('valueMult')));
                 backpackCount++;
@@ -1868,6 +1881,8 @@
                 if (t === VOIDSTONE) unlockAchievement('void_find');
                 if (t === CELESTITE) unlockAchievement('celestial_find');
                 if (t === PRISMATIC) unlockAchievement('prismatic_find');
+                if (t === RIFTSTONE) unlockAchievement('riftstone_find');
+                if (t === ECHO_CRYSTAL) unlockAchievement('echo_crystal_find');
             }
         }
 
@@ -1943,6 +1958,9 @@
         if (type === VOIDSTONE) colors = ["#e040fb", "#000000", "#1a0033"];
         if (type === CELESTITE) colors = ["#e0f7fa", "#ffffff", "#40c4ff"];
         if (type === PRISMATIC) colors = ["#ff4081", "#40c4ff", "#ffeb3b", "#ffffff"];
+        if (type === RIFT_SEAL) colors = ["#ff1744", "#ff3d00", "#050007"];
+        if (type === RIFTSTONE) colors = ["#9554e0", "#2d1b40", "#1a0e26"];
+        if (type === ECHO_CRYSTAL) colors = ["#ff4081", "#e040fb", "#40c4ff", "#ffffff"];
 
         const centerX = c * TILE_SIZE + TILE_SIZE / 2;
         const centerY = r * TILE_SIZE + TILE_SIZE / 2;
@@ -1983,6 +2001,7 @@
     function getMaxTileHp(type, row) {
         if (type === AIR || type === SKY || type === MINECART_STATION || type === WOOD_SUPPORT || type === LAVA) return 0;
         if (type === GRASS || type === OBSIDIAN_BRICK) return 999999;
+        if (type === RIFT_SEAL) return 500000;
 
         const depthMultiplier = 1 + Math.pow(row / 30, 1.35); 
         let baseHp = 10;
@@ -1998,6 +2017,8 @@
         if (type === VOIDSTONE) baseHp = 8000;
         if (type === CELESTITE) baseHp = 16000;
         if (type === PRISMATIC) baseHp = 32000;
+        if (type === RIFTSTONE) baseHp = 80;
+        if (type === ECHO_CRYSTAL) baseHp = 250;
 
         return Math.floor(baseHp * depthMultiplier);
     }
@@ -2034,6 +2055,7 @@
         if (deepestDepthReached >= 2500) unlockAchievement('deep_dive_2500');
         if (deepestDepthReached >= 2980) unlockAchievement('bottom_world');
         if (boyChamberUnlocked) unlockAchievement('obsidian_broken');
+        if (heartOfRiftFound) unlockAchievement('heart_of_the_rift');
     }
 
     function selectSaveSlot(slotNum) {
@@ -2071,6 +2093,7 @@
         hasCompanion = false;
         goblinsKilled = 0;
         deepestDepthReached = 0;
+        heartOfRiftFound = false;
         allAchievementsCelebrated = false;
         bossesDefeated = [];
         boyChamberUnlocked = false;
@@ -2119,6 +2142,7 @@
             hasCompanion: hasCompanion,
             goblinsKilled: goblinsKilled,
             deepestDepthReached: deepestDepthReached,
+            heartOfRiftFound: heartOfRiftFound,
             allAchievementsCelebrated: allAchievementsCelebrated,
             bossesDefeated: bossesDefeated,
             boyChamberUnlocked: boyChamberUnlocked,
@@ -2159,6 +2183,7 @@
             hasCompanion = data.hasCompanion ?? false;
             goblinsKilled = data.goblinsKilled ?? 0;
             deepestDepthReached = data.deepestDepthReached ?? 0;
+            heartOfRiftFound = data.heartOfRiftFound ?? false;
             allAchievementsCelebrated = data.allAchievementsCelebrated ?? false;
             bossesDefeated = data.bossesDefeated ?? [];
             boyChamberUnlocked = data.boyChamberUnlocked ?? false;
@@ -2206,11 +2231,11 @@
         const targetCenterCol = WORLD_COLS / 2;
         const maxAmplitude = (WORLD_COLS - 40) / 2;
 
-        for (let r = 0; r < WORLD_ROWS - 2; r++) {
+        for (let r = 0; r < OLD_FLOOR_ROWS - 2; r++) {
             if (r < 8) {
                 railCols[r] = centerCol;
             } else {
-                const depthProgress = Math.min(1, r / (WORLD_ROWS * 0.55));
+                const depthProgress = Math.min(1, r / (OLD_FLOOR_ROWS * 0.55));
                 const baseCenter = centerCol + (targetCenterCol - centerCol) * depthProgress;
                 const sweepAmplitude = 25 + depthProgress * (maxAmplitude - 25);
                 const wiggleScale = 0.4 + depthProgress * 0.6;
@@ -2244,14 +2269,23 @@
                     world[r][c] = AIR;
                 } else if (r === 5) {
                     world[r][c] = GRASS;
-                } else if (r >= WORLD_ROWS - 15 && r <= WORLD_ROWS - 6) {
+                } else if (r >= OLD_FLOOR_ROWS - 15 && r <= OLD_FLOOR_ROWS - 6) {
                     world[r][c] = LAVA;
-                } else if (r >= WORLD_ROWS - 5) {
-                    if (c >= 52 && c <= 68 && r >= WORLD_ROWS - 4 && r <= WORLD_ROWS - 2) {
+                } else if (r >= OLD_FLOOR_ROWS - 5 && r < OLD_FLOOR_ROWS) {
+                    if (c >= 52 && c <= 68 && r >= OLD_FLOOR_ROWS - 4 && r <= OLD_FLOOR_ROWS - 2) {
                         world[r][c] = AIR;
+                    } else if (c >= 145 && c <= 165) {
+                        world[r][c] = RIFT_SEAL;
                     } else {
                         world[r][c] = OBSIDIAN_BRICK;
                     }
+                } else if (r >= OLD_FLOOR_ROWS) {
+                    const riftRand = Math.random();
+                    if (riftRand < 0.60) world[r][c] = RIFTSTONE;
+                    else if (riftRand < 0.85) world[r][c] = STONE;
+                    else if (riftRand < 0.95) world[r][c] = VOIDSTONE;
+                    else if (riftRand < 0.99) world[r][c] = CELESTITE;
+                    else world[r][c] = ECHO_CRYSTAL;
                 } else {
                     const rand = Math.random();
 
@@ -2327,7 +2361,7 @@
             }
         }
 
-        for (let r = 4; r < WORLD_ROWS - 15; r++) {
+        for (let r = 4; r < OLD_FLOOR_ROWS - 15; r++) {
             const trackCol = railCols[r];
             const halfWidth = r < 12 ? 3 : 1;
             for (let dc = -halfWidth; dc <= halfWidth; dc++) {
@@ -2344,10 +2378,41 @@
         generateVoidSanctuary();
         generateCelestialShrine();
         generateTreasurePockets();
+        generateRiftEntrance();
+        generateHeartOfTheRift();
         if (bossesDefeated.length >= 6) {
             unlockBoyChamberGate();
         }
         updateCartPositionFromProgress();
+    }
+
+    function generateRiftEntrance() {
+        for (let r = OLD_FLOOR_ROWS; r < OLD_FLOOR_ROWS + 6; r++) {
+            for (let c = 148; c <= 162; c++) {
+                if (world[r] && world[r][c] !== undefined) {
+                    world[r][c] = AIR;
+                    tileHp[r][c] = 0;
+                }
+            }
+        }
+    }
+
+    function generateHeartOfTheRift() {
+        const roomRow = WORLD_ROWS - 14;
+        const colStart = 110;
+        const colEnd = 190;
+        for (let r = roomRow; r < roomRow + 10; r++) {
+            for (let c = colStart; c <= colEnd; c++) {
+                if (!world[r] || world[r][c] === undefined) continue;
+                if (Math.random() < 0.08 && r > roomRow + 1 && r < roomRow + 8) {
+                    world[r][c] = ECHO_CRYSTAL;
+                    tileHp[r][c] = getMaxTileHp(ECHO_CRYSTAL, r);
+                } else {
+                    world[r][c] = AIR;
+                    tileHp[r][c] = 0;
+                }
+            }
+        }
     }
 
     let treasurePockets = [];
@@ -2357,7 +2422,7 @@
         const pocketCount = 55;
 
         for (let p = 0; p < pocketCount; p++) {
-            const row = 20 + Math.floor(Math.random() * (WORLD_ROWS - 60));
+            const row = 20 + Math.floor(Math.random() * (OLD_FLOOR_ROWS - 60));
             const col = 5 + Math.floor(Math.random() * (WORLD_COLS - 10));
             const size = 2 + Math.floor(Math.random() * 2);
 
@@ -2431,8 +2496,8 @@
     function unlockBoyChamberGate() {
         boyChamberUnlocked = true;
         for (let c = 59; c <= 61; c++) {
-            world[WORLD_ROWS - 5][c] = AIR;
-            tileHp[WORLD_ROWS - 5][c] = 0;
+            world[OLD_FLOOR_ROWS - 5][c] = AIR;
+            tileHp[OLD_FLOOR_ROWS - 5][c] = 0;
         }
         unlockAchievement('obsidian_broken');
     }
@@ -2540,7 +2605,7 @@
             width: 56, height: 68, speed: 3.4, hp: 15000, contactDamage: 140, cashReward: 20000
         });
 
-        createBossChamber(WORLD_ROWS - 11, 130, 170, {
+        createBossChamber(OLD_FLOOR_ROWS - 11, 130, 170, {
             bossId: 'obsidian_warden', name: 'THE OBSIDIAN WARDEN',
             color: '#000000', darkColor: '#1a0000', glowColor: '#ff3d00',
             width: 68, height: 82, speed: 2.8, hp: 60000, contactDamage: 220, cashReward: 50000
@@ -2549,7 +2614,7 @@
 
     function updateCartPositionFromProgress() {
         const row = Math.floor(shaftCart.rowProgress);
-        const nextRow = Math.min(WORLD_ROWS - 2, row + 1);
+        const nextRow = Math.min(OLD_FLOOR_ROWS - 2, row + 1);
         const frac = shaftCart.rowProgress - row;
 
         const colCurrent = railCols[row] || 50;
@@ -2563,7 +2628,7 @@
     function generateAbandonedMines() {
         const numMines = 160;
         for (let i = 0; i < numMines; i++) {
-            const startRow = Math.floor(15 + Math.random() * (WORLD_ROWS - 50));
+            const startRow = Math.floor(15 + Math.random() * (OLD_FLOOR_ROWS - 50));
             const startCol = Math.floor(Math.random() * (WORLD_COLS - 30));
             const tunnelLength = Math.floor(20 + Math.random() * 35);
             const endCol = Math.min(WORLD_COLS - 2, startCol + tunnelLength);
@@ -2571,7 +2636,7 @@
             for (let col = startCol; col < endCol; col++) {
                 for (let h = 0; h < 3; h++) {
                     const r = startRow + h;
-                    if (r < WORLD_ROWS - 20 && r > 5) {
+                    if (r < OLD_FLOOR_ROWS - 20 && r > 5) {
                         world[r][col] = AIR;
                         tileHp[r][col] = 0;
                     }
@@ -2723,7 +2788,8 @@
     function isSolidTile(type) {
         return type === DIRT || type === STONE || type === GOLD || type === GEM || type === DIAMOND || 
                type === RUBY || type === EMERALD || type === MYTHIC || type === VOIDSTONE || type === CELESTITE ||
-               type === PRISMATIC || type === GRASS || type === OBSIDIAN_BRICK;
+               type === PRISMATIC || type === GRASS || type === OBSIDIAN_BRICK ||
+               type === RIFT_SEAL || type === RIFTSTONE || type === ECHO_CRYSTAL;
     }
 
     function isInLava(x, y, w, h) {
@@ -2782,8 +2848,32 @@
         }
     }
 
+    function isPlayerEmbedded() {
+        const left = Math.max(0, Math.floor(player.x / TILE_SIZE));
+        const right = Math.min(WORLD_COLS - 1, Math.floor((player.x + player.width - 1) / TILE_SIZE));
+        const top = Math.max(0, Math.floor(player.y / TILE_SIZE));
+        const bottom = Math.min(WORLD_ROWS - 1, Math.floor((player.y + player.height - 1) / TILE_SIZE));
+        for (let r = top; r <= bottom; r++) {
+            for (let c = left; c <= right; c++) {
+                if (world[r] && isSolidTile(world[r][c])) return true;
+            }
+        }
+        return false;
+    }
+
+    function resolveStuckInGround() {
+        if (player.inCart) return;
+        let attempts = 0;
+        while (isPlayerEmbedded() && attempts < 40) {
+            player.y -= 2;
+            attempts++;
+        }
+    }
+
     function updatePlayer() {
         if (attackTimer > 0) attackTimer--;
+
+        resolveStuckInGround();
 
         const currentDepth = parseFloat(getExactDepth());
         if (currentDepth > deepestDepthReached) deepestDepthReached = currentDepth;
@@ -2799,6 +2889,17 @@
         if (currentCol <= 15) unlockAchievement('wanderer_west');
         if (currentCol >= WORLD_COLS - 15) unlockAchievement('wanderer_east');
 
+        if (!heartOfRiftFound && currentCol >= 108 && currentCol <= 192 &&
+            (player.y + player.height / 2) / TILE_SIZE >= WORLD_ROWS - 15) {
+            heartOfRiftFound = true;
+            cash += 500000;
+            unlockAchievement('heart_of_the_rift');
+            sfx.treasureFound();
+            showEventBanner('heart-banner');
+            saveGame();
+            updateHUD();
+        }
+
         if (player.inCart) {
             let rowSpeed = 0.4 * cartSpeedMultiplier;
             let currentMove = 0;
@@ -2807,7 +2908,7 @@
             else if (keys['s'] || keys['arrowdown']) currentMove = rowSpeed;
 
             shaftCart.rowProgress += currentMove;
-            shaftCart.rowProgress = Math.max(3, Math.min(shaftCart.rowProgress, WORLD_ROWS - 3));
+            shaftCart.rowProgress = Math.max(3, Math.min(shaftCart.rowProgress, OLD_FLOOR_ROWS - 3));
 
             updateCartPositionFromProgress();
             player.x = shaftCart.x + 5;
@@ -2976,6 +3077,7 @@
 
         const tile = world[r][c];
         if (tile === GRASS || tile === OBSIDIAN_BRICK) return;
+        if (tile === RIFT_SEAL && (digPower * getBuffMultiplier('digMult')) < RIFT_DIG_THRESHOLD) return;
 
         tileHp[r][c] -= digPower * getBuffMultiplier('digMult');
 
@@ -2997,6 +3099,13 @@
             if (tile === VOIDSTONE) unlockAchievement('void_find');
             if (tile === CELESTITE) unlockAchievement('celestial_find');
             if (tile === PRISMATIC) unlockAchievement('prismatic_find');
+            if (tile === RIFTSTONE) unlockAchievement('riftstone_find');
+            if (tile === ECHO_CRYSTAL) unlockAchievement('echo_crystal_find');
+            if (tile === RIFT_SEAL) {
+                unlockAchievement('rift_discovered');
+                sfx.bossDeath();
+                showEventBanner('rift-banner');
+            }
 
             checkTreasurePocketFound(r, c);
 
@@ -3014,6 +3123,8 @@
             if (tile === VOIDSTONE) itemVal = Math.floor(12000 * depthValMultiplier);
             if (tile === CELESTITE) itemVal = Math.floor(28000 * depthValMultiplier);
             if (tile === PRISMATIC) itemVal = Math.floor(60000 * depthValMultiplier);
+            if (tile === RIFTSTONE) itemVal = Math.floor(3000 * depthValMultiplier);
+            if (tile === ECHO_CRYSTAL) itemVal = Math.floor(80000 * depthValMultiplier);
 
             backpackCargo.push(Math.floor(itemVal * getBuffMultiplier('valueMult')));
             backpackCount++;
@@ -3046,7 +3157,7 @@
             showNoMinecartBanner();
             return;
         }
-        const targetRow = Math.max(3, Math.min(WORLD_ROWS - 3, (player.y + player.height / 2) / TILE_SIZE));
+        const targetRow = Math.max(3, Math.min(OLD_FLOOR_ROWS - 3, (player.y + player.height / 2) / TILE_SIZE));
         shaftCart.targetRow = targetRow;
         shaftCart.isMovingToTarget = true;
     }
@@ -3618,6 +3729,66 @@
             ctx.fillStyle = "#ffffff";
             ctx.fillRect(x + 14, y + 10, 4, 4);
             ctx.shadowBlur = 0;
+        } else if (type === RIFT_SEAL) {
+            const pulse = Math.sin(time * 1.2 + r * 0.3 + c * 0.3) * 0.3 + 0.5;
+            ctx.fillStyle = "#050007";
+            ctx.fillRect(x, y, TILE_SIZE, TILE_SIZE);
+            ctx.strokeStyle = `rgba(255, 23, 68, ${pulse})`;
+            ctx.lineWidth = 2;
+            ctx.strokeRect(x + 2, y + 2, TILE_SIZE - 4, TILE_SIZE - 4);
+            ctx.beginPath();
+            ctx.moveTo(x + 4, y + 4);
+            ctx.lineTo(x + 28, y + 28);
+            ctx.moveTo(x + 28, y + 4);
+            ctx.lineTo(x + 4, y + 28);
+            ctx.strokeStyle = `rgba(255, 23, 68, ${pulse * 0.7})`;
+            ctx.stroke();
+            ctx.fillStyle = `rgba(255, 61, 0, ${pulse})`;
+            ctx.shadowColor = "#ff3d00";
+            ctx.shadowBlur = 8;
+            ctx.beginPath();
+            ctx.arc(x + 16, y + 16, 5, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.shadowBlur = 0;
+        } else if (type === RIFTSTONE) {
+            ctx.fillStyle = "#1a0e26";
+            ctx.fillRect(x, y, TILE_SIZE, TILE_SIZE);
+            ctx.fillStyle = "#2d1b40";
+            ctx.fillRect(x + 3, y + 3, TILE_SIZE - 6, TILE_SIZE - 6);
+            const crackGlow = Math.sin(time * 1.5 + r + c) * 0.3 + 0.5;
+            ctx.strokeStyle = `rgba(149, 84, 224, ${crackGlow})`;
+            ctx.lineWidth = 1.5;
+            ctx.beginPath();
+            ctx.moveTo(x + 6, y + 8);
+            ctx.lineTo(x + 16, y + 18);
+            ctx.lineTo(x + 12, y + 27);
+            ctx.moveTo(x + 24, y + 6);
+            ctx.lineTo(x + 18, y + 16);
+            ctx.stroke();
+        } else if (type === ECHO_CRYSTAL) {
+            ctx.fillStyle = "#0a0014";
+            ctx.fillRect(x, y, TILE_SIZE, TILE_SIZE);
+
+            const hue = (time * 90 + r * 15 + c * 15) % 360;
+            const echoColor = `hsl(${hue}, 95%, 72%)`;
+            const echoPulse = Math.sin(time * 2.5 + r + c) * 0.3 + 0.7;
+            ctx.fillStyle = echoColor;
+            ctx.shadowColor = echoColor;
+            ctx.shadowBlur = 12 * echoPulse;
+            ctx.beginPath();
+            ctx.moveTo(x + 16, y + 2);
+            ctx.lineTo(x + 22, y + 12);
+            ctx.lineTo(x + 30, y + 16);
+            ctx.lineTo(x + 22, y + 20);
+            ctx.lineTo(x + 16, y + 30);
+            ctx.lineTo(x + 10, y + 20);
+            ctx.lineTo(x + 2, y + 16);
+            ctx.lineTo(x + 10, y + 12);
+            ctx.closePath();
+            ctx.fill();
+            ctx.fillStyle = "#ffffff";
+            ctx.fillRect(x + 14, y + 14, 4, 4);
+            ctx.shadowBlur = 0;
         } else if (type === LAVA) {
             const lavaY = Math.sin(time * 2 + c) * 3;
             const lavaPulse = Math.sin(time * 1.5 + r + c) * 0.3 + 0.7;
@@ -3667,7 +3838,7 @@
 
     function drawSwervingTracks(startRow, endRow) {
         ctx.save();
-        for (let r = startRow; r <= Math.min(endRow, WORLD_ROWS - 2); r++) {
+        for (let r = startRow; r <= Math.min(endRow, OLD_FLOOR_ROWS - 2); r++) {
             if (r < 3) continue;
 
             const x1 = railCols[r] * TILE_SIZE + 16;
@@ -4355,8 +4526,9 @@
             { from: 12, to: 250, color: '#5d4327' },
             { from: 250, to: 1400, color: '#1a2233' },
             { from: 1400, to: 2400, color: '#160c26' },
-            { from: 2400, to: WORLD_ROWS - 15, color: '#2a0d0d' },
-            { from: WORLD_ROWS - 15, to: WORLD_ROWS, color: '#5c0000' }
+            { from: 2400, to: OLD_FLOOR_ROWS - 15, color: '#2a0d0d' },
+            { from: OLD_FLOOR_ROWS - 15, to: OLD_FLOOR_ROWS, color: '#5c0000' },
+            { from: OLD_FLOOR_ROWS, to: WORLD_ROWS, color: '#12002b' }
         ];
         zones.forEach(z => {
             mctx.fillStyle = z.color;
@@ -4381,7 +4553,7 @@
             { row: 1425, col: 260, id: 'void_warlord' },
             { row: 2060, col: 77, id: 'celestial_overlord' },
             { row: 2700, col: 192, id: 'magma_guardian' },
-            { row: WORLD_ROWS - 11, col: 150, id: 'obsidian_warden' }
+            { row: OLD_FLOOR_ROWS - 11, col: 150, id: 'obsidian_warden' }
         ];
         bosses.forEach(b => {
             const defeated = bossesDefeated.includes(b.id);
@@ -4443,7 +4615,7 @@
 
         // Easter eggs
         const boyX = 60 * TILE_SIZE;
-        const boyY = (WORLD_ROWS - 3) * TILE_SIZE;
+        const boyY = (OLD_FLOOR_ROWS - 3) * TILE_SIZE;
         drawRedHairGlassesBoy(boyX, boyY);
 
         const beliveSignX = 22 * TILE_SIZE;
@@ -4591,7 +4763,7 @@
         const pCol = Math.max(0, Math.min(WORLD_COLS - 1, Math.floor((player.x + player.width / 2) / TILE_SIZE)));
         const trackColAtRow = railCols[pRow] || 50;
 
-        nearSwervingTrack = Math.abs(pCol - trackColAtRow) <= 3 && pRow < WORLD_ROWS - 2;
+        nearSwervingTrack = Math.abs(pCol - trackColAtRow) <= 3 && pRow < OLD_FLOOR_ROWS - 2;
 
         const cartDist = Math.hypot(player.x - shaftCart.x, player.y - shaftCart.y);
         nearMinecart = cartDist < 48;
@@ -4607,7 +4779,7 @@
         }
 
         const boyX = 60 * TILE_SIZE + 12;
-        const boyY = (WORLD_ROWS - 3) * TILE_SIZE + 12;
+        const boyY = (OLD_FLOOR_ROWS - 3) * TILE_SIZE + 12;
         const eggDist = Math.hypot(player.x - boyX, player.y - boyY);
 
         if (eggDist < 80) {
@@ -4759,8 +4931,9 @@
         else if (curRow < 1400) layerName = "MYTHIC CORE CAVERNS";
         else if (curRow < 1800) layerName = "VOID RIFT CAVERNS";
         else if (curRow < 2400) layerName = "CELESTIAL ABYSS";
-        else if (curRow < WORLD_ROWS - 15) layerName = "PRISMATIC DEPTHS";
-        else layerName = "LAVA CORE FLOOR";
+        else if (curRow < OLD_FLOOR_ROWS - 15) layerName = "PRISMATIC DEPTHS";
+        else if (curRow < OLD_FLOOR_ROWS) layerName = "LAVA CORE FLOOR";
+        else layerName = "⚡ THE RIFT ⚡";
 
         document.getElementById('bp-layer-val').innerText = layerName;
 
